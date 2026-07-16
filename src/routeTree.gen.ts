@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ParticipationRouteImport } from './routes/participation'
 import { Route as CarbonRouteImport } from './routes/carbon'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SupportIndexRouteImport } from './routes/support.index'
 import { Route as ConsortiumIndexRouteImport } from './routes/consortium.index'
 import { Route as ConsortiumIdRouteImport } from './routes/consortium.$id'
 
@@ -28,6 +29,11 @@ const CarbonRoute = CarbonRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportIndexRoute = SupportIndexRouteImport.update({
+  id: '/support/',
+  path: '/support/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConsortiumIndexRoute = ConsortiumIndexRouteImport.update({
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/participation': typeof ParticipationRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/consortium/': typeof ConsortiumIndexRoute
+  '/support/': typeof SupportIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/participation': typeof ParticipationRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/consortium': typeof ConsortiumIndexRoute
+  '/support': typeof SupportIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,6 +70,7 @@ export interface FileRoutesById {
   '/participation': typeof ParticipationRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/consortium/': typeof ConsortiumIndexRoute
+  '/support/': typeof SupportIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -71,8 +80,15 @@ export interface FileRouteTypes {
     | '/participation'
     | '/consortium/$id'
     | '/consortium/'
+    | '/support/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/carbon' | '/participation' | '/consortium/$id' | '/consortium'
+  to:
+    | '/'
+    | '/carbon'
+    | '/participation'
+    | '/consortium/$id'
+    | '/consortium'
+    | '/support'
   id:
     | '__root__'
     | '/'
@@ -80,6 +96,7 @@ export interface FileRouteTypes {
     | '/participation'
     | '/consortium/$id'
     | '/consortium/'
+    | '/support/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -88,6 +105,7 @@ export interface RootRouteChildren {
   ParticipationRoute: typeof ParticipationRoute
   ConsortiumIdRoute: typeof ConsortiumIdRoute
   ConsortiumIndexRoute: typeof ConsortiumIndexRoute
+  SupportIndexRoute: typeof SupportIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -113,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/support/': {
+      id: '/support/'
+      path: '/support'
+      fullPath: '/support/'
+      preLoaderRoute: typeof SupportIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/consortium/': {
       id: '/consortium/'
       path: '/consortium'
@@ -136,6 +161,7 @@ const rootRouteChildren: RootRouteChildren = {
   ParticipationRoute: ParticipationRoute,
   ConsortiumIdRoute: ConsortiumIdRoute,
   ConsortiumIndexRoute: ConsortiumIndexRoute,
+  SupportIndexRoute: SupportIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
