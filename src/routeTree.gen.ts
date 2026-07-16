@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ReportRouteImport } from './routes/report'
 import { Route as ParticipationRouteImport } from './routes/participation'
 import { Route as CarbonRouteImport } from './routes/carbon'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as ConsortiumIndexRouteImport } from './routes/consortium.index'
 import { Route as SupportIdRouteImport } from './routes/support.$id'
 import { Route as ConsortiumIdRouteImport } from './routes/consortium.$id'
 
+const ReportRoute = ReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ParticipationRoute = ParticipationRouteImport.update({
   id: '/participation',
   path: '/participation',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/carbon': typeof CarbonRoute
   '/participation': typeof ParticipationRoute
+  '/report': typeof ReportRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/support/$id': typeof SupportIdRoute
   '/consortium/': typeof ConsortiumIndexRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/carbon': typeof CarbonRoute
   '/participation': typeof ParticipationRoute
+  '/report': typeof ReportRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/support/$id': typeof SupportIdRoute
   '/consortium': typeof ConsortiumIndexRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/carbon': typeof CarbonRoute
   '/participation': typeof ParticipationRoute
+  '/report': typeof ReportRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/support/$id': typeof SupportIdRoute
   '/consortium/': typeof ConsortiumIndexRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carbon'
     | '/participation'
+    | '/report'
     | '/consortium/$id'
     | '/support/$id'
     | '/consortium/'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carbon'
     | '/participation'
+    | '/report'
     | '/consortium/$id'
     | '/support/$id'
     | '/consortium'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carbon'
     | '/participation'
+    | '/report'
     | '/consortium/$id'
     | '/support/$id'
     | '/consortium/'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CarbonRoute: typeof CarbonRoute
   ParticipationRoute: typeof ParticipationRoute
+  ReportRoute: typeof ReportRoute
   ConsortiumIdRoute: typeof ConsortiumIdRoute
   SupportIdRoute: typeof SupportIdRoute
   ConsortiumIndexRoute: typeof ConsortiumIndexRoute
@@ -123,6 +136,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/report': {
+      id: '/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/participation': {
       id: '/participation'
       path: '/participation'
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CarbonRoute: CarbonRoute,
   ParticipationRoute: ParticipationRoute,
+  ReportRoute: ReportRoute,
   ConsortiumIdRoute: ConsortiumIdRoute,
   SupportIdRoute: SupportIdRoute,
   ConsortiumIndexRoute: ConsortiumIndexRoute,
