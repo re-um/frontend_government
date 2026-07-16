@@ -16,7 +16,7 @@ import { consortiums } from "../lib/mockData";
 
 export const Route = createFileRoute("/consortium/$id")({
   head: () => ({ meta: [{ title: "컨소시엄 상세보기 · LIUM" }] }),
-  loader: ({ params }) => {
+  loader: ({ params }): (typeof consortiums)[number] => {
     const c = consortiums.find((x) => x.id === params.id) ?? consortiums[0];
     if (!c) throw notFound();
     return c;

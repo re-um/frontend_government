@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConsortiumIndexRouteImport } from './routes/consortium.index'
+import { Route as ConsortiumIdRouteImport } from './routes/consortium.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,30 +23,39 @@ const ConsortiumIndexRoute = ConsortiumIndexRouteImport.update({
   path: '/consortium/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConsortiumIdRoute = ConsortiumIdRouteImport.update({
+  id: '/consortium/$id',
+  path: '/consortium/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/consortium/$id': typeof ConsortiumIdRoute
   '/consortium/': typeof ConsortiumIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/consortium/$id': typeof ConsortiumIdRoute
   '/consortium': typeof ConsortiumIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/consortium/$id': typeof ConsortiumIdRoute
   '/consortium/': typeof ConsortiumIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/consortium/'
+  fullPaths: '/' | '/consortium/$id' | '/consortium/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/consortium'
-  id: '__root__' | '/' | '/consortium/'
+  to: '/' | '/consortium/$id' | '/consortium'
+  id: '__root__' | '/' | '/consortium/$id' | '/consortium/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConsortiumIdRoute: typeof ConsortiumIdRoute
   ConsortiumIndexRoute: typeof ConsortiumIndexRoute
 }
 
@@ -65,11 +75,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConsortiumIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/consortium/$id': {
+      id: '/consortium/$id'
+      path: '/consortium/$id'
+      fullPath: '/consortium/$id'
+      preLoaderRoute: typeof ConsortiumIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConsortiumIdRoute: ConsortiumIdRoute,
   ConsortiumIndexRoute: ConsortiumIndexRoute,
 }
 export const routeTree = rootRouteImport
