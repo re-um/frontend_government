@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ParticipationRouteImport } from './routes/participation'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConsortiumIndexRouteImport } from './routes/consortium.index'
 import { Route as ConsortiumIdRouteImport } from './routes/consortium.$id'
 
+const ParticipationRoute = ParticipationRouteImport.update({
+  id: '/participation',
+  path: '/participation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,36 +37,47 @@ const ConsortiumIdRoute = ConsortiumIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/participation': typeof ParticipationRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/consortium/': typeof ConsortiumIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/participation': typeof ParticipationRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/consortium': typeof ConsortiumIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/participation': typeof ParticipationRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/consortium/': typeof ConsortiumIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/consortium/$id' | '/consortium/'
+  fullPaths: '/' | '/participation' | '/consortium/$id' | '/consortium/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/consortium/$id' | '/consortium'
-  id: '__root__' | '/' | '/consortium/$id' | '/consortium/'
+  to: '/' | '/participation' | '/consortium/$id' | '/consortium'
+  id: '__root__' | '/' | '/participation' | '/consortium/$id' | '/consortium/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ParticipationRoute: typeof ParticipationRoute
   ConsortiumIdRoute: typeof ConsortiumIdRoute
   ConsortiumIndexRoute: typeof ConsortiumIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/participation': {
+      id: '/participation'
+      path: '/participation'
+      fullPath: '/participation'
+      preLoaderRoute: typeof ParticipationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ParticipationRoute: ParticipationRoute,
   ConsortiumIdRoute: ConsortiumIdRoute,
   ConsortiumIndexRoute: ConsortiumIndexRoute,
 }
