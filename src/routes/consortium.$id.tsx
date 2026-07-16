@@ -33,7 +33,7 @@ const statusMap: Record<string, { tone: any; label: string }> = {
 };
 
 function ConsortiumDetail() {
-  const c = Route.useLoaderData();
+  const c: (typeof consortiums)[number] = Route.useLoaderData();
   const router = useRouter();
   const s = statusMap[c.status];
 
