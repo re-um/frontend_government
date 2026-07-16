@@ -3,7 +3,7 @@ import { Filter, Search, ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-
 import { Badge, BtnSecondary, Card, PageHeader } from "../components/ui-kit";
 import { consortiums } from "../lib/mockData";
 
-export const Route = createFileRoute("/consortium")({
+export const Route = createFileRoute("/consortium/")({
   head: () => ({
     meta: [{ title: "산업공생 컨소시엄 후보 추천 · LIUM" }],
   }),

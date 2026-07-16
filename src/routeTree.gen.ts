@@ -9,55 +9,48 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ConsortiumRouteImport } from './routes/consortium'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConsortiumIndexRouteImport } from './routes/consortium.index'
 
-const ConsortiumRoute = ConsortiumRouteImport.update({
-  id: '/consortium',
-  path: '/consortium',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConsortiumIndexRoute = ConsortiumIndexRouteImport.update({
+  id: '/consortium/',
+  path: '/consortium/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/consortium': typeof ConsortiumRoute
+  '/consortium/': typeof ConsortiumIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/consortium': typeof ConsortiumRoute
+  '/consortium': typeof ConsortiumIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/consortium': typeof ConsortiumRoute
+  '/consortium/': typeof ConsortiumIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/consortium'
+  fullPaths: '/' | '/consortium/'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/consortium'
-  id: '__root__' | '/' | '/consortium'
+  id: '__root__' | '/' | '/consortium/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ConsortiumRoute: typeof ConsortiumRoute
+  ConsortiumIndexRoute: typeof ConsortiumIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/consortium': {
-      id: '/consortium'
-      path: '/consortium'
-      fullPath: '/consortium'
-      preLoaderRoute: typeof ConsortiumRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -65,12 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/consortium/': {
+      id: '/consortium/'
+      path: '/consortium'
+      fullPath: '/consortium/'
+      preLoaderRoute: typeof ConsortiumIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ConsortiumRoute: ConsortiumRoute,
+  ConsortiumIndexRoute: ConsortiumIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
