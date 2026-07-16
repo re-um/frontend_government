@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReportRouteImport } from './routes/report'
+import { Route as PolicyRouteImport } from './routes/policy'
 import { Route as ParticipationRouteImport } from './routes/participation'
 import { Route as CarbonRouteImport } from './routes/carbon'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,6 +22,11 @@ import { Route as ConsortiumIdRouteImport } from './routes/consortium.$id'
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PolicyRoute = PolicyRouteImport.update({
+  id: '/policy',
+  path: '/policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParticipationRoute = ParticipationRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/carbon': typeof CarbonRoute
   '/participation': typeof ParticipationRoute
+  '/policy': typeof PolicyRoute
   '/report': typeof ReportRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/support/$id': typeof SupportIdRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/carbon': typeof CarbonRoute
   '/participation': typeof ParticipationRoute
+  '/policy': typeof PolicyRoute
   '/report': typeof ReportRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/support/$id': typeof SupportIdRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/carbon': typeof CarbonRoute
   '/participation': typeof ParticipationRoute
+  '/policy': typeof PolicyRoute
   '/report': typeof ReportRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/support/$id': typeof SupportIdRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carbon'
     | '/participation'
+    | '/policy'
     | '/report'
     | '/consortium/$id'
     | '/support/$id'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carbon'
     | '/participation'
+    | '/policy'
     | '/report'
     | '/consortium/$id'
     | '/support/$id'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carbon'
     | '/participation'
+    | '/policy'
     | '/report'
     | '/consortium/$id'
     | '/support/$id'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CarbonRoute: typeof CarbonRoute
   ParticipationRoute: typeof ParticipationRoute
+  PolicyRoute: typeof PolicyRoute
   ReportRoute: typeof ReportRoute
   ConsortiumIdRoute: typeof ConsortiumIdRoute
   SupportIdRoute: typeof SupportIdRoute
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/report'
       preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/policy': {
+      id: '/policy'
+      path: '/policy'
+      fullPath: '/policy'
+      preLoaderRoute: typeof PolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/participation': {
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CarbonRoute: CarbonRoute,
   ParticipationRoute: ParticipationRoute,
+  PolicyRoute: PolicyRoute,
   ReportRoute: ReportRoute,
   ConsortiumIdRoute: ConsortiumIdRoute,
   SupportIdRoute: SupportIdRoute,
