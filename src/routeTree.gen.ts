@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as PolicyRouteImport } from './routes/policy'
 import { Route as ParticipationRouteImport } from './routes/participation'
@@ -19,6 +20,11 @@ import { Route as ConsortiumIndexRouteImport } from './routes/consortium.index'
 import { Route as SupportIdRouteImport } from './routes/support.$id'
 import { Route as ConsortiumIdRouteImport } from './routes/consortium.$id'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/participation': typeof ParticipationRoute
   '/policy': typeof PolicyRoute
   '/report': typeof ReportRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/support/$id': typeof SupportIdRoute
   '/consortium/': typeof ConsortiumIndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/participation': typeof ParticipationRoute
   '/policy': typeof PolicyRoute
   '/report': typeof ReportRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/support/$id': typeof SupportIdRoute
   '/consortium': typeof ConsortiumIndexRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/participation': typeof ParticipationRoute
   '/policy': typeof PolicyRoute
   '/report': typeof ReportRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/consortium/$id': typeof ConsortiumIdRoute
   '/support/$id': typeof SupportIdRoute
   '/consortium/': typeof ConsortiumIndexRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/participation'
     | '/policy'
     | '/report'
+    | '/sitemap.xml'
     | '/consortium/$id'
     | '/support/$id'
     | '/consortium/'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/participation'
     | '/policy'
     | '/report'
+    | '/sitemap.xml'
     | '/consortium/$id'
     | '/support/$id'
     | '/consortium'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/participation'
     | '/policy'
     | '/report'
+    | '/sitemap.xml'
     | '/consortium/$id'
     | '/support/$id'
     | '/consortium/'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   ParticipationRoute: typeof ParticipationRoute
   PolicyRoute: typeof PolicyRoute
   ReportRoute: typeof ReportRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ConsortiumIdRoute: typeof ConsortiumIdRoute
   SupportIdRoute: typeof SupportIdRoute
   ConsortiumIndexRoute: typeof ConsortiumIndexRoute
@@ -149,6 +162,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/report': {
       id: '/report'
       path: '/report'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   ParticipationRoute: ParticipationRoute,
   PolicyRoute: PolicyRoute,
   ReportRoute: ReportRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ConsortiumIdRoute: ConsortiumIdRoute,
   SupportIdRoute: SupportIdRoute,
   ConsortiumIndexRoute: ConsortiumIndexRoute,
