@@ -4,7 +4,7 @@ import { Badge, BtnPrimary, BtnSecondary, Card, PageHeader } from "../components
 import { supportPrograms } from "../lib/mockData";
 
 export const Route = createFileRoute("/support/$id")({
-  head: () => ({ meta: [{ title: "지원사업 상세보기 · LIUM" }] }),
+  head: () => ({ meta: [{ title: "지원사업 상세보기 · Re:um" }] }),
   loader: ({ params }): (typeof supportPrograms)[number] => {
     const p = supportPrograms.find((x) => x.id === params.id) ?? supportPrograms[0];
     if (!p) throw notFound();
@@ -103,7 +103,7 @@ function SupportDetail() {
           <Sparkles className="h-4 w-4 text-lime" strokeWidth={2} /> AI Summary
         </div>
         <p className="text-[13px] leading-relaxed text-white/85">
-          본 지원사업은 컨소시엄 실증형 과제로, LIUM 추천 컨소시엄 3건과 즉시 연계 가능합니다.
+          본 지원사업은 컨소시엄 실증형 과제로, Re:um 추천 컨소시엄 3건과 즉시 연계 가능합니다.
           예상 인센티브 규모는 컨소시엄당 평균 12억 원이며, 신청 준비 기간은 45일 내외로 산정됩니다.
           정책 성과 리포트를 생성합니다.
         </p>

@@ -5,7 +5,7 @@ import { consortiums } from "../lib/mockData";
 
 export const Route = createFileRoute("/consortium/")({
   head: () => ({
-    meta: [{ title: "산업공생 컨소시엄 후보 추천 · LIUM" }],
+    meta: [{ title: "산업공생 컨소시엄 후보 추천 · Re:um" }],
   }),
   component: ConsortiumList,
 });

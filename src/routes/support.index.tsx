@@ -4,7 +4,7 @@ import { Badge, BtnPrimary, BtnSecondary, Card, PageHeader, SectionTitle } from 
 import { supportPrograms } from "../lib/mockData";
 
 export const Route = createFileRoute("/support/")({
-  head: () => ({ meta: [{ title: "추천 지원사업 및 정책 · LIUM" }] }),
+  head: () => ({ meta: [{ title: "추천 지원사업 및 정책 · Re:um" }] }),
   component: SupportList,
 });
 
@@ -93,7 +93,7 @@ function SupportList() {
           <SectionTitle title="AI 추천 근거" />
           <ul className="space-y-3 text-[13px]">
             {[
-              "산업부 자원순환 실증사업은 LIUM 추천 컨소시엄과 매칭도 94%로 최상위입니다.",
+              "산업부 자원순환 실증사업은 Re:um 추천 컨소시엄과 매칭도 94%로 최상위입니다.",
               "환경부 순환경제 클러스터는 지역 기반 참여율이 높은 지자체에서 우선 매칭됩니다.",
               "마감 30일 이내 지원사업이 총 2건으로 신속한 신청 준비가 필요합니다.",
             ].map((t, i) => (

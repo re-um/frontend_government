@@ -130,7 +130,7 @@ export const supportPrograms = [
       "실증 기간 24개월 이내 완료",
     ],
     reason:
-      "본 사업은 LIUM이 추천한 컨소시엄 구성 조건과 일치도가 94%로 산정되었습니다. 특히 폐기물 재활용 전환 목표가 정책 KPI와 부합합니다.",
+      "본 사업은 Re:um이 추천한 컨소시엄 구성 조건과 일치도가 94%로 산정되었습니다. 특히 폐기물 재활용 전환 목표가 정책 KPI와 부합합니다.",
     summary:
       "산업 부문 탄소중립 전환을 가속하기 위한 실증형 R&D 사업으로, 폐자원 순환 및 공정 저탄소화 과제를 지원합니다.",
   },
@@ -205,4 +205,85 @@ export const regionalParticipation = [
   { region: "광양", value: 68 },
   { region: "인천", value: 54 },
   { region: "강원", value: 38 },
+];
+
+export const rejectionReasons: Record<string, { by: string; reason: string; at: string }[]> = {
+  "C-2024-0138": [
+    {
+      by: "SK지오센트릭",
+      reason:
+        "열분해유 생산 라인 증설 일정이 2026년 하반기로 조정되어 즉시 원료 인수가 어렵습니다. 차년도 재검토 요청드립니다.",
+      at: "2025-12-14 14:22",
+    },
+  ],
+};
+
+export type NotificationKind = "response" | "recommendation" | "policy" | "system";
+export interface AppNotification {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  message: string;
+  at: string;
+  to?: string;
+  unread?: boolean;
+}
+
+export const notifications: AppNotification[] = [
+  {
+    id: "N-01",
+    kind: "response",
+    title: "기업 응답 도착",
+    message: "SK지오센트릭이 C-2024-0138에 대해 거절 사유를 등록했습니다.",
+    at: "방금 전",
+    to: "/participation",
+    unread: true,
+  },
+  {
+    id: "N-02",
+    kind: "recommendation",
+    title: "AI 차순위 추천 준비 완료",
+    message: "LG화학 여수 컨소시엄에 대한 대체 수요기업 3곳을 추천합니다.",
+    at: "5분 전",
+    to: "/consortium",
+    unread: true,
+  },
+  {
+    id: "N-03",
+    kind: "policy",
+    title: "정책 마감 임박",
+    message: "환경부 순환경제 R&D 접수가 12일 남았습니다.",
+    at: "1시간 전",
+    to: "/support",
+    unread: true,
+  },
+  {
+    id: "N-04",
+    kind: "system",
+    title: "탄소감축 리포트 생성 완료",
+    message: "12월 정책 성과 리포트가 준비되었습니다.",
+    at: "어제",
+    to: "/report",
+  },
+];
+
+export const policyAlerts = [
+  {
+    tone: "danger" as const,
+    title: "강원권 참여율 급감",
+    message: "최근 30일 참여율이 38%로 하락했습니다. 신규 매칭 캠페인이 필요합니다.",
+    at: "오늘",
+  },
+  {
+    tone: "warning" as const,
+    title: "환경부 클러스터 심사 지연",
+    message: "3건이 심사 대기 상태로 평균 대기 시간이 21일을 초과했습니다.",
+    at: "어제",
+  },
+  {
+    tone: "success" as const,
+    title: "울산권 실증 목표 초과 달성",
+    message: "탄소감축 KPI 대비 112% 달성. 후속 실증 편성이 권고됩니다.",
+    at: "3일 전",
+  },
 ];
