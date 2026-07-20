@@ -1,4 +1,63 @@
 import type { ReactNode } from "react";
+import { X } from "lucide-react";
+
+export function Modal({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+  footer,
+  size = "md",
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  description?: string;
+  children: ReactNode;
+  footer?: ReactNode;
+  size?: "md" | "lg";
+}) {
+  if (!open) return null;
+  const width = size === "lg" ? "max-w-2xl" : "max-w-lg";
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-in fade-in duration-150"
+      onClick={onClose}
+    >
+      <div
+        className={
+          "relative w-full " +
+          width +
+          " overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-150"
+        }
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between border-b border-border px-6 py-4">
+          <div>
+            <div className="text-[15px] font-bold tracking-tight">{title}</div>
+            {description && (
+              <div className="mt-1 text-[12px] text-muted-foreground">{description}</div>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-secondary"
+          >
+            <X className="h-4 w-4" strokeWidth={1.75} />
+          </button>
+        </div>
+        <div className="px-6 py-5">{children}</div>
+        {footer && (
+          <div className="flex justify-end gap-2 border-t border-border bg-secondary/40 px-6 py-3">
+            {footer}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 export function Card({
   children,
