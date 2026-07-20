@@ -76,16 +76,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "LIUM · AI 산업공생 플랫폼" },
+      { title: "Re:um · AI 산업공생 플랫폼" },
       {
         name: "description",
         content:
-          "LIUM은 산업통상자원부의 AI 기반 산업공생 플랫폼입니다. 컨소시엄 추천, 탄소감축 분석, 정책 성과 리포트를 통합 관리합니다.",
+          "Re:um은 산업통상자원부의 AI 기반 산업공생 플랫폼입니다. 컨소시엄 추천, 탄소감축 분석, 정책 성과 리포트를 통합 관리합니다.",
       },
-      { property: "og:title", content: "LIUM · AI 산업공생 플랫폼" },
+      { property: "og:title", content: "Re:um · AI 산업공생 플랫폼" },
       {
         property: "og:description",
-        content: "데이터로 연결하고, AI로 순환합니다.",
+        content: "다시 순환하고, 다시 연결합니다. Re:um.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
