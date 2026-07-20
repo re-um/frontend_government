@@ -20,7 +20,7 @@ import { BtnPrimary, BtnSecondary, Card, Kpi, PageHeader, SectionTitle } from ".
 import { monthlyCarbon, wasteMix } from "../lib/mockData";
 
 export const Route = createFileRoute("/carbon")({
-  head: () => ({ meta: [{ title: "탄소감축 / 환경성과 분석 · LIUM" }] }),
+  head: () => ({ meta: [{ title: "탄소감축 / 환경성과 분석 · Re:um" }] }),
   component: CarbonPage,
 });
 
