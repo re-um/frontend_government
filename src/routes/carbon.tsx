@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Download, FileText, Leaf, Recycle, TrendingDown, Building2 } from "lucide-react";
+import { useState } from "react";
+import { Download, FileText, Leaf, Recycle, TrendingDown, Building2, Info } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
