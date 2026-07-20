@@ -143,10 +143,50 @@ function PolicyDashboard() {
         </Card>
       </div>
 
+      {/* AI 정책 알림 */}
+      <Card className="mb-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="grid h-9 w-9 place-items-center rounded-lg bg-lime text-lime-foreground">
+              <BellRing className="h-4 w-4" strokeWidth={2} />
+            </div>
+            <div>
+              <div className="text-[14px] font-bold">AI 정책 알림</div>
+              <div className="text-[11px] text-muted-foreground">이상 신호와 이행 이슈를 실시간으로 감지합니다.</div>
+            </div>
+          </div>
+          <Badge tone="lime">
+            <Sparkles className="h-3 w-3" strokeWidth={2.5} /> Live
+          </Badge>
+        </div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          {policyAlerts.map((a) => {
+            const iconMap = { danger: AlertTriangle, warning: AlertTriangle, success: CheckCircle2 } as const;
+            const cls =
+              a.tone === "danger"
+                ? "border-[#FCA5A5] bg-[#FEF2F2]"
+                : a.tone === "warning"
+                  ? "border-[#FCD34D] bg-[#FEFCE8]"
+                  : "border-[#86EFAC] bg-[#F0FDF4]";
+            const Icon = iconMap[a.tone];
+            return (
+              <div key={a.title} className={"rounded-xl border p-4 " + cls}>
+                <div className="flex items-center justify-between">
+                  <Icon className="h-4 w-4" strokeWidth={2} />
+                  <span className="text-[10px] font-semibold text-muted-foreground">{a.at}</span>
+                </div>
+                <div className="mt-2 text-[13px] font-bold">{a.title}</div>
+                <div className="mt-1 text-[12px] leading-relaxed text-foreground/80">{a.message}</div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <SectionTitle title="지역 참여 현황" description="Map Visualization" />
-          <MapPlaceholder />
+          <SectionTitle title="지역 참여 현황" description="지도에서 지역을 호버해 상세 참여율을 확인하세요." />
+          <KoreaMap />
         </Card>
 
         <Card className="bg-[#1B1F23] text-white">
