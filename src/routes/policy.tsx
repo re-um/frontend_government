@@ -211,8 +211,8 @@ function PolicyDashboard() {
   );
 }
 
-function MapPlaceholder() {
-  const dots = [
+function KoreaMap() {
+  const regions = [
     { top: "22%", left: "48%", label: "당진", value: 72 },
     { top: "18%", left: "72%", label: "강원", value: 38 },
     { top: "44%", left: "30%", label: "인천", value: 54 },
@@ -221,13 +221,17 @@ function MapPlaceholder() {
     { top: "74%", left: "42%", label: "광양", value: 68 },
     { top: "80%", left: "52%", label: "여수", value: 84 },
   ];
+  const [hovered, setHovered] = useState<string | null>(null);
+  // Color intensity by value: green → red gradient bucketed.
+  function toneFor(v: number) {
+    if (v >= 85) return { bg: "#A3E635", fg: "#1B1F23", ring: "rgba(163,230,53,0.35)" };
+    if (v >= 70) return { bg: "#4ADE80", fg: "#052E16", ring: "rgba(74,222,128,0.30)" };
+    if (v >= 55) return { bg: "#FDE047", fg: "#713F12", ring: "rgba(253,224,71,0.30)" };
+    return { bg: "#F87171", fg: "#7F1D1D", ring: "rgba(248,113,113,0.30)" };
+  }
   return (
-    <div className="relative h-[320px] w-full overflow-hidden rounded-xl border border-border bg-[radial-gradient(circle_at_30%_20%,#F5F6F8_0%,#EEF0F3_60%,#E5E7EB_100%)]">
-      <svg
-        viewBox="0 0 400 400"
-        className="absolute inset-0 h-full w-full opacity-40"
-        aria-hidden
-      >
+    <div className="relative h-[360px] w-full overflow-hidden rounded-xl border border-border bg-[radial-gradient(circle_at_30%_20%,#F5F6F8_0%,#EEF0F3_60%,#E5E7EB_100%)]">
+      <svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full opacity-40" aria-hidden>
         <path
           d="M160 40 L220 60 L260 120 L280 180 L260 240 L280 300 L220 340 L180 360 L140 320 L120 260 L100 200 L120 120 Z"
           fill="none"
@@ -236,26 +240,60 @@ function MapPlaceholder() {
           strokeDasharray="3 4"
         />
       </svg>
-      {dots.map((d) => (
-        <div
-          key={d.label}
-          className="absolute -translate-x-1/2 -translate-y-1/2"
-          style={{ top: d.top, left: d.left }}
-        >
-          <div className="relative">
-            <div
-              className="absolute inset-0 -z-10 animate-ping rounded-full bg-lime opacity-40"
-              style={{ animationDuration: "2.4s" }}
-            />
-            <div className="grid h-8 w-8 place-items-center rounded-full bg-lime text-[10px] font-bold text-lime-foreground shadow-md">
-              {d.value}
-            </div>
-            <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold">
-              <MapPin className="h-3 w-3" strokeWidth={2} /> {d.label}
+      {/* Legend */}
+      <div className="absolute right-3 top-3 flex items-center gap-2 rounded-lg border border-border bg-card/95 px-3 py-2 text-[10px] font-semibold shadow-sm backdrop-blur">
+        <span className="text-muted-foreground">참여율</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: "#F87171" }} />낮음</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: "#FDE047" }} />중간</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: "#4ADE80" }} />높음</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: "#A3E635" }} />최상</span>
+      </div>
+
+      {regions.map((d) => {
+        const t = toneFor(d.value);
+        const active = hovered === d.label;
+        return (
+          <div
+            key={d.label}
+            className="absolute -translate-x-1/2 -translate-y-1/2 transition-transform"
+            style={{ top: d.top, left: d.left, transform: `translate(-50%,-50%) scale(${active ? 1.1 : 1})` }}
+            onMouseEnter={() => setHovered(d.label)}
+            onMouseLeave={() => setHovered(null)}
+          >
+            <div className="relative cursor-pointer">
+              <div
+                className="absolute inset-0 -z-10 animate-ping rounded-full opacity-40"
+                style={{ background: t.ring, animationDuration: "2.4s" }}
+              />
+              <div
+                className="grid h-9 w-9 place-items-center rounded-full text-[11px] font-bold shadow-md ring-2 ring-white"
+                style={{ background: t.bg, color: t.fg }}
+              >
+                {d.value}
+              </div>
+              <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold">
+                <MapPin className="h-3 w-3" strokeWidth={2} /> {d.label}
+              </div>
+
+              {active && (
+                <div className="absolute left-1/2 top-[calc(100%+18px)] z-10 w-[180px] -translate-x-1/2 rounded-xl border border-border bg-card p-3 text-left shadow-lg">
+                  <div className="text-[11px] font-semibold text-muted-foreground">{d.label} 산업단지</div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="num text-[20px]">{d.value}</span>
+                    <span className="text-[11px] text-muted-foreground">/ 100 참여율</span>
+                  </div>
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                    <div className="h-full rounded-full" style={{ width: d.value + "%", background: t.bg }} />
+                  </div>
+                  <div className="mt-2 text-[10px] text-muted-foreground">
+                    참여기업 {Math.round(d.value * 3.2)}개사 · 전월 대비 +{(d.value / 12).toFixed(1)}%
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
