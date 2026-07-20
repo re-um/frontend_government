@@ -222,6 +222,38 @@ function FlowDiagram() {
   );
 }
 
+function FlowInfo() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onClick={() => setOpen((v) => !v)}
+        className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-card text-muted-foreground hover:bg-secondary"
+        aria-label="다이어그램 설명"
+      >
+        <Info className="h-4 w-4" strokeWidth={1.75} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-10 z-20 w-[300px] rounded-xl border border-border bg-card p-4 text-left shadow-lg">
+          <div className="text-[12px] font-bold">다이어그램 설명</div>
+          <p className="mt-2 text-[12px] leading-relaxed text-foreground/80">
+            산업공생 프로세스는 <span className="font-semibold">배출기업</span>에서 발생한 폐자원이
+            <span className="font-semibold"> 중간처리기업</span>을 거쳐 <span className="font-semibold">수요기업</span>의
+            원료로 재투입되는 3단계 순환 구조입니다.
+          </p>
+          <ul className="mt-3 space-y-1.5 text-[11px] text-muted-foreground">
+            <li>• 노드 숫자는 각 단계 참여기업 수를 의미합니다.</li>
+            <li>• 화살표는 실제 물류 흐름 방향을 나타냅니다.</li>
+            <li>• 색상은 각 단계 역할(배출/처리/수요)을 구분합니다.</li>
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FilterSelect({ label, options }: { label: string; options: string[] }) {
   return (
     <div>
