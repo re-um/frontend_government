@@ -21,12 +21,13 @@ import { consortiums, supportPrograms, notifications as seedNotifications, type 
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/consortium", label: "산업공생 컨소시엄 후보 추천", icon: Network },
+  { to: "/consortium/", label: "산업공생 컨소시엄 후보 추천", icon: Network },
   { to: "/participation", label: "기업 참여 진행 현황", icon: ListChecks },
   { to: "/carbon", label: "탄소감축 / 환경성과 분석", icon: Leaf },
+  { to: "/report", label: "폐합성수지 환경성과 리포트", icon: FileBarChart },
   { to: "/policy", label: "자원순환 정책 운영 대시보드", icon: Landmark },
-  { to: "/report", label: "정책 성과 리포트", icon: FileBarChart },
-  { to: "/support", label: "추천 지원사업 및 정책", icon: FileText },
+  { to: "/policy-report", label: "정책 운영 성과 리포트", icon: FileText },
+  { to: "/support/", label: "추천 지원사업 및 정책", icon: FileText },
 ] as const;
 
 function ReumLogo({ size = 32 }: { size?: number }) {
@@ -100,7 +101,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const searchRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  const isActive = (to: string) => (to === "/" ? pathname === "/" : pathname === to || pathname.startsWith(to + "/"));
+  const isActive = (to: string) => {
+    if (to === "/") return pathname === "/";
+    const normalizedPath = pathname.replace(/\/$/, "");
+    const normalizedTarget = to.replace(/\/$/, "");
+    return normalizedPath === normalizedTarget || normalizedPath.startsWith(normalizedTarget + "/");
+  };
   const index = useGlobalIndex();
   const results = useMemo(() => {
     if (!q.trim()) return [];
@@ -290,9 +296,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
             <div className="mx-2 h-6 w-px bg-border" />
             <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-secondary">
-              <div className="grid h-8 w-8 place-items-center rounded-full bg-[#14181D] text-[11px] font-bold text-lime">
-                산통
-              </div>
+              <div className="grid h-8 w-8 place-items-center rounded-full bg-[#14181D] text-[11px] font-bold text-lime">산통</div>
               <div className="hidden text-left leading-tight sm:block">
                 <div className="text-[12px] font-semibold">산통부 계정</div>
                 <div className="text-[10px] text-muted-foreground">Policy Analyst</div>

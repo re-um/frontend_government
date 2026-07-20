@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { FileText, Sparkles, MapPin, TrendingUp, Building2, Landmark, BellRing, AlertTriangle, CheckCircle2 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -11,21 +11,23 @@ import {
   CartesianGrid,
 } from "recharts";
 import { Badge, BtnPrimary, Card, Kpi, PageHeader, SectionTitle } from "../components/ui-kit";
-import { regionalParticipation, policyAlerts } from "../lib/mockData";
+import { policyAlerts } from "../lib/mockData";
+import { calculatePolicyPerformance, policyOptions, policyPeriods, policyRegions } from "../lib/policyData";
 
 export const Route = createFileRoute("/policy")({
   head: () => ({ meta: [{ title: "자원순환 정책 운영 대시보드 · Re:um" }] }),
   component: PolicyDashboard,
 });
 
-const projects = [
-  { name: "산업부 자원순환 실증사업", stage: "운영중", progress: 72 },
-  { name: "탄소중립 산업전환 지원", stage: "접수중", progress: 34 },
-  { name: "환경부 순환경제 클러스터", stage: "심사중", progress: 58 },
-  { name: "중소·중견 감축 설비 지원", stage: "예정", progress: 8 },
-];
-
 function PolicyDashboard() {
+  const navigate = useNavigate();
+  const [policy, setPolicy] = useState("전체 정책");
+  const [period, setPeriod] = useState("이번 분기");
+  const [region, setRegion] = useState("전체");
+  const analytics = useMemo(
+    () => calculatePolicyPerformance(policy, period, region),
+    [policy, period, region],
+  );
   return (
     <div className="mx-auto max-w-[1400px]">
       <PageHeader
@@ -33,8 +35,10 @@ function PolicyDashboard() {
         title="자원순환 정책 운영 대시보드"
         description="정책 기간·지역별 정책 성과를 확인해 주세요. AI가 정책 인사이트를 제안합니다."
         actions={
-          <BtnPrimary>
-            <FileText className="h-4 w-4" strokeWidth={1.75} /> 정책 성과 리포트 생성
+          <BtnPrimary
+            onClick={() => navigate({ to: "/policy-report", search: { policy, period, region } })}
+          >
+            <FileText className="h-4 w-4" strokeWidth={1.75} /> 정책 운영 리포트 생성
           </BtnPrimary>
         }
       />
@@ -43,15 +47,21 @@ function PolicyDashboard() {
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <FilterSelect
             label="정책"
-            options={["전체 정책", "자원순환 실증", "탄소중립 산업전환", "순환경제 클러스터"]}
+            options={[...policyOptions]}
+            value={policy}
+            onChange={setPolicy}
           />
           <FilterSelect
             label="기간"
-            options={["이번 분기", "최근 6개월", "올해", "지난 1년"]}
+            options={[...policyPeriods]}
+            value={period}
+            onChange={setPeriod}
           />
           <FilterSelect
             label="지역"
-            options={["전체", "울산", "여수", "포항", "당진", "광양", "강원"]}
+            options={[...policyRegions]}
+            value={region}
+            onChange={setRegion}
           />
         </div>
       </Card>
@@ -59,14 +69,14 @@ function PolicyDashboard() {
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi
           label="운영 정책 수"
-          value="12"
+          value={analytics.operatingPolicies.toLocaleString()}
           unit="건"
           delta="+2건"
           icon={<Landmark className="h-[18px] w-[18px]" strokeWidth={1.75} />}
         />
         <Kpi
           label="참여 기업"
-          value="1,284"
+          value={analytics.participants.toLocaleString()}
           unit="개사"
           delta="+8.2%"
           icon={<Building2 className="h-[18px] w-[18px]" strokeWidth={1.75} />}
@@ -74,7 +84,7 @@ function PolicyDashboard() {
         />
         <Kpi
           label="집행률"
-          value="68.4"
+          value={analytics.executionRate.toFixed(1)}
           unit="%"
           delta="+3.6%p"
           icon={<TrendingUp className="h-[18px] w-[18px]" strokeWidth={1.75} />}
@@ -82,7 +92,7 @@ function PolicyDashboard() {
         />
         <Kpi
           label="예산 집행 규모"
-          value="1,842"
+          value={analytics.budget.toLocaleString()}
           unit="억 원"
           delta="+14.2%"
           icon={<TrendingUp className="h-[18px] w-[18px]" strokeWidth={1.75} />}
@@ -93,7 +103,7 @@ function PolicyDashboard() {
         <Card className="lg:col-span-2">
           <SectionTitle title="지원사업 진행 현황" />
           <ul className="space-y-3">
-            {projects.map((p) => (
+            {analytics.projects.map((p) => (
               <li key={p.name} className="rounded-xl border border-border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="font-semibold">{p.name}</div>
@@ -120,7 +130,7 @@ function PolicyDashboard() {
           <div className="h-[280px]">
             <ResponsiveContainer>
               <BarChart
-                data={regionalParticipation}
+                data={analytics.regionalParticipation}
                 layout="vertical"
                 margin={{ top: 4, right: 12, left: 0 }}
               >
@@ -194,11 +204,7 @@ function PolicyDashboard() {
             <Sparkles className="h-4 w-4 text-lime" strokeWidth={2} /> AI 정책 인사이트
           </div>
           <ul className="space-y-3 text-[13px]">
-            {[
-              "울산 지역 참여율이 증가했습니다. 후속 실증 과제 편성이 권고됩니다.",
-              "강원권 참여기업 확보가 필요합니다. 신규 매칭 캠페인이 필요합니다.",
-              "신규 지원사업 연계를 추천합니다. 산업부·환경부 공동 사업 편성이 가능합니다.",
-            ].map((t, i) => (
+            {analytics.insights.map((t, i) => (
               <li key={i} className="flex gap-2 text-white/85">
                 <span className="num text-lime">0{i + 1}</span>
                 <span>{t}</span>
@@ -298,11 +304,11 @@ function KoreaMap() {
   );
 }
 
-function FilterSelect({ label, options }: { label: string; options: string[] }) {
+function FilterSelect({ label, options, value, onChange }: { label: string; options: string[]; value: string; onChange: (value: string) => void }) {
   return (
     <div>
       <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">{label}</label>
-      <select className="h-10 w-full rounded-lg border border-border bg-card px-3 text-[13px] outline-none">
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-10 w-full rounded-lg border border-border bg-card px-3 text-[13px] outline-none">
         {options.map((o) => (
           <option key={o}>{o}</option>
         ))}

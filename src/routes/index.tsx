@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Factory,
   Layers,
@@ -44,6 +44,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  const navigate = useNavigate();
   const accepted = 128;
   const waiting = 42;
   const rejected = 11;
@@ -61,7 +62,14 @@ function Dashboard() {
               <FileText className="h-4 w-4" strokeWidth={1.75} />
               데이터 내보내기
             </BtnSecondary>
-            <BtnPrimary>
+            <BtnPrimary
+              onClick={() =>
+                navigate({
+                  to: "/report",
+                  search: { region: "전체", period: "최근 6개월", material: "전체" },
+                })
+              }
+            >
               <Sparkles className="h-4 w-4" strokeWidth={1.75} />
               리포트 생성
             </BtnPrimary>
@@ -293,26 +301,6 @@ function Dashboard() {
         </Card>
       </div>
 
-      {/* CTA */}
-      <div className="mt-8">
-        <Card className="flex flex-wrap items-center justify-between gap-4 bg-[#1B1F23] text-white">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-widest text-lime">
-              Policy report
-            </div>
-            <div className="mt-1 text-lg font-bold">정책 성과 리포트를 생성합니다.</div>
-            <div className="mt-1 text-[12px] text-white/60">
-              AI가 최근 분기 데이터를 종합하여 리포트를 자동 생성합니다.
-            </div>
-          </div>
-          <Link
-            to="/report"
-            className="inline-flex h-11 items-center gap-2 rounded-lg bg-lime px-5 text-[13px] font-semibold text-lime-foreground hover:brightness-95"
-          >
-            <Sparkles className="h-4 w-4" strokeWidth={1.75} /> 리포트 생성
-          </Link>
-        </Card>
-      </div>
     </div>
   );
 }

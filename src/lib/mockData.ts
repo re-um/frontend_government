@@ -14,7 +14,7 @@ export interface Consortium {
   policy: { name: string; matched: boolean }[];
 }
 
-export const consortiums: Consortium[] = [
+const featuredConsortiums: Consortium[] = [
   {
     id: "C-2024-0142",
     emitter: { name: "한화솔루션 여수", region: "전라남도 여수시", waste: "폐합성수지 (PP)" },
@@ -112,6 +112,63 @@ export const consortiums: Consortium[] = [
     policy: [{ name: "환경부 순환경제 클러스터", matched: true }],
   },
 ];
+
+const consortiumSeeds = [
+  ["금호석유화학 울산", "울산광역시", "PP", "울산자원순환", "현대EP"],
+  ["GS칼텍스 여수", "전라남도 여수시", "HDPE", "여수에코사이클", "대한유화"],
+  ["효성화학 용연", "울산광역시", "PET", "케이알폴리머", "효성티앤씨"],
+  ["SK지오센트릭 울산", "울산광역시", "LDPE", "리뉴폴리머", "동원시스템즈"],
+  ["코오롱인더스트리 구미", "경상북도 구미시", "ABS", "경북에코플라스틱", "LG전자 창원"],
+  ["롯데정밀화학 울산", "울산광역시", "PP", "그린폴리머", "한화첨단소재"],
+  ["한화토탈에너지스 대산", "충청남도 서산시", "HDPE", "충남리사이클", "세방산업"],
+  ["도레이첨단소재 구미", "경상북도 구미시", "PET", "구미순환자원", "휴비스 전주"],
+  ["현대모비스 울산", "울산광역시", "ABS", "오토리사이클", "현대공업"],
+  ["LG전자 창원", "경상남도 창원시", "PP", "경남에코텍", "코오롱플라스틱"],
+  ["삼양사 전주", "전라북도 전주시", "PET", "전북자원순환", "티케이케미칼"],
+  ["애경케미칼 울산", "울산광역시", "LDPE", "울산리뉴텍", "율촌화학"],
+  ["OCI 포항", "경상북도 포항시", "HDPE", "포항에코원", "경방"],
+  ["동국제강 당진", "충청남도 당진시", "PP", "당진순환소재", "동원시스템즈"],
+  ["포스코DX 광양", "전라남도 광양시", "ABS", "광양리사이클", "신성델타테크"],
+  ["한국바스프 여수", "전라남도 여수시", "LDPE", "남해화학순환", "한솔제지"],
+  ["SK실트론 구미", "경상북도 구미시", "LDPE", "에코앤플라스", "LG화학 오창"],
+  ["두산에너빌리티 창원", "경상남도 창원시", "HDPE", "창원자원순환", "한화솔루션"],
+  ["HD현대중공업 울산", "울산광역시", "ABS", "해양에코소재", "현대리바트"],
+  ["LS일렉트릭 청주", "충청북도 청주시", "PET", "충북그린사이클", "도레이첨단소재"],
+] as const;
+
+const statusCycle: ConsortiumStatus[] = [
+  "recommended",
+  "review",
+  "approved",
+  "waiting",
+  "rejected",
+];
+
+const additionalConsortiums: Consortium[] = consortiumSeeds.map(
+  ([emitter, region, material, processor, demander], index) => ({
+    id: `C-2024-${String(118 - index).padStart(4, "0")}`,
+    emitter: { name: emitter, region, waste: `폐합성수지 (${material})` },
+    processor: { name: processor, region },
+    demander: { name: demander, region },
+    aiScore: 95 - (index % 20),
+    status: statusCycle[index % statusCycle.length],
+    expectedRoi: `${(17.8 - index * 0.35).toFixed(1)}%`,
+    carbonReduction: `${(11800 - index * 310).toLocaleString()} tCO₂e`,
+    recycling: `${(76000 - index * 1800).toLocaleString()} t`,
+    rationale: [
+      `${material} 재생원료의 배출–처리–수요 기업 간 공급 조건이 적합합니다.`,
+      "권역 내 운송 거리가 짧아 물류비와 운송 배출량 절감이 예상됩니다.",
+      "AI 매칭 모델의 품질·물량·입지 기준을 충족했습니다.",
+    ],
+    policy: [
+      { name: "산업부 자원순환 실증사업", matched: index % 3 !== 2 },
+      { name: "탄소중립 산업전환 지원", matched: index % 4 !== 3 },
+      { name: "환경부 순환경제 클러스터", matched: index % 2 === 0 },
+    ],
+  }),
+);
+
+export const consortiums: Consortium[] = [...featuredConsortiums, ...additionalConsortiums];
 
 export const supportPrograms = [
   {
@@ -214,6 +271,14 @@ export const rejectionReasons: Record<string, { by: string; reason: string; at: 
       reason:
         "열분해유 생산 라인 증설 일정이 2026년 하반기로 조정되어 즉시 원료 인수가 어렵습니다. 차년도 재검토 요청드립니다.",
       at: "2025-12-14 14:22",
+    },
+  ],
+  "C-2024-0121": [
+    {
+      by: "대한유화",
+      reason:
+        "현재 생산 설비의 재생 HDPE 투입 비율 상한에 도달하여 추가 물량을 즉시 인수하기 어렵습니다. 다음 분기 설비 점검 이후 품질 샘플과 공급 일정을 다시 검토해 주세요.",
+      at: "2025-11-02 10:35",
     },
   ],
 };

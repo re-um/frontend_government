@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Search,
-  Filter,
   Check,
   Clock,
   X,
@@ -171,6 +170,7 @@ const partyStatus: Record<Status, { tone: any; label: string; icon: any }> = {
 
 const alternativeSuggestions: Record<string, string[]> = {
   "C-2024-0138": ["한화솔루션 여수", "롯데케미칼 대산", "GS칼텍스 여수"],
+  "C-2024-0121": ["한화솔루션 울산", "롯데케미칼 대산", "코오롱인더스트리 김천"],
   default: ["코오롱인더스트리 김천", "율촌화학", "효성티앤씨 울산"],
 };
 
@@ -323,11 +323,6 @@ function Participation() {
         eyebrow="Screen · 기업 워크플로우"
         title="기업 참여 진행 현황"
         description="기업 응답을 기다리는 중입니다. AI 추천 이후 승인 단계를 실시간으로 확인해 주세요."
-        actions={
-          <BtnSecondary>
-            <Filter className="h-4 w-4" strokeWidth={1.75} /> 고급 필터
-          </BtnSecondary>
-        }
       />
 
       {/* Filter tabs */}
@@ -514,12 +509,14 @@ function Participation() {
           )}
 
           <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-border pt-5">
-            <button
-              onClick={() => setRejectModal(c)}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-[12px] font-medium hover:bg-secondary"
-            >
-              <FileText className="h-3.5 w-3.5" strokeWidth={1.75} /> 거절 사유 보기
-            </button>
+            {c.parties.some((p) => p.status === "reject") && (
+              <button
+                onClick={() => setRejectModal(c)}
+                className="inline-flex h-9 items-center gap-1.5 rounded-md border border-danger/30 bg-danger/5 px-3 text-[12px] font-medium text-danger hover:bg-danger/10"
+              >
+                <FileText className="h-3.5 w-3.5" strokeWidth={1.75} /> 거절 사유 보기
+              </button>
+            )}
             <button
               onClick={() => holdCase(c)}
               className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-[12px] font-medium hover:bg-secondary"

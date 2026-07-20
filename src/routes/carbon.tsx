@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { Download, FileText, Leaf, Recycle, TrendingDown, Building2, Info } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -17,7 +17,7 @@ import {
   Legend,
 } from "recharts";
 import { BtnPrimary, BtnSecondary, Card, Kpi, PageHeader, SectionTitle } from "../components/ui-kit";
-import { monthlyCarbon, wasteMix } from "../lib/mockData";
+import { calculatePerformance } from "../lib/performanceData";
 
 export const Route = createFileRoute("/carbon")({
   head: () => ({ meta: [{ title: "탄소감축 / 환경성과 분석 · Re:um" }] }),
@@ -27,6 +27,20 @@ export const Route = createFileRoute("/carbon")({
 const pieColors = ["#1B1F23", "#A3E635", "#22D3EE", "#F59E0B", "#94A3B8"];
 
 function CarbonPage() {
+  const navigate = useNavigate();
+  const [region, setRegion] = useState("전체");
+  const [period, setPeriod] = useState("최근 6개월");
+  const [material, setMaterial] = useState("전체");
+
+  const analytics = useMemo(
+    () => calculatePerformance(region, period, material),
+    [region, period, material],
+  );
+
+  const selectionLabel = `${region === "전체" ? "전 지역" : region} · ${period} · ${
+    material === "전체" ? "전체 폐합성수지" : material
+  }`;
+
   return (
     <div className="mx-auto max-w-[1400px]">
       <PageHeader
@@ -38,7 +52,14 @@ function CarbonPage() {
             <BtnSecondary>
               <Download className="h-4 w-4" strokeWidth={1.75} /> PDF 다운로드
             </BtnSecondary>
-            <BtnPrimary>
+            <BtnPrimary
+              onClick={() =>
+                navigate({
+                  to: "/report",
+                  search: { region, period, material },
+                })
+              }
+            >
               <FileText className="h-4 w-4" strokeWidth={1.75} /> 보고서 생성
             </BtnPrimary>
           </>
@@ -50,47 +71,67 @@ function CarbonPage() {
           <FilterSelect
             label="지역"
             options={["전체", "울산", "여수", "포항", "당진", "광양", "강원"]}
+            value={region}
+            onChange={setRegion}
           />
           <FilterSelect
             label="기간"
             options={["최근 6개월", "올해", "지난 1년", "지난 2년"]}
+            value={period}
+            onChange={setPeriod}
           />
           <FilterSelect
             label="폐합성수지 종류"
             options={["전체", "HDPE", "PP", "LDPE", "PET", "ABS"]}
+            value={material}
+            onChange={setMaterial}
           />
+        </div>
+        <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+          <span className="text-[11px] text-muted-foreground">분석 조건: {selectionLabel}</span>
+          <button
+            type="button"
+            onClick={() => {
+              setRegion("전체");
+              setPeriod("최근 6개월");
+              setMaterial("전체");
+            }}
+            className="text-[12px] font-semibold text-foreground/70 hover:text-foreground"
+          >
+            조건 초기화
+          </button>
         </div>
       </Card>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi
           label="예상 탄소감축"
-          value="128,400"
+          value={analytics.carbon.toLocaleString()}
           unit="tCO₂e"
-          delta="+14.6%"
+          delta={`+${analytics.growth.toFixed(1)}%`}
           icon={<Leaf className="h-[18px] w-[18px]" strokeWidth={1.75} />}
           tone="lime"
         />
         <Kpi
           label="재활용 전환량"
-          value="842K"
+          value={analytics.recycling.toLocaleString()}
           unit="톤"
-          delta="+9.3%"
+          delta={`+${(analytics.growth - 2.1).toFixed(1)}%`}
           icon={<Recycle className="h-[18px] w-[18px]" strokeWidth={1.75} />}
         />
         <Kpi
           label="감축률"
-          value="24.8"
+          value={analytics.rate.toFixed(1)}
           unit="%"
-          delta="+2.1%p"
+          delta={`+${(analytics.growth / 5).toFixed(1)}%p`}
           icon={<TrendingDown className="h-[18px] w-[18px]" strokeWidth={1.75} />}
           tone="cyan"
         />
         <Kpi
           label="분석 기업 수"
-          value="1,284"
+          value={analytics.companies.toLocaleString()}
           unit="개사"
-          delta="+8.2%"
+          delta={`+${(analytics.growth - 3.4).toFixed(1)}%`}
           icon={<Building2 className="h-[18px] w-[18px]" strokeWidth={1.75} />}
         />
       </div>
@@ -100,7 +141,7 @@ function CarbonPage() {
           <SectionTitle title="월별 탄소감축량" description="tCO₂e" />
           <div className="h-[280px]">
             <ResponsiveContainer>
-              <BarChart data={monthlyCarbon} margin={{ top: 10, right: 10, left: -10 }}>
+              <BarChart data={analytics.monthly} margin={{ top: 10, right: 10, left: -10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
                 <XAxis dataKey="month" stroke="#6B7280" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="#6B7280" fontSize={11} tickLine={false} axisLine={false} />
@@ -115,7 +156,7 @@ function CarbonPage() {
           <SectionTitle title="재활용 전환량 추이" description="톤" />
           <div className="h-[280px]">
             <ResponsiveContainer>
-              <LineChart data={monthlyCarbon} margin={{ top: 10, right: 10, left: -10 }}>
+              <LineChart data={analytics.monthly} margin={{ top: 10, right: 10, left: -10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
                 <XAxis dataKey="month" stroke="#6B7280" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="#6B7280" fontSize={11} tickLine={false} axisLine={false} />
@@ -134,14 +175,14 @@ function CarbonPage() {
             <ResponsiveContainer>
               <PieChart>
                 <Pie
-                  data={wasteMix}
+                  data={analytics.wasteMix}
                   dataKey="value"
                   nameKey="name"
                   innerRadius={55}
                   outerRadius={85}
                   paddingAngle={2}
                 >
-                  {wasteMix.map((_, i) => (
+                  {analytics.wasteMix.map((_, i) => (
                     <Cell key={i} fill={pieColors[i % pieColors.length]} />
                   ))}
                 </Pie>
@@ -160,7 +201,7 @@ function CarbonPage() {
             </div>
             <FlowInfo />
           </div>
-          <FlowDiagram />
+          <FlowDiagram companies={analytics.companies} />
         </Card>
       </div>
 
@@ -168,10 +209,10 @@ function CarbonPage() {
         <SectionTitle title="환경성과 요약" description="AI가 분석한 주요 성과 지표입니다." />
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {[
-            "여수권 PP 순환 컨소시엄이 전체 감축량의 12.4%를 기여했습니다.",
-            "울산권 폐합성수지 재생 클러스터는 전년 대비 재활용 전환량이 32% 증가했습니다.",
-            "강원권 참여 기업 수는 목표 대비 71% 수준으로 확보가 필요합니다.",
-            "정책 성과 리포트 자동 생성에 필요한 데이터 완전성은 96%입니다.",
+            `${selectionLabel} 기준 예상 탄소감축량은 ${analytics.carbon.toLocaleString()} tCO₂e입니다.`,
+            `재활용 전환량은 ${analytics.recycling.toLocaleString()}톤이며 전기 대비 ${analytics.growth.toFixed(1)}% 증가했습니다.`,
+            `${material === "전체" ? "HDPE·PP·LDPE·PET·ABS" : material} 순환에 참여한 분석 기업은 ${analytics.companies.toLocaleString()}개사입니다.`,
+            `${region === "전체" ? "전국 권역" : `${region}권`} 데이터 완전성은 96%로 환경성과 리포트 생성이 가능합니다.`,
           ].map((t, i) => (
             <li
               key={i}
@@ -189,11 +230,11 @@ function CarbonPage() {
   );
 }
 
-function FlowDiagram() {
+function FlowDiagram({ companies }: { companies: number }) {
   const stages = [
-    { title: "배출기업", value: "128", unit: "개사", color: "bg-[#1B1F23] text-lime" },
-    { title: "중간처리", value: "42", unit: "개사", color: "bg-cyan text-[#0E3B44]" },
-    { title: "수요기업", value: "96", unit: "개사", color: "bg-lime text-lime-foreground" },
+    { title: "배출기업", value: Math.max(1, companies), unit: "개사", color: "bg-[#1B1F23] text-lime" },
+    { title: "중간처리", value: Math.max(1, Math.round(companies * 0.42)), unit: "개사", color: "bg-cyan text-[#0E3B44]" },
+    { title: "수요기업", value: Math.max(1, Math.round(companies * 0.76)), unit: "개사", color: "bg-lime text-lime-foreground" },
   ];
   return (
     <div className="mt-4 flex h-[200px] items-center justify-between gap-3">
@@ -254,11 +295,25 @@ function FlowInfo() {
   );
 }
 
-function FilterSelect({ label, options }: { label: string; options: string[] }) {
+function FilterSelect({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+}) {
   return (
     <div>
       <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">{label}</label>
-      <select className="h-10 w-full rounded-lg border border-border bg-card px-3 text-[13px] outline-none">
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-10 w-full rounded-lg border border-border bg-card px-3 text-[13px] outline-none"
+      >
         {options.map((o) => (
           <option key={o}>{o}</option>
         ))}

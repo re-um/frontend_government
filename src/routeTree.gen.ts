@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CarbonRouteImport } from './routes/carbon'
 import { Route as ParticipationRouteImport } from './routes/participation'
 import { Route as PolicyRouteImport } from './routes/policy'
+import { Route as PolicyReportRouteImport } from './routes/policy-report'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ConsortiumIndexRouteImport } from './routes/consortium.index'
@@ -38,6 +39,11 @@ const ParticipationRoute = ParticipationRouteImport.update({
 const PolicyRoute = PolicyRouteImport.update({
   id: '/policy',
   path: '/policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PolicyReportRoute = PolicyReportRouteImport.update({
+  id: '/policy-report',
+  path: '/policy-report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportRoute = ReportRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/carbon': typeof CarbonRoute
   '/participation': typeof ParticipationRoute
   '/policy': typeof PolicyRoute
+  '/policy-report': typeof PolicyReportRoute
   '/report': typeof ReportRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/consortium/$id': typeof ConsortiumIdRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/carbon': typeof CarbonRoute
   '/participation': typeof ParticipationRoute
   '/policy': typeof PolicyRoute
+  '/policy-report': typeof PolicyReportRoute
   '/report': typeof ReportRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/consortium/$id': typeof ConsortiumIdRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/carbon': typeof CarbonRoute
   '/participation': typeof ParticipationRoute
   '/policy': typeof PolicyRoute
+  '/policy-report': typeof PolicyReportRoute
   '/report': typeof ReportRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/consortium/$id': typeof ConsortiumIdRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/carbon'
     | '/participation'
     | '/policy'
+    | '/policy-report'
     | '/report'
     | '/sitemap.xml'
     | '/consortium/$id'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/carbon'
     | '/participation'
     | '/policy'
+    | '/policy-report'
     | '/report'
     | '/sitemap.xml'
     | '/consortium/$id'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/carbon'
     | '/participation'
     | '/policy'
+    | '/policy-report'
     | '/report'
     | '/sitemap.xml'
     | '/consortium/$id'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   CarbonRoute: typeof CarbonRoute
   ParticipationRoute: typeof ParticipationRoute
   PolicyRoute: typeof PolicyRoute
+  PolicyReportRoute: typeof PolicyReportRoute
   ReportRoute: typeof ReportRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ConsortiumIdRoute: typeof ConsortiumIdRoute
@@ -188,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/policy'
       fullPath: '/policy'
       preLoaderRoute: typeof PolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/policy-report': {
+      id: '/policy-report'
+      path: '/policy-report'
+      fullPath: '/policy-report'
+      preLoaderRoute: typeof PolicyReportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/report': {
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarbonRoute: CarbonRoute,
   ParticipationRoute: ParticipationRoute,
   PolicyRoute: PolicyRoute,
+  PolicyReportRoute: PolicyReportRoute,
   ReportRoute: ReportRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ConsortiumIdRoute: ConsortiumIdRoute,
