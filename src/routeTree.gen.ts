@@ -9,35 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ReportRouteImport } from './routes/report'
-import { Route as PolicyRouteImport } from './routes/policy'
-import { Route as ParticipationRouteImport } from './routes/participation'
-import { Route as CarbonRouteImport } from './routes/carbon'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SupportIndexRouteImport } from './routes/support.index'
+import { Route as CarbonRouteImport } from './routes/carbon'
+import { Route as ParticipationRouteImport } from './routes/participation'
+import { Route as PolicyRouteImport } from './routes/policy'
+import { Route as ReportRouteImport } from './routes/report'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ConsortiumIndexRouteImport } from './routes/consortium.index'
-import { Route as SupportIdRouteImport } from './routes/support.$id'
 import { Route as ConsortiumIdRouteImport } from './routes/consortium.$id'
+import { Route as SupportIndexRouteImport } from './routes/support.index'
+import { Route as SupportIdRouteImport } from './routes/support.$id'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReportRoute = ReportRouteImport.update({
-  id: '/report',
-  path: '/report',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PolicyRoute = PolicyRouteImport.update({
-  id: '/policy',
-  path: '/policy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ParticipationRoute = ParticipationRouteImport.update({
-  id: '/participation',
-  path: '/participation',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarbonRoute = CarbonRouteImport.update({
@@ -45,14 +30,24 @@ const CarbonRoute = CarbonRouteImport.update({
   path: '/carbon',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ParticipationRoute = ParticipationRouteImport.update({
+  id: '/participation',
+  path: '/participation',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SupportIndexRoute = SupportIndexRouteImport.update({
-  id: '/support/',
-  path: '/support/',
+const PolicyRoute = PolicyRouteImport.update({
+  id: '/policy',
+  path: '/policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportRoute = ReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConsortiumIndexRoute = ConsortiumIndexRouteImport.update({
@@ -60,14 +55,19 @@ const ConsortiumIndexRoute = ConsortiumIndexRouteImport.update({
   path: '/consortium/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SupportIdRoute = SupportIdRouteImport.update({
-  id: '/support/$id',
-  path: '/support/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ConsortiumIdRoute = ConsortiumIdRouteImport.update({
   id: '/consortium/$id',
   path: '/consortium/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportIndexRoute = SupportIndexRouteImport.update({
+  id: '/support/',
+  path: '/support/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportIdRoute = SupportIdRouteImport.update({
+  id: '/support/$id',
+  path: '/support/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -162,32 +162,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/report': {
-      id: '/report'
-      path: '/report'
-      fullPath: '/report'
-      preLoaderRoute: typeof ReportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/policy': {
-      id: '/policy'
-      path: '/policy'
-      fullPath: '/policy'
-      preLoaderRoute: typeof PolicyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/participation': {
-      id: '/participation'
-      path: '/participation'
-      fullPath: '/participation'
-      preLoaderRoute: typeof ParticipationRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/carbon': {
@@ -197,18 +176,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarbonRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/participation': {
+      id: '/participation'
+      path: '/participation'
+      fullPath: '/participation'
+      preLoaderRoute: typeof ParticipationRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/support/': {
-      id: '/support/'
-      path: '/support'
-      fullPath: '/support/'
-      preLoaderRoute: typeof SupportIndexRouteImport
+    '/policy': {
+      id: '/policy'
+      path: '/policy'
+      fullPath: '/policy'
+      preLoaderRoute: typeof PolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report': {
+      id: '/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/consortium/': {
@@ -218,18 +211,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConsortiumIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/support/$id': {
-      id: '/support/$id'
-      path: '/support/$id'
-      fullPath: '/support/$id'
-      preLoaderRoute: typeof SupportIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/consortium/$id': {
       id: '/consortium/$id'
       path: '/consortium/$id'
       fullPath: '/consortium/$id'
       preLoaderRoute: typeof ConsortiumIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support/': {
+      id: '/support/'
+      path: '/support'
+      fullPath: '/support/'
+      preLoaderRoute: typeof SupportIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support/$id': {
+      id: '/support/$id'
+      path: '/support/$id'
+      fullPath: '/support/$id'
+      preLoaderRoute: typeof SupportIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -250,3 +250,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

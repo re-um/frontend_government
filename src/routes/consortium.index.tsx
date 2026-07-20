@@ -39,8 +39,8 @@ function ConsortiumList() {
         <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
           <FilterSelect label="지역" options={["전체", "울산", "여수", "포항", "당진", "광양"]} />
           <FilterSelect
-            label="폐기물 종류"
-            options={["전체", "슬래그", "폐플라스틱", "폐용매", "촉매"]}
+            label="폐합성수지 종류"
+            options={["전체", "HDPE", "PP", "LDPE", "PET", "ABS"]}
           />
           <FilterSelect label="AI 점수" options={["전체", "90 이상", "80 이상", "70 이상"]} />
           <FilterSelect

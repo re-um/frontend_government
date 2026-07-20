@@ -84,9 +84,9 @@ function SupportDetail() {
         <div className="mb-3 text-[13px] font-bold">참여 예상 기업</div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {[
-            { name: "포스코퓨처엠 광양", role: "배출기업" },
+            { name: "한화솔루션 여수", role: "폐합성수지 배출기업" },
             { name: "한국순환자원", role: "중간처리" },
-            { name: "삼표시멘트 삼척", role: "수요기업" },
+            { name: "코오롱인더스트리 김천", role: "재생원료 수요기업" },
           ].map((e) => (
             <div key={e.name} className="rounded-xl border border-border p-3">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">

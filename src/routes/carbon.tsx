@@ -32,7 +32,7 @@ function CarbonPage() {
       <PageHeader
         eyebrow="Screen · 환경성과"
         title="탄소감축 / 환경성과 분석"
-        description="AI 분석이 완료되었습니다. 지역·기간·폐기물별 감축 성과를 확인해 주세요."
+        description="AI 분석이 완료되었습니다. 지역·기간·폐합성수지 종류별 감축 성과를 확인해 주세요."
         actions={
           <>
             <BtnSecondary>
@@ -56,8 +56,8 @@ function CarbonPage() {
             options={["최근 6개월", "올해", "지난 1년", "지난 2년"]}
           />
           <FilterSelect
-            label="폐기물 종류"
-            options={["전체", "슬래그", "폐플라스틱", "폐용매", "촉매"]}
+            label="폐합성수지 종류"
+            options={["전체", "HDPE", "PP", "LDPE", "PET", "ABS"]}
           />
         </div>
       </Card>
@@ -129,7 +129,7 @@ function CarbonPage() {
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card>
-          <SectionTitle title="폐기물 유형별 비중" />
+          <SectionTitle title="폐합성수지 종류별 비중" />
           <div className="h-[240px]">
             <ResponsiveContainer>
               <PieChart>
@@ -155,7 +155,7 @@ function CarbonPage() {
         <Card className="lg:col-span-2">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-[15px] font-bold tracking-tight">폐기물 흐름 다이어그램</h2>
+              <h2 className="text-[15px] font-bold tracking-tight">폐합성수지 흐름 다이어그램</h2>
               <p className="mt-1 text-[12px] text-muted-foreground">배출 → 중간처리 → 수요</p>
             </div>
             <FlowInfo />
@@ -168,8 +168,8 @@ function CarbonPage() {
         <SectionTitle title="환경성과 요약" description="AI가 분석한 주요 성과 지표입니다." />
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {[
-            "포스코-삼표 슬래그 순환 컨소시엄이 전체 감축량의 12.4%를 기여했습니다.",
-            "울산권 폐용매 재생 클러스터는 전년 대비 재활용 전환량이 32% 증가했습니다.",
+            "여수권 PP 순환 컨소시엄이 전체 감축량의 12.4%를 기여했습니다.",
+            "울산권 폐합성수지 재생 클러스터는 전년 대비 재활용 전환량이 32% 증가했습니다.",
             "강원권 참여 기업 수는 목표 대비 71% 수준으로 확보가 필요합니다.",
             "정책 성과 리포트 자동 생성에 필요한 데이터 완전성은 96%입니다.",
           ].map((t, i) => (

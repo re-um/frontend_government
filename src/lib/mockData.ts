@@ -17,9 +17,9 @@ export interface Consortium {
 export const consortiums: Consortium[] = [
   {
     id: "C-2024-0142",
-    emitter: { name: "포스코퓨처엠 광양", region: "전라남도 광양시", waste: "슬래그 (철강)" },
-    processor: { name: "한국순환자원", region: "경상남도 창원시" },
-    demander: { name: "삼표시멘트 삼척", region: "강원도 삼척시" },
+    emitter: { name: "한화솔루션 여수", region: "전라남도 여수시", waste: "폐합성수지 (PP)" },
+    processor: { name: "한국플라스틱순환", region: "경상남도 창원시" },
+    demander: { name: "코오롱인더스트리 김천", region: "경상북도 김천시" },
     aiScore: 96,
     status: "recommended",
     expectedRoi: "18.4%",
@@ -27,7 +27,7 @@ export const consortiums: Consortium[] = [
     recycling: "84,200 t",
     rationale: [
       "3사 물류 반경이 220km 이내로 운송비 절감이 예상됩니다.",
-      "슬래그 시멘트 대체 수요가 전년 대비 22% 증가한 지역입니다.",
+      "고순도 PP 재생원료 수요가 전년 대비 22% 증가한 지역입니다.",
       "환경부 순환자원 지정 품목에 해당하여 정책 적합성이 높습니다.",
     ],
     policy: [
@@ -38,7 +38,7 @@ export const consortiums: Consortium[] = [
   },
   {
     id: "C-2024-0138",
-    emitter: { name: "LG화학 여수", region: "전라남도 여수시", waste: "폐플라스틱 (HDPE)" },
+    emitter: { name: "LG화학 여수", region: "전라남도 여수시", waste: "폐합성수지 (HDPE)" },
     processor: { name: "그린사이클", region: "충청남도 서산시" },
     demander: { name: "SK지오센트릭", region: "울산광역시" },
     aiScore: 92,
@@ -59,17 +59,17 @@ export const consortiums: Consortium[] = [
   },
   {
     id: "C-2024-0131",
-    emitter: { name: "현대제철 당진", region: "충청남도 당진시", waste: "고로 슬래그" },
-    processor: { name: "동양환경산업", region: "충청남도 아산시" },
-    demander: { name: "쌍용C&E 동해", region: "강원도 동해시" },
+    emitter: { name: "롯데케미칼 대산", region: "충청남도 서산시", waste: "폐합성수지 (LDPE)" },
+    processor: { name: "동양리사이클링", region: "충청남도 아산시" },
+    demander: { name: "율촌화학", region: "경기도 안산시" },
     aiScore: 89,
     status: "approved",
     expectedRoi: "14.6%",
     carbonReduction: "16,200 tCO₂e",
     recycling: "112,400 t",
     rationale: [
-      "당진-동해 해상 물류 연계 시 운송비 31% 절감이 가능합니다.",
-      "시멘트 대체재 활용 시 CO₂ 감축이 톤당 0.82t 예상됩니다.",
+      "대산-아산 육상 물류 연계 시 운송비 31% 절감이 가능합니다.",
+      "LDPE 재생원료 활용 시 CO₂ 감축이 톤당 0.82t 예상됩니다.",
     ],
     policy: [
       { name: "산업부 자원순환 실증사업", matched: true },
@@ -78,9 +78,9 @@ export const consortiums: Consortium[] = [
   },
   {
     id: "C-2024-0127",
-    emitter: { name: "S-OIL 온산", region: "울산광역시 울주군", waste: "황산화물 촉매" },
-    processor: { name: "케이알에코", region: "울산광역시" },
-    demander: { name: "롯데정밀화학", region: "울산광역시" },
+    emitter: { name: "SK케미칼 울산", region: "울산광역시 남구", waste: "폐합성수지 (PET)" },
+    processor: { name: "케이알폴리머", region: "울산광역시" },
+    demander: { name: "효성티앤씨 울산", region: "울산광역시" },
     aiScore: 87,
     status: "waiting",
     expectedRoi: "12.8%",
@@ -88,7 +88,7 @@ export const consortiums: Consortium[] = [
     recycling: "18,500 t",
     rationale: [
       "울산 국가산단 내부 순환으로 운송 배출을 최소화합니다.",
-      "촉매 재생 기술 특허 보유 기업 매칭이 완료되었습니다.",
+      "PET 해중합 및 재생 기술 특허 보유 기업 매칭이 완료되었습니다.",
     ],
     policy: [
       { name: "산업부 자원순환 실증사업", matched: true },
@@ -97,16 +97,16 @@ export const consortiums: Consortium[] = [
   },
   {
     id: "C-2024-0119",
-    emitter: { name: "삼성전자 기흥", region: "경기도 용인시", waste: "폐용매 (IPA)" },
-    processor: { name: "에코솔벤트", region: "경기도 평택시" },
-    demander: { name: "동진쎄미켐", region: "인천광역시" },
+    emitter: { name: "삼성전자 기흥", region: "경기도 용인시", waste: "폐합성수지 (ABS)" },
+    processor: { name: "에코폴리머", region: "경기도 평택시" },
+    demander: { name: "동진엔지니어링", region: "인천광역시" },
     aiScore: 84,
     status: "rejected",
     expectedRoi: "9.4%",
     carbonReduction: "3,140 tCO₂e",
     recycling: "12,600 t",
     rationale: [
-      "반도체 공정용 IPA 재생 순도 기준 충족이 확인되었습니다.",
+      "전자부품용 ABS 재생원료의 품질 기준 충족이 확인되었습니다.",
       "수요기업 재검토 요청에 따라 후속 매칭이 필요합니다.",
     ],
     policy: [{ name: "환경부 순환경제 클러스터", matched: true }],
@@ -190,11 +190,11 @@ export const monthlyCarbon = [
 ];
 
 export const wasteMix = [
-  { name: "철강 슬래그", value: 34 },
-  { name: "폐플라스틱", value: 24 },
-  { name: "폐용매", value: 14 },
-  { name: "촉매/화학", value: 12 },
-  { name: "기타", value: 16 },
+  { name: "HDPE", value: 30 },
+  { name: "PP", value: 25 },
+  { name: "LDPE", value: 20 },
+  { name: "PET", value: 15 },
+  { name: "기타 폐합성수지", value: 10 },
 ];
 
 export const regionalParticipation = [

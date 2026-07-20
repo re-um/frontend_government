@@ -35,20 +35,20 @@ interface Case {
 const initialCases: Case[] = [
   {
     id: "C-2024-0142",
-    emitter: "포스코퓨처엠 광양",
-    waste: "슬래그",
+    emitter: "한화솔루션 여수",
+    waste: "폐합성수지 (PP)",
     step: 3,
     parties: [
-      { role: "배출기업", name: "포스코퓨처엠 광양", status: "accept" },
-      { role: "중간처리", name: "한국순환자원", status: "review" },
-      { role: "수요기업", name: "삼표시멘트 삼척", status: "review" },
+      { role: "배출기업", name: "한화솔루션 여수", status: "accept" },
+      { role: "중간처리", name: "한국플라스틱순환", status: "review" },
+      { role: "수요기업", name: "코오롱인더스트리 김천", status: "review" },
     ],
     startedAt: "2025-12-04",
   },
   {
     id: "C-2024-0138",
     emitter: "LG화학 여수",
-    waste: "폐플라스틱",
+    waste: "폐합성수지 (HDPE)",
     step: 2,
     parties: [
       { role: "배출기업", name: "LG화학 여수", status: "accept" },
@@ -59,15 +59,99 @@ const initialCases: Case[] = [
   },
   {
     id: "C-2024-0127",
-    emitter: "S-OIL 온산",
-    waste: "황산화물 촉매",
+    emitter: "SK케미칼 울산",
+    waste: "폐합성수지 (PET)",
     step: 1,
     parties: [
-      { role: "배출기업", name: "S-OIL 온산", status: "accept" },
-      { role: "중간처리", name: "케이알에코", status: "hold" },
-      { role: "수요기업", name: "롯데정밀화학", status: "review" },
+      { role: "배출기업", name: "SK케미칼 울산", status: "accept" },
+      { role: "중간처리", name: "케이알폴리머", status: "hold" },
+      { role: "수요기업", name: "효성티앤씨 울산", status: "review" },
     ],
     startedAt: "2025-12-10",
+  },
+  {
+    id: "C-2024-0151",
+    emitter: "롯데케미칼 대산",
+    waste: "폐합성수지 (LDPE)",
+    step: 4,
+    parties: [
+      { role: "배출기업", name: "롯데케미칼 대산", status: "accept" },
+      { role: "중간처리", name: "동양리사이클링", status: "accept" },
+      { role: "수요기업", name: "율촌화학", status: "accept" },
+    ],
+    startedAt: "2025-12-18",
+  },
+  {
+    id: "C-2024-0149",
+    emitter: "삼성전자 기흥",
+    waste: "폐합성수지 (ABS)",
+    step: 2,
+    parties: [
+      { role: "배출기업", name: "삼성전자 기흥", status: "accept" },
+      { role: "중간처리", name: "에코폴리머", status: "review" },
+      { role: "수요기업", name: "동진엔지니어링", status: "review" },
+    ],
+    startedAt: "2025-12-15",
+  },
+  {
+    id: "C-2024-0145",
+    emitter: "금호석유화학 울산",
+    waste: "폐합성수지 (PP)",
+    step: 2,
+    parties: [
+      { role: "배출기업", name: "금호석유화학 울산", status: "accept" },
+      { role: "중간처리", name: "울산자원순환", status: "hold" },
+      { role: "수요기업", name: "현대EP", status: "review" },
+    ],
+    startedAt: "2025-11-30",
+  },
+  {
+    id: "C-2024-0121",
+    emitter: "GS칼텍스 여수",
+    waste: "폐합성수지 (HDPE)",
+    step: 3,
+    parties: [
+      { role: "배출기업", name: "GS칼텍스 여수", status: "accept" },
+      { role: "중간처리", name: "그린사이클", status: "accept" },
+      { role: "수요기업", name: "대한유화", status: "reject" },
+    ],
+    startedAt: "2025-10-25",
+  },
+  {
+    id: "C-2024-0116",
+    emitter: "효성화학 용연",
+    waste: "폐합성수지 (PET)",
+    step: 4,
+    parties: [
+      { role: "배출기업", name: "효성화학 용연", status: "accept" },
+      { role: "중간처리", name: "케이알폴리머", status: "accept" },
+      { role: "수요기업", name: "효성티앤씨 울산", status: "accept" },
+    ],
+    startedAt: "2025-09-12",
+  },
+  {
+    id: "C-2024-0108",
+    emitter: "SK지오센트릭 울산",
+    waste: "폐합성수지 (LDPE)",
+    step: 3,
+    parties: [
+      { role: "배출기업", name: "SK지오센트릭 울산", status: "accept" },
+      { role: "중간처리", name: "리뉴폴리머", status: "review" },
+      { role: "수요기업", name: "동원시스템즈", status: "accept" },
+    ],
+    startedAt: "2025-07-20",
+  },
+  {
+    id: "C-2024-0097",
+    emitter: "코오롱인더스트리 구미",
+    waste: "폐합성수지 (ABS)",
+    step: 1,
+    parties: [
+      { role: "배출기업", name: "코오롱인더스트리 구미", status: "review" },
+      { role: "중간처리", name: "경북에코플라스틱", status: "review" },
+      { role: "수요기업", name: "LG전자 창원", status: "review" },
+    ],
+    startedAt: "2025-02-14",
   },
 ];
 
@@ -87,7 +171,7 @@ const partyStatus: Record<Status, { tone: any; label: string; icon: any }> = {
 
 const alternativeSuggestions: Record<string, string[]> = {
   "C-2024-0138": ["한화솔루션 여수", "롯데케미칼 대산", "GS칼텍스 여수"],
-  default: ["동양시멘트", "쌍용C&E", "성신양회 단양"],
+  default: ["코오롱인더스트리 김천", "율촌화학", "효성티앤씨 울산"],
 };
 
 const TABS = [
@@ -102,15 +186,53 @@ function Participation() {
   const [cases, setCases] = useState<Case[]>(initialCases);
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("all");
   const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("전체");
+  const [companyFilter, setCompanyFilter] = useState("전체");
+  const [wasteFilter, setWasteFilter] = useState("전체");
+  const [periodFilter, setPeriodFilter] = useState("전체");
   const [rejectModal, setRejectModal] = useState<Case | null>(null);
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<{ caseId: string; suggestions: string[] } | null>(null);
+  const companyOptions = ["전체", ...cases.map((c) => c.emitter)];
 
   const filtered = useMemo(() => {
+    const latestStartedAt = cases.reduce(
+      (latest, c) => Math.max(latest, new Date(`${c.startedAt}T00:00:00`).getTime()),
+      0,
+    );
+
     return cases.filter((c) => {
       const matchesTab =
         tab === "all" ||
         c.parties.some((p) => p.status === tab);
+      const caseStatus = c.parties.some((p) => p.status === "hold")
+        ? "보류"
+        : c.step >= 4 || c.parties.every((p) => p.status === "accept")
+          ? "완료"
+          : "진행중";
+      const matchesStatus = statusFilter === "전체" || caseStatus === statusFilter;
+      const matchesCompany =
+        companyFilter === "전체" ||
+        c.emitter.includes(companyFilter) ||
+        c.parties.some((p) => p.name.includes(companyFilter));
+      const matchesWaste = wasteFilter === "전체" || c.waste.includes(wasteFilter);
+
+      const startedAt = new Date(`${c.startedAt}T00:00:00`);
+      const referenceDate = new Date(latestStartedAt);
+      let matchesPeriod = true;
+      if (periodFilter === "최근 30일" || periodFilter === "최근 90일") {
+        const days = periodFilter === "최근 30일" ? 30 : 90;
+        const cutoff = new Date(referenceDate);
+        cutoff.setDate(cutoff.getDate() - days);
+        matchesPeriod = startedAt >= cutoff && startedAt <= referenceDate;
+      } else if (periodFilter === "이번 분기") {
+        const quarterStartMonth = Math.floor(referenceDate.getMonth() / 3) * 3;
+        const quarterStart = new Date(referenceDate.getFullYear(), quarterStartMonth, 1);
+        matchesPeriod = startedAt >= quarterStart && startedAt <= referenceDate;
+      } else if (periodFilter === "올해") {
+        matchesPeriod = startedAt.getFullYear() === referenceDate.getFullYear();
+      }
+
       const q = query.trim().toLowerCase();
       const matchesQuery =
         !q ||
@@ -118,9 +240,33 @@ function Participation() {
         c.emitter.toLowerCase().includes(q) ||
         c.waste.toLowerCase().includes(q) ||
         c.parties.some((p) => p.name.toLowerCase().includes(q));
-      return matchesTab && matchesQuery;
+      return (
+        matchesTab &&
+        matchesStatus &&
+        matchesCompany &&
+        matchesWaste &&
+        matchesPeriod &&
+        matchesQuery
+      );
     });
-  }, [cases, tab, query]);
+  }, [cases, tab, query, statusFilter, companyFilter, wasteFilter, periodFilter]);
+
+  const hasActiveFilters =
+    tab !== "all" ||
+    query !== "" ||
+    statusFilter !== "전체" ||
+    companyFilter !== "전체" ||
+    wasteFilter !== "전체" ||
+    periodFilter !== "전체";
+
+  function resetFilters() {
+    setTab("all");
+    setQuery("");
+    setStatusFilter("전체");
+    setCompanyFilter("전체");
+    setWasteFilter("전체");
+    setPeriodFilter("전체");
+  }
 
   function counts(status: Status | "all") {
     if (status === "all") return cases.length;
@@ -215,10 +361,30 @@ function Participation() {
 
       <Card className="mb-6">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
-          <FilterSelect label="상태" options={["전체", "진행중", "완료", "보류"]} />
-          <FilterSelect label="기업명" options={["전체", "포스코퓨처엠", "LG화학", "현대제철"]} />
-          <FilterSelect label="폐기물 종류" options={["전체", "슬래그", "폐플라스틱", "폐용매"]} />
-          <FilterSelect label="기간" options={["최근 30일", "최근 90일", "이번 분기", "올해"]} />
+          <FilterSelect
+            label="상태"
+            options={["전체", "진행중", "완료", "보류"]}
+            value={statusFilter}
+            onChange={setStatusFilter}
+          />
+          <FilterSelect
+            label="기업명"
+            options={companyOptions}
+            value={companyFilter}
+            onChange={setCompanyFilter}
+          />
+          <FilterSelect
+            label="폐합성수지 종류"
+            options={["전체", "HDPE", "PP", "LDPE", "PET", "ABS"]}
+            value={wasteFilter}
+            onChange={setWasteFilter}
+          />
+          <FilterSelect
+            label="기간"
+            options={["전체", "최근 30일", "최근 90일", "이번 분기", "올해"]}
+            value={periodFilter}
+            onChange={setPeriodFilter}
+          />
           <div>
             <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">검색</label>
             <div className="relative">
@@ -235,6 +401,20 @@ function Participation() {
             </div>
           </div>
         </div>
+        {hasActiveFilters && (
+          <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+            <span className="text-[11px] text-muted-foreground">
+              검색 결과 {filtered.length}건
+            </span>
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="text-[12px] font-semibold text-foreground/70 hover:text-foreground"
+            >
+              조건 초기화
+            </button>
+          </div>
+        )}
       </Card>
 
       {filtered.length === 0 && (
@@ -405,11 +585,25 @@ function Participation() {
   );
 }
 
-function FilterSelect({ label, options }: { label: string; options: string[] }) {
+function FilterSelect({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+}) {
   return (
     <div>
       <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">{label}</label>
-      <select className="h-10 w-full rounded-lg border border-border bg-card px-3 text-[13px] outline-none">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-10 w-full rounded-lg border border-border bg-card px-3 text-[13px] outline-none"
+      >
         {options.map((o) => (
           <option key={o}>{o}</option>
         ))}
