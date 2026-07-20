@@ -153,7 +153,13 @@ function CarbonPage() {
         </Card>
 
         <Card className="lg:col-span-2">
-          <SectionTitle title="폐기물 흐름 다이어그램" description="배출 → 중간처리 → 수요" />
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-[15px] font-bold tracking-tight">폐기물 흐름 다이어그램</h2>
+              <p className="mt-1 text-[12px] text-muted-foreground">배출 → 중간처리 → 수요</p>
+            </div>
+            <FlowInfo />
+          </div>
           <FlowDiagram />
         </Card>
       </div>
