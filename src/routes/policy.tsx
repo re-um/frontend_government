@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FileText, Sparkles, MapPin, TrendingUp, Building2, Landmark } from "lucide-react";
+import { useState } from "react";
+import { FileText, Sparkles, MapPin, TrendingUp, Building2, Landmark, BellRing, AlertTriangle, CheckCircle2 } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -9,11 +10,11 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { BtnPrimary, Card, Kpi, PageHeader, SectionTitle } from "../components/ui-kit";
-import { regionalParticipation } from "../lib/mockData";
+import { Badge, BtnPrimary, Card, Kpi, PageHeader, SectionTitle } from "../components/ui-kit";
+import { regionalParticipation, policyAlerts } from "../lib/mockData";
 
 export const Route = createFileRoute("/policy")({
-  head: () => ({ meta: [{ title: "자원순환 정책 운영 대시보드 · LIUM" }] }),
+  head: () => ({ meta: [{ title: "자원순환 정책 운영 대시보드 · Re:um" }] }),
   component: PolicyDashboard,
 });
 
