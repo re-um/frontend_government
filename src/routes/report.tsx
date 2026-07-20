@@ -13,7 +13,7 @@ import { BtnPrimary, Card } from "../components/ui-kit";
 import { monthlyCarbon } from "../lib/mockData";
 
 export const Route = createFileRoute("/report")({
-  head: () => ({ meta: [{ title: "정책 성과 리포트 · LIUM" }] }),
+  head: () => ({ meta: [{ title: "정책 성과 리포트 · Re:um" }] }),
   component: ReportPage,
 });
 
@@ -30,7 +30,7 @@ function ReportPage() {
             산업공생 · 자원순환 정책 성과 리포트
           </h1>
           <p className="mt-3 max-w-xl text-[13px] text-white/70">
-            데이터로 연결하고, AI로 순환합니다. 본 리포트는 LIUM이 자동 생성한 분기 정책 성과
+            데이터로 연결하고, AI로 순환합니다. 본 리포트는 Re:um이 자동 생성한 분기 정책 성과
             요약입니다.
           </p>
           <div className="mt-6 flex flex-wrap gap-6 text-[12px]">
@@ -140,7 +140,7 @@ function ReportPage() {
             </BtnPrimary>
             <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <Sparkles className="h-3 w-3 text-lime-foreground" strokeWidth={2} />
-              LIUM AI · Auto-generated report v2.4
+              Re:um AI · Auto-generated report v2.4
             </div>
           </div>
         </div>

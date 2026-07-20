@@ -33,10 +33,10 @@ import { consortiums, monthlyCarbon, supportPrograms } from "../lib/mockData";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Dashboard · LIUM" },
+      { title: "Dashboard · Re:um" },
       {
         name: "description",
-        content: "LIUM AI 산업공생 플랫폼 통합 대시보드 — KPI, 컨소시엄 추천, 지원사업 요약.",
+        content: "Re:um AI 산업공생 플랫폼 통합 대시보드 — KPI, 컨소시엄 추천, 지원사업 요약.",
       },
     ],
   }),
