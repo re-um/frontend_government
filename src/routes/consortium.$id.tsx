@@ -1,4 +1,6 @@
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Check,
@@ -13,6 +15,11 @@ import {
 } from "lucide-react";
 import { Badge, BtnPrimary, BtnSecondary, Card, PageHeader } from "../components/ui-kit";
 import { consortiums } from "../lib/mockData";
+import {
+  getConsortiumRecommendation,
+  saveConsortiumRecommendation,
+  type ConsortiumRecommendationRecord,
+} from "../lib/consortiumRecommendation";
 
 export const Route = createFileRoute("/consortium/$id")({
   head: () => ({ meta: [{ title: "컨소시엄 상세보기 · Re:um" }] }),
@@ -35,7 +42,38 @@ const statusMap: Record<string, { tone: any; label: string }> = {
 function ConsortiumDetail() {
   const c: (typeof consortiums)[number] = Route.useLoaderData();
   const router = useRouter();
-  const s = statusMap[c.status];
+  const [recommendation, setRecommendation] = useState<ConsortiumRecommendationRecord | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const s = recommendation?.action === "held"
+    ? { tone: "warning", label: "추천 보류" }
+    : recommendation?.action === "sent"
+      ? { tone: "success", label: "전달 완료" }
+      : statusMap[c.status];
+
+  useEffect(() => {
+    setRecommendation(getConsortiumRecommendation(c.id));
+  }, [c.id]);
+
+  function holdRecommendation() {
+    const record = saveConsortiumRecommendation(c.id, "held");
+    setRecommendation(record);
+    toast.warning("추천을 보류했습니다.", {
+      description: `${c.id} 후보는 추후 다시 검토할 수 있습니다.`,
+    });
+  }
+
+  async function sendRecommendation() {
+    if (isSending || recommendation?.action === "sent") return;
+
+    setIsSending(true);
+    await new Promise((resolve) => window.setTimeout(resolve, 700));
+    const record = saveConsortiumRecommendation(c.id, "sent");
+    setRecommendation(record);
+    setIsSending(false);
+    toast.success("기업에게 추천을 전달했습니다.", {
+      description: `${c.emitter.name}, ${c.processor.name}, ${c.demander.name}에 검토 요청이 전달되었습니다.`,
+    });
+  }
 
   return (
     <div className="mx-auto max-w-[1400px]">
@@ -52,9 +90,24 @@ function ConsortiumDetail() {
         description="추천 가능한 산업공생 컨소시엄을 찾았습니다. AI 분석 근거와 예상 성과를 확인해 주세요."
         actions={
           <>
-            <BtnSecondary>추천 보류</BtnSecondary>
-            <BtnPrimary>
-              <Sparkles className="h-4 w-4" strokeWidth={1.75} /> 기업에게 추천 전달
+            <BtnSecondary
+              type="button"
+              onClick={holdRecommendation}
+              disabled={isSending || recommendation?.action === "held"}
+            >
+              {recommendation?.action === "held" ? "보류됨" : "추천 보류"}
+            </BtnSecondary>
+            <BtnPrimary
+              type="button"
+              onClick={sendRecommendation}
+              disabled={isSending || recommendation?.action === "sent"}
+            >
+              <Sparkles className="h-4 w-4" strokeWidth={1.75} />{" "}
+              {isSending
+                ? "전달 중..."
+                : recommendation?.action === "sent"
+                  ? "추천 전달 완료"
+                  : "기업에게 추천 전달"}
             </BtnPrimary>
           </>
         }
