@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
   Factory,
   Layers,
@@ -50,6 +51,70 @@ function Dashboard() {
   const rejected = 11;
   const total = accepted + waiting + rejected;
 
+  function exportDashboardData() {
+    const statusLabels: Record<string, string> = {
+      recommended: "추천",
+      review: "검토중",
+      approved: "승인",
+      waiting: "대기",
+      rejected: "거절",
+    };
+    const rows: Array<Array<string | number>> = [
+      ["구분", "항목/ID", "세부정보 1", "세부정보 2", "세부정보 3", "수치/상태"],
+      ["핵심지표", "참여 기업", "", "", "", "1,284개사"],
+      ["핵심지표", "추천 컨소시엄", "", "", "", "342건"],
+      ["핵심지표", "승인 컨소시엄", "", "", "", "86건"],
+      ["핵심지표", "예상 탄소감축", "", "", "", "128,400 tCO₂e"],
+      ["핵심지표", "재활용 전환량", "", "", "", "842K톤"],
+      ["기업 참여 현황", "수락", "", "", "", accepted],
+      ["기업 참여 현황", "검토중", "", "", "", waiting],
+      ["기업 참여 현황", "거절", "", "", "", rejected],
+      ...consortiums.map((c) => [
+        "산업공생 컨소시엄",
+        c.id,
+        `배출기업: ${c.emitter.name}`,
+        `중간처리기업: ${c.processor.name}`,
+        `수요기업: ${c.demander.name}`,
+        `AI ${c.aiScore} / ${statusLabels[c.status] ?? c.status}`,
+      ]),
+      ...supportPrograms.map((program) => [
+        "지원사업",
+        program.id,
+        program.name,
+        program.ministry,
+        `마감일: ${program.deadline}`,
+        `적합도 ${program.fit} / ${program.status}`,
+      ]),
+      ...monthlyCarbon.map((item) => [
+        "탄소감축 추이",
+        item.month,
+        "",
+        "",
+        `재활용: ${item.재활용}`,
+        `감축: ${item.감축}`,
+      ]),
+    ];
+    const escapeCsv = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
+    const csv = `\uFEFF${rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n")}`;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Intl.DateTimeFormat("en-CA", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+    link.href = url;
+    link.download = `Reum_통합대시보드_${date}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    toast.success("대시보드 데이터를 내보냈습니다.", {
+      description: "다운로드된 CSV 파일은 Excel에서 바로 열 수 있습니다.",
+    });
+  }
+
   return (
     <div className="mx-auto max-w-[1400px]">
       <PageHeader
@@ -58,7 +123,7 @@ function Dashboard() {
         description="AI가 최적의 협력기업 조합을 추천했습니다. 최근 30일 동안의 참여, 승인, 성과 지표를 확인해 주세요."
         actions={
           <>
-            <BtnSecondary>
+            <BtnSecondary type="button" onClick={exportDashboardData}>
               <FileText className="h-4 w-4" strokeWidth={1.75} />
               데이터 내보내기
             </BtnSecondary>
