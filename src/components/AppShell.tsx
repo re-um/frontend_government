@@ -522,8 +522,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <span
                 className={
-                  "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform " +
-                  (draftSettings.notificationsEnabled ? "translate-x-5" : "translate-x-0.5")
+                  "absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform " +
+                  (draftSettings.notificationsEnabled ? "translate-x-5" : "translate-x-0")
                 }
               />
             </button>
