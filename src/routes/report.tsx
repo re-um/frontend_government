@@ -108,9 +108,9 @@ function ReportPage() {
         </div>
       </Card>
 
-      <Card className="mb-6 overflow-hidden p-0">
+      <Card className="mb-6 overflow-hidden !p-0">
         {/* Header band */}
-        <div className="bg-[#1B1F23] px-10 py-10 text-white">
+        <div className="bg-[#1B1F23] px-5 py-7 text-white sm:px-10 sm:py-10">
           <div className="text-[11px] font-semibold uppercase tracking-widest text-lime">
             MOTIE · Policy Performance Report
           </div>
@@ -138,13 +138,13 @@ function ReportPage() {
           </div>
         </div>
 
-        <div className="px-10 py-10">
+        <div className="px-5 py-7 sm:px-10 sm:py-10">
           <section>
             <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Executive summary
             </div>
             <h2 className="mt-1 text-[18px] font-bold">핵심 성과 지표</h2>
-            <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3">
               <ReportKpi label="참여 기업" value={analytics.companies.toLocaleString()} unit="개사" />
               <ReportKpi label="추천 컨소시엄" value={recommended.toLocaleString()} unit="건" />
               <ReportKpi label="승인 컨소시엄" value={approved.toLocaleString()} unit="건" />
@@ -152,14 +152,14 @@ function ReportPage() {
               <ReportKpi label="재활용 전환량" value={analytics.recycling.toLocaleString()} unit="톤" />
               <ReportKpi label="감축률" value={analytics.rate.toFixed(1)} unit="%" />
             </div>
-            <div className="mt-4 flex items-center justify-between rounded-xl border border-border bg-secondary/40 p-4">
+            <div className="mt-4 flex flex-col gap-3 rounded-xl border border-border bg-secondary/40 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   지원사업 평균 적합도
                 </div>
                 <div className="num mt-1 text-[22px]">84.7 / 100</div>
               </div>
-              <div className="text-right text-[11px] text-muted-foreground">
+              <div className="text-left text-[11px] text-muted-foreground sm:text-right">
                 최고 매칭: 탄소중립 산업전환 실증 지원사업 · 94
               </div>
             </div>
@@ -241,11 +241,11 @@ function ReportPage() {
 
 function ReportKpi({ label, value, unit }: { label: string; value: string; unit: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="min-w-0 rounded-xl border border-border bg-card p-4">
       <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
-      <div className="mt-2 flex items-baseline gap-1">
-        <span className="num text-[22px]">{value}</span>
-        <span className="text-[11px] text-muted-foreground">{unit}</span>
+      <div className="mt-2 flex min-w-0 flex-wrap items-baseline gap-x-1 gap-y-0.5">
+        <span className="num break-all text-[20px] sm:text-[22px]">{value}</span>
+        <span className="shrink-0 text-[11px] text-muted-foreground">{unit}</span>
       </div>
     </div>
   );
