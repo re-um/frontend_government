@@ -16,6 +16,8 @@ import {
   MessageSquare,
   AlertTriangle,
   CheckCircle2,
+  Menu,
+  X as CloseIcon,
 } from "lucide-react";
 import { consortiums, supportPrograms, notifications as seedNotifications, type AppNotification } from "../lib/mockData";
 
@@ -97,6 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [q, setQ] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [notifs, setNotifs] = useState<AppNotification[]>(seedNotifications);
   const searchRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -125,6 +128,24 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => document.removeEventListener("mousedown", onDown);
   }, []);
 
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [mobileNavOpen]);
+
   const unreadCount = notifs.filter((n) => n.unread).length;
 
   function openNotification(n: AppNotification) {
@@ -139,6 +160,75 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
+      {/* Mobile navigation */}
+      {mobileNavOpen && (
+        <button
+          type="button"
+          aria-label="모바일 메뉴 닫기"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[1px] lg:hidden"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
+      <aside
+        className={
+          "fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-r border-black/40 bg-sidebar text-sidebar-foreground shadow-2xl transition-transform duration-200 lg:hidden " +
+          (mobileNavOpen ? "translate-x-0" : "-translate-x-full")
+        }
+        aria-hidden={!mobileNavOpen}
+      >
+        <div className="flex h-16 items-center gap-2.5 px-5">
+          <ReumLogo />
+          <div className="flex-1 leading-tight">
+            <div className="flex items-baseline gap-0.5 text-[17px] font-bold tracking-tight text-white">
+              <span>Re</span><span className="text-lime">:</span><span>um</span>
+            </div>
+            <div className="text-[10px] text-white/50">AI Industrial Symbiosis</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(false)}
+            className="grid h-9 w-9 place-items-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white"
+            aria-label="메뉴 닫기"
+          >
+            <CloseIcon className="h-5 w-5" />
+          </button>
+        </div>
+        <nav className="flex-1 overflow-y-auto px-3 py-2">
+          <div className="px-3 pb-2 pt-3 text-[10px] font-semibold uppercase tracking-widest text-white/40">
+            Workspace
+          </div>
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const active = isActive(item.to);
+              const Icon = item.icon;
+              return (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    onClick={() => setMobileNavOpen(false)}
+                    className={
+                      "group flex items-center gap-3 rounded-lg px-3 py-3 text-[13px] font-medium transition " +
+                      (active
+                        ? "bg-lime text-lime-foreground"
+                        : "text-white/70 hover:bg-white/5 hover:text-white")
+                    }
+                  >
+                    <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
+                    <span className="min-w-0 truncate">{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+        <div className="border-t border-white/10 px-4 py-4">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+            <div className="text-[11px] font-semibold text-white">다시 순환하고, 다시 연결합니다.</div>
+            <div className="mt-1 text-[10px] text-white/50">Re:um v2.4 · MOTIE 산업통상자원부</div>
+          </div>
+        </div>
+      </aside>
+
       {/* Sidebar (dark) */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] shrink-0 flex-col border-r border-black/40 bg-sidebar text-sidebar-foreground lg:flex">
         <div className="flex h-16 items-center gap-2.5 px-5">
@@ -192,8 +282,17 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Main */}
       <div className="flex min-h-screen w-full flex-1 flex-col lg:pl-[260px]">
         {/* Top nav */}
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-border bg-card/90 px-6 backdrop-blur">
-          <div className="flex flex-1 items-center gap-3">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b border-border bg-card/90 px-3 backdrop-blur sm:gap-4 sm:px-6">
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-foreground/70 hover:bg-secondary lg:hidden"
+            aria-label="메뉴 열기"
+            aria-expanded={mobileNavOpen}
+          >
+            <Menu className="h-5 w-5" strokeWidth={1.8} />
+          </button>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             <div ref={searchRef} className="relative w-full max-w-md">
               <Search
                 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -256,7 +355,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               </button>
               {notifOpen && (
-                <div className="absolute right-0 top-11 z-30 w-[380px] overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+                <div className="absolute right-0 top-11 z-30 w-[calc(100vw-1.5rem)] max-w-[380px] overflow-hidden rounded-xl border border-border bg-card shadow-lg">
                   <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <div className="text-[13px] font-bold">알림 센터</div>
                     <button
@@ -291,22 +390,22 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </div>
               )}
             </div>
-            <button className="grid h-9 w-9 place-items-center rounded-lg text-foreground/70 hover:bg-secondary">
+            <button className="hidden h-9 w-9 place-items-center rounded-lg text-foreground/70 hover:bg-secondary sm:grid">
               <Settings className="h-[18px] w-[18px]" strokeWidth={1.75} />
             </button>
-            <div className="mx-2 h-6 w-px bg-border" />
+            <div className="mx-2 hidden h-6 w-px bg-border sm:block" />
             <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-secondary">
               <div className="grid h-8 w-8 place-items-center rounded-full bg-[#14181D] text-[11px] font-bold text-lime">산통</div>
               <div className="hidden text-left leading-tight sm:block">
                 <div className="text-[12px] font-semibold">산통부 계정</div>
                 <div className="text-[10px] text-muted-foreground">Policy Analyst</div>
               </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
+              <ChevronDown className="hidden h-4 w-4 text-muted-foreground sm:block" strokeWidth={1.75} />
             </button>
           </div>
         </header>
 
-        <main className="flex-1 px-6 py-6 lg:px-10 lg:py-8">{children}</main>
+        <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-8">{children}</main>
       </div>
     </div>
   );
