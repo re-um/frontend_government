@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   Search,
   Check,
+  CheckCircle2,
   Clock,
   X,
   Sparkles,
@@ -418,7 +419,10 @@ function Participation() {
         </Card>
       )}
 
-      {filtered.map((c) => (
+      {filtered.map((c) => {
+        const isCompleted = c.step >= 4 || c.parties.every((p) => p.status === "accept");
+
+        return (
         <Card key={c.id} className="mb-6">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -428,7 +432,9 @@ function Participation() {
               </div>
               <div className="text-[11px] text-muted-foreground">시작일 {c.startedAt}</div>
             </div>
-            <Badge tone="info">진행중 · Step {c.step}/4</Badge>
+            <Badge tone={isCompleted ? "success" : "info"}>
+              {isCompleted ? "최종 승인 완료" : `진행중 · Step ${c.step}/4`}
+            </Badge>
           </div>
 
           <div className="mb-6 rounded-xl border border-border p-4">
@@ -460,7 +466,9 @@ function Participation() {
                     >
                       {t.label}
                     </div>
-                    <div className="text-[11px] text-muted-foreground">{t.date}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {isCompleted && i === timeline.length - 1 ? "승인 완료" : t.date}
+                    </div>
                   </div>
                 );
               })}
@@ -488,7 +496,7 @@ function Participation() {
             })}
           </div>
 
-          {aiResult?.caseId === c.id && (
+          {!isCompleted && aiResult?.caseId === c.id && (
             <div className="mt-5 rounded-xl border border-lime/60 bg-lime/10 p-4">
               <div className="mb-2 flex items-center gap-2 text-[12px] font-bold">
                 <Sparkles className="h-4 w-4" strokeWidth={2} /> AI 차순위 추천
@@ -509,6 +517,13 @@ function Participation() {
           )}
 
           <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-border pt-5">
+            {isCompleted ? (
+              <div className="inline-flex items-center gap-2 text-[12px] font-semibold text-[#166534]">
+                <CheckCircle2 className="h-4 w-4" strokeWidth={2} />
+                최종 승인 완료 · 추가 조치 없음
+              </div>
+            ) : (
+              <>
             {c.parties.some((p) => p.status === "reject") && (
               <button
                 onClick={() => setRejectModal(c)}
@@ -538,9 +553,12 @@ function Participation() {
               )}
               AI 차순위 추천
             </BtnPrimary>
+              </>
+            )}
           </div>
         </Card>
-      ))}
+        );
+      })}
 
       <Modal
         open={!!rejectModal}
