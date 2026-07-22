@@ -242,11 +242,11 @@ function ConsortiumDetail() {
           </ul>
         </Card>
 
-        <Card className="!border-[#30363D] !bg-[#1B1F23] !text-white">
+        <Card>
           <div className="mb-3 flex items-center gap-2 text-[13px] font-bold">
-            <Sparkles className="h-4 w-4 text-lime" strokeWidth={2} /> AI 종합 의견
+            <Sparkles className="h-4 w-4 text-[#65A30D]" strokeWidth={2} /> AI 종합 의견
           </div>
-          <p className="text-[13px] leading-relaxed !text-white/85">
+          <p className="text-[13px] leading-relaxed text-foreground/85">
             본 컨소시엄은 물류 반경, 기술 적합성, 정책 적합성 세 축에서 모두 상위 10% 구간에 위치합니다.
             AI 분석이 완료되었습니다. 배출–중간처리–수요 3자 간 폐자원 흐름의 안정성이 확인되었으며,
             산업통상자원부 자원순환 실증사업과의 연계 시 추가 인센티브 확보가 가능합니다.
@@ -258,7 +258,7 @@ function ConsortiumDetail() {
             >
               연계 지원사업 보기
             </Link>
-            <button className="inline-flex h-9 items-center rounded-md border border-white/20 bg-white/5 px-3 text-[12px] font-medium text-white hover:bg-white/10">
+            <button className="inline-flex h-9 items-center rounded-md border border-border bg-card px-3 text-[12px] font-medium text-foreground hover:bg-secondary">
               분석 리포트 다운로드
             </button>
           </div>

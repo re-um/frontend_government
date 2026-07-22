@@ -199,14 +199,14 @@ function PolicyDashboard() {
           <KoreaMap />
         </Card>
 
-        <Card className="!border-[#30363D] !bg-[#1B1F23] !text-white">
+        <Card>
           <div className="mb-3 flex items-center gap-2 text-[13px] font-bold">
-            <Sparkles className="h-4 w-4 text-lime" strokeWidth={2} /> AI 정책 인사이트
+            <Sparkles className="h-4 w-4 text-[#65A30D]" strokeWidth={2} /> AI 정책 인사이트
           </div>
           <ul className="space-y-3 text-[13px]">
             {analytics.insights.map((t, i) => (
-              <li key={i} className="flex gap-2 !text-white/85">
-                <span className="num text-lime">0{i + 1}</span>
+              <li key={i} className="flex gap-2 text-foreground/85">
+                <span className="num text-[#65A30D]">0{i + 1}</span>
                 <span>{t}</span>
               </li>
             ))}
