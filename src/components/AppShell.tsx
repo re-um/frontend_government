@@ -1,5 +1,6 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   Network,
@@ -20,6 +21,19 @@ import {
   X as CloseIcon,
 } from "lucide-react";
 import { consortiums, supportPrograms, notifications as seedNotifications, type AppNotification } from "../lib/mockData";
+import { BtnPrimary, BtnSecondary, Modal } from "./ui-kit";
+
+type AppSettings = {
+  notificationsEnabled: boolean;
+  refreshMinutes: number;
+};
+
+const defaultSettings: AppSettings = {
+  notificationsEnabled: true,
+  refreshMinutes: 0,
+};
+
+const SETTINGS_STORAGE_KEY = "reum-app-settings";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -100,6 +114,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState<AppSettings>(defaultSettings);
+  const [draftSettings, setDraftSettings] = useState<AppSettings>(defaultSettings);
   const [notifs, setNotifs] = useState<AppNotification[]>(seedNotifications);
   const searchRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -146,7 +163,45 @@ export function AppShell({ children }: { children: ReactNode }) {
     };
   }, [mobileNavOpen]);
 
-  const unreadCount = notifs.filter((n) => n.unread).length;
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (!saved) return;
+      const parsed = { ...defaultSettings, ...JSON.parse(saved) } as AppSettings;
+      setSettings(parsed);
+      setDraftSettings(parsed);
+    } catch {
+      // 잘못된 로컬 설정값은 기본값을 사용합니다.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (settings.refreshMinutes <= 0) return;
+    const timer = window.setInterval(
+      () => window.location.reload(),
+      settings.refreshMinutes * 60 * 1000,
+    );
+    return () => window.clearInterval(timer);
+  }, [settings.refreshMinutes]);
+
+  const unreadCount = settings.notificationsEnabled ? notifs.filter((n) => n.unread).length : 0;
+
+  function openSettings() {
+    setDraftSettings(settings);
+    setSettingsOpen(true);
+  }
+
+  function saveSettings() {
+    setSettings(draftSettings);
+    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(draftSettings));
+    setSettingsOpen(false);
+    toast.success("설정을 저장했습니다.", {
+      description:
+        draftSettings.refreshMinutes > 0
+          ? `${draftSettings.refreshMinutes}분마다 데이터를 자동으로 새로고침합니다.`
+          : "자동 새로고침이 꺼져 있습니다.",
+    });
+  }
 
   function openNotification(n: AppNotification) {
     setNotifs((prev) => prev.map((x) => (x.id === n.id ? { ...x, unread: false } : x)));
@@ -365,6 +420,22 @@ export function AppShell({ children }: { children: ReactNode }) {
                       모두 읽음으로
                     </button>
                   </div>
+                  {!settings.notificationsEnabled ? (
+                    <div className="p-6 text-center">
+                      <Bell className="mx-auto h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
+                      <div className="mt-2 text-[13px] font-semibold">알림이 꺼져 있습니다.</div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNotifOpen(false);
+                          openSettings();
+                        }}
+                        className="mt-2 text-[12px] font-semibold text-[#65A30D] hover:underline"
+                      >
+                        설정에서 켜기
+                      </button>
+                    </div>
+                  ) : (
                   <ul className="max-h-[420px] divide-y divide-border overflow-auto">
                     {notifs.map((n) => (
                       <li key={n.id}>
@@ -387,10 +458,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                       </li>
                     ))}
                   </ul>
+                  )}
                 </div>
               )}
             </div>
-            <button className="hidden h-9 w-9 place-items-center rounded-lg text-foreground/70 hover:bg-secondary sm:grid">
+            <button
+              type="button"
+              onClick={openSettings}
+              className="grid h-9 w-9 place-items-center rounded-lg text-foreground/70 hover:bg-secondary"
+              aria-label="환경 설정 열기"
+            >
               <Settings className="h-[18px] w-[18px]" strokeWidth={1.75} />
             </button>
             <div className="mx-2 hidden h-6 w-px bg-border sm:block" />
@@ -407,6 +484,81 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-8">{children}</main>
       </div>
+
+      <Modal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        title="환경 설정"
+        description="알림 및 데이터 갱신 방식을 설정합니다."
+        footer={
+          <>
+            <BtnSecondary type="button" onClick={() => setSettingsOpen(false)}>취소</BtnSecondary>
+            <BtnPrimary type="button" onClick={saveSettings}>설정 저장</BtnPrimary>
+          </>
+        }
+      >
+        <div className="space-y-5">
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-border p-4">
+            <div>
+              <div className="text-[13px] font-semibold">인앱 알림</div>
+              <div className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                기업 응답, 추천 결과 및 정책 알림을 알림센터에 표시합니다.
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={draftSettings.notificationsEnabled}
+              onClick={() =>
+                setDraftSettings((current) => ({
+                  ...current,
+                  notificationsEnabled: !current.notificationsEnabled,
+                }))
+              }
+              className={
+                "relative h-6 w-11 shrink-0 rounded-full transition-colors " +
+                (draftSettings.notificationsEnabled ? "bg-[#65A30D]" : "bg-border")
+              }
+            >
+              <span
+                className={
+                  "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform " +
+                  (draftSettings.notificationsEnabled ? "translate-x-5" : "translate-x-0.5")
+                }
+              />
+            </button>
+          </div>
+
+          <div className="rounded-xl border border-border p-4">
+            <label htmlFor="refresh-interval" className="text-[13px] font-semibold">
+              데이터 자동 새로고침
+            </label>
+            <div className="mt-1 text-[11px] text-muted-foreground">
+              선택한 주기마다 현재 화면의 최신 데이터를 다시 불러옵니다.
+            </div>
+            <select
+              id="refresh-interval"
+              value={draftSettings.refreshMinutes}
+              onChange={(event) =>
+                setDraftSettings((current) => ({
+                  ...current,
+                  refreshMinutes: Number(event.target.value),
+                }))
+              }
+              className="mt-3 h-10 w-full rounded-lg border border-border bg-card px-3 text-[13px] outline-none focus:border-foreground/30"
+            >
+              <option value={0}>사용 안 함</option>
+              <option value={5}>5분마다</option>
+              <option value={10}>10분마다</option>
+              <option value={30}>30분마다</option>
+            </select>
+          </div>
+
+          <div className="rounded-xl bg-secondary/50 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+            설정은 이 브라우저에 저장되며, 다른 기기에는 자동으로 동기화되지 않습니다.
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
