@@ -37,7 +37,47 @@ function SupportList() {
       />
 
       <Card className="mb-6 p-0">
-        <div className="overflow-x-auto">
+        <div className="divide-y divide-border md:hidden">
+          {supportPrograms.map((p) => (
+            <article key={p.id} className="p-4">
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="break-keep text-[14px] font-bold leading-snug">{p.name}</div>
+                  <div className="mt-1 break-keep text-[11px] text-muted-foreground">
+                    {p.ministry} · {p.scale}
+                  </div>
+                </div>
+                <Badge tone={statusTone[p.status] ?? "neutral"}>{p.status}</Badge>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-secondary/40 p-3">
+                <div>
+                  <div className="text-[10px] font-semibold text-muted-foreground">적합도</div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-secondary">
+                      <div className="h-full rounded-full bg-lime" style={{ width: p.fit + "%" }} />
+                    </div>
+                    <span className="num shrink-0 text-[13px]">{p.fit}</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold text-muted-foreground">마감일</div>
+                  <div className="num mt-1.5 text-[12px] font-medium">{p.deadline}</div>
+                </div>
+              </div>
+
+              <Link
+                to="/support/$id"
+                params={{ id: p.id }}
+                className="mt-3 inline-flex h-9 w-full items-center justify-center gap-1 rounded-lg border border-border bg-card text-[12px] font-semibold hover:bg-secondary"
+              >
+                상세보기 <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} />
+              </Link>
+            </article>
+          ))}
+        </div>
+
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-[13px]">
             <thead className="bg-secondary/60 text-[11px] uppercase tracking-wider text-muted-foreground">
               <tr>

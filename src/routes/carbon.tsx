@@ -181,12 +181,17 @@ function CarbonPage() {
                   innerRadius={55}
                   outerRadius={85}
                   paddingAngle={2}
+                  labelLine={false}
+                  label={({ value }) => `${value}%`}
                 >
                   {analytics.wasteMix.map((_, i) => (
                     <Cell key={i} fill={pieColors[i % pieColors.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 12 }} />
+                <Tooltip
+                  formatter={(value) => [`${value}%`, "비중"]}
+                  contentStyle={{ borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 12 }}
+                />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>
@@ -237,10 +242,10 @@ function FlowDiagram({ companies }: { companies: number }) {
     { title: "수요기업", value: Math.max(1, Math.round(companies * 0.76)), unit: "개사", color: "bg-lime text-lime-foreground" },
   ];
   return (
-    <div className="mt-4 flex h-[200px] items-center justify-between gap-3">
+    <div className="mt-4 flex flex-col items-stretch gap-2 sm:h-[200px] sm:flex-row sm:items-center sm:justify-between sm:gap-3">
       {stages.map((s, i) => (
-        <div key={s.title} className="flex flex-1 items-center gap-3">
-          <div className="flex flex-1 flex-col items-center rounded-2xl border border-border bg-card p-4">
+        <div key={s.title} className="flex w-full flex-col items-center gap-2 sm:flex-1 sm:flex-row sm:gap-3">
+          <div className="flex w-full flex-col items-center rounded-2xl border border-border bg-card p-4 sm:flex-1">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {s.title}
             </div>
@@ -254,7 +259,8 @@ function FlowDiagram({ companies }: { companies: number }) {
           {i < stages.length - 1 && (
             <div className="flex flex-col items-center text-muted-foreground">
               <div className="text-[10px] font-semibold">flow</div>
-              <div className="mt-1 h-0.5 w-10 bg-border" />
+              <div className="mt-1 h-5 w-0.5 bg-border sm:hidden" />
+              <div className="mt-1 hidden h-0.5 w-10 bg-border sm:block" />
             </div>
           )}
         </div>
@@ -277,7 +283,7 @@ function FlowInfo() {
         <Info className="h-4 w-4" strokeWidth={1.75} />
       </button>
       {open && (
-        <div className="absolute right-0 top-10 z-20 w-[300px] rounded-xl border border-border bg-card p-4 text-left shadow-lg">
+        <div className="absolute right-0 top-10 z-20 w-[min(300px,calc(100vw-3rem))] rounded-xl border border-border bg-card p-4 text-left shadow-lg">
           <div className="text-[12px] font-bold">다이어그램 설명</div>
           <p className="mt-2 text-[12px] leading-relaxed text-foreground/80">
             산업공생 프로세스는 <span className="font-semibold">배출기업</span>에서 발생한 폐자원이

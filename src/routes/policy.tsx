@@ -236,7 +236,24 @@ function KoreaMap() {
     return { bg: "#F87171", fg: "#7F1D1D", ring: "rgba(248,113,113,0.30)" };
   }
   return (
-    <div className="relative h-[360px] w-full overflow-hidden rounded-xl border border-border bg-[radial-gradient(circle_at_30%_20%,#F5F6F8_0%,#EEF0F3_60%,#E5E7EB_100%)]">
+    <div>
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border bg-secondary/40 px-3 py-2.5 text-[10px] font-semibold">
+        <span className="text-muted-foreground">참여율 범례</span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#F87171]" /> 낮음 (0–54)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#FDE047]" /> 중간 (55–69)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#4ADE80]" /> 높음 (70–84)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#A3E635]" /> 최상 (85–100)
+        </span>
+      </div>
+
+      <div className="relative h-[360px] w-full overflow-hidden rounded-xl border border-border bg-[radial-gradient(circle_at_30%_20%,#F5F6F8_0%,#EEF0F3_60%,#E5E7EB_100%)]">
       <svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full opacity-40" aria-hidden>
         <path
           d="M160 40 L220 60 L260 120 L280 180 L260 240 L280 300 L220 340 L180 360 L140 320 L120 260 L100 200 L120 120 Z"
@@ -246,15 +263,6 @@ function KoreaMap() {
           strokeDasharray="3 4"
         />
       </svg>
-      {/* Legend */}
-      <div className="absolute right-3 top-3 flex items-center gap-2 rounded-lg border border-border bg-card/95 px-3 py-2 text-[10px] font-semibold shadow-sm backdrop-blur">
-        <span className="text-muted-foreground">참여율</span>
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: "#F87171" }} />낮음</span>
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: "#FDE047" }} />중간</span>
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: "#4ADE80" }} />높음</span>
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: "#A3E635" }} />최상</span>
-      </div>
-
       {regions.map((d) => {
         const t = toneFor(d.value);
         const active = hovered === d.label;
@@ -300,6 +308,7 @@ function KoreaMap() {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
