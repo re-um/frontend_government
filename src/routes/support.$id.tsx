@@ -98,11 +98,11 @@ function SupportDetail() {
         </div>
       </Card>
 
-      <Card className="bg-[#1B1F23] text-white">
+      <Card className="!border-[#30363D] !bg-[#1B1F23] !text-white">
         <div className="mb-2 flex items-center gap-2 text-[13px] font-bold">
           <Sparkles className="h-4 w-4 text-lime" strokeWidth={2} /> AI Summary
         </div>
-        <p className="text-[13px] leading-relaxed text-white/85">
+        <p className="text-[13px] leading-relaxed !text-white/85">
           본 지원사업은 컨소시엄 실증형 과제로, Re:um 추천 컨소시엄 3건과 즉시 연계 가능합니다.
           예상 인센티브 규모는 컨소시엄당 평균 12억 원이며, 신청 준비 기간은 45일 내외로 산정됩니다.
           정책 성과 리포트를 생성합니다.

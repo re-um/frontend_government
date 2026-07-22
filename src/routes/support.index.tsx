@@ -107,11 +107,11 @@ function SupportList() {
           </ul>
         </Card>
 
-        <Card className="bg-[#1B1F23] text-white">
+        <Card className="!border-[#30363D] !bg-[#1B1F23] !text-white">
           <div className="mb-3 flex items-center gap-2 text-[13px] font-bold">
             <Sparkles className="h-4 w-4 text-lime" strokeWidth={2} /> 정책 요약
           </div>
-          <p className="text-[13px] leading-relaxed text-white/85">
+          <p className="text-[13px] leading-relaxed !text-white/85">
             현재 접수 중인 4개 지원사업 중 3개는 산업통상자원부, 1개는 환경부 소관입니다.
             AI 매칭 결과 참여기업의 평균 적합도는 84.7점이며, 실증형 사업 비중이 62%로 높습니다.
             추천 컨소시엄 3건에 대해 지원사업 연계를 우선 검토해 주세요.
