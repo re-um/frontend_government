@@ -228,6 +228,7 @@ function KoreaMap() {
     { top: "80%", left: "52%", label: "여수", value: 84 },
   ];
   const [hovered, setHovered] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
   // Color intensity by value: green → red gradient bucketed.
   function toneFor(v: number) {
     if (v >= 85) return { bg: "#A3E635", fg: "#1B1F23", ring: "rgba(163,230,53,0.35)" };
@@ -235,6 +236,8 @@ function KoreaMap() {
     if (v >= 55) return { bg: "#FDE047", fg: "#713F12", ring: "rgba(253,224,71,0.30)" };
     return { bg: "#F87171", fg: "#7F1D1D", ring: "rgba(248,113,113,0.30)" };
   }
+  const activeRegion = regions.find((region) => region.label === (hovered ?? selected));
+  const activeTone = activeRegion ? toneFor(activeRegion.value) : null;
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border bg-secondary/40 px-3 py-2.5 text-[10px] font-semibold">
@@ -265,7 +268,7 @@ function KoreaMap() {
       </svg>
       {regions.map((d) => {
         const t = toneFor(d.value);
-        const active = hovered === d.label;
+        const active = hovered === d.label || selected === d.label;
         return (
           <div
             key={d.label}
@@ -273,6 +276,16 @@ function KoreaMap() {
             style={{ top: d.top, left: d.left, transform: `translate(-50%,-50%) scale(${active ? 1.1 : 1})` }}
             onMouseEnter={() => setHovered(d.label)}
             onMouseLeave={() => setHovered(null)}
+            onClick={() => setSelected((current) => (current === d.label ? null : d.label))}
+            role="button"
+            tabIndex={0}
+            aria-label={`${d.label} 참여율 ${d.value}, 상세정보 ${selected === d.label ? "닫기" : "보기"}`}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setSelected((current) => (current === d.label ? null : d.label));
+              }
+            }}
           >
             <div className="relative cursor-pointer">
               <div
@@ -289,26 +302,40 @@ function KoreaMap() {
                 <MapPin className="h-3 w-3" strokeWidth={2} /> {d.label}
               </div>
 
-              {active && (
-                <div className="absolute left-1/2 top-[calc(100%+18px)] z-10 w-[180px] -translate-x-1/2 rounded-xl border border-border bg-card p-3 text-left shadow-lg">
-                  <div className="text-[11px] font-semibold text-muted-foreground">{d.label} 산업단지</div>
-                  <div className="mt-1 flex items-baseline gap-1">
-                    <span className="num text-[20px]">{d.value}</span>
-                    <span className="text-[11px] text-muted-foreground">/ 100 참여율</span>
-                  </div>
-                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                    <div className="h-full rounded-full" style={{ width: d.value + "%", background: t.bg }} />
-                  </div>
-                  <div className="mt-2 text-[10px] text-muted-foreground">
-                    참여기업 {Math.round(d.value * 3.2)}개사 · 전월 대비 +{(d.value / 12).toFixed(1)}%
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         );
       })}
       </div>
+
+      {activeRegion && activeTone && (
+        <div className="mt-3 rounded-xl border border-border bg-card p-4 shadow-sm" aria-live="polite">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[12px] font-semibold text-muted-foreground">{activeRegion.label} 산업단지</div>
+              <div className="mt-1 flex items-baseline gap-1">
+                <span className="num text-[22px]">{activeRegion.value}</span>
+                <span className="text-[11px] text-muted-foreground">/ 100 참여율</span>
+              </div>
+            </div>
+            {selected === activeRegion.label && (
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                className="rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
+              >
+                닫기
+              </button>
+            )}
+          </div>
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+            <div className="h-full rounded-full" style={{ width: activeRegion.value + "%", background: activeTone.bg }} />
+          </div>
+          <div className="mt-2 text-[11px] text-muted-foreground">
+            참여기업 {Math.round(activeRegion.value * 3.2)}개사 · 전월 대비 +{(activeRegion.value / 12).toFixed(1)}%
+          </div>
+        </div>
+      )}
     </div>
   );
 }

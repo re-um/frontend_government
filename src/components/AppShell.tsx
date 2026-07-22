@@ -355,7 +355,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               </button>
               {notifOpen && (
-                <div className="absolute right-0 top-11 z-30 w-[calc(100vw-1.5rem)] max-w-[380px] overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+                <div className="fixed left-3 right-3 top-[68px] z-30 overflow-hidden rounded-xl border border-border bg-card shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-11 sm:w-[380px] sm:max-w-[calc(100vw-3rem)]">
                   <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <div className="text-[13px] font-bold">알림 센터</div>
                     <button
