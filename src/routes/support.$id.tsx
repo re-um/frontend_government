@@ -1,6 +1,6 @@
 import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
 import { ArrowLeft, Building2, Coins, Calendar, Sparkles, Check } from "lucide-react";
-import { Badge, BtnPrimary, BtnSecondary, Card, PageHeader } from "../components/ui-kit";
+import { Badge, Card, PageHeader } from "../components/ui-kit";
 import { supportPrograms } from "../lib/mockData";
 
 export const Route = createFileRoute("/support/$id")({
@@ -29,14 +29,6 @@ function SupportDetail() {
         eyebrow={p.ministry}
         title={p.name}
         description={p.summary}
-        actions={
-          <>
-            <BtnSecondary>참여 조건 확인</BtnSecondary>
-            <BtnPrimary>
-              <Sparkles className="h-4 w-4" strokeWidth={1.75} /> 참여 조건 확인
-            </BtnPrimary>
-          </>
-        }
       />
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">

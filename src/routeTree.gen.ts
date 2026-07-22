@@ -272,8 +272,8 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
+import type { getRouter } from '../../../../../../User/OneDrive - KT CORPORATION/바탕 화면/reum/liium-circle-flow/src/router.tsx'
+import type { startInstance } from '../../../../../../User/OneDrive - KT CORPORATION/바탕 화면/reum/liium-circle-flow/src/start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true

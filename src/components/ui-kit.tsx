@@ -196,7 +196,7 @@ export function PageHeader({
 }) {
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <div>
+      <div className="min-w-0">
         {eyebrow && (
           <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             {eyebrow}
@@ -207,7 +207,11 @@ export function PageHeader({
           <p className="mt-2 max-w-2xl text-[13px] text-muted-foreground">{description}</p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className="flex w-full flex-col gap-2 [&>*]:w-full [&>*]:whitespace-nowrap sm:w-auto sm:flex-row sm:items-center sm:[&>*]:w-auto">
+          {actions}
+        </div>
+      )}
     </div>
   );
 }
