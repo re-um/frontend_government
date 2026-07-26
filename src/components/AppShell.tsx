@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable prettier/prettier */
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import {
   LayoutDashboard,
   Network,
+  Share2,
   ListChecks,
   Leaf,
   Landmark,
@@ -39,6 +42,7 @@ const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/consortium/", label: "산업공생 컨소시엄 후보 추천", icon: Network },
   { to: "/participation", label: "기업 참여 진행 현황", icon: ListChecks },
+  { to: "/network", label: "산업공생 네트워크맵", icon: Share2 },
   { to: "/carbon", label: "탄소감축 / 환경성과 분석", icon: Leaf },
   { to: "/report", label: "폐합성수지 환경성과 리포트", icon: FileBarChart },
   { to: "/policy", label: "자원순환 정책 운영 대시보드", icon: Landmark },
@@ -226,7 +230,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
       <aside
         className={
-          "fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-r border-black/40 bg-sidebar text-sidebar-foreground shadow-2xl transition-transform duration-200 lg:hidden " +
+          "fixed inset-y-0 left-0 z-50 flex w-70 max-w-[85vw] flex-col border-r border-black/40 bg-sidebar text-sidebar-foreground shadow-2xl transition-transform duration-200 lg:hidden " +
           (mobileNavOpen ? "translate-x-0" : "-translate-x-full")
         }
         aria-hidden={!mobileNavOpen}
@@ -268,7 +272,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                         : "text-white/70 hover:bg-white/5 hover:text-white")
                     }
                   >
-                    <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
+                    <Icon className="h-4.5 w-4.5 shrink-0" strokeWidth={1.75} />
                     <span className="min-w-0 truncate">{item.label}</span>
                   </Link>
                 </li>
@@ -317,7 +321,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                         : "text-white/70 hover:bg-white/5 hover:text-white")
                     }
                   >
-                    <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
+                    <Icon className="h-4.5 w-4.5 shrink-0" strokeWidth={1.75} />
                     <span className="min-w-0 truncate">{item.label}</span>
                   </Link>
                 </li>
@@ -365,7 +369,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-[13px] outline-none placeholder:text-muted-foreground focus:border-foreground/30 focus:ring-2 focus:ring-foreground/5"
               />
               {searchOpen && q.trim() && (
-                <div className="absolute left-0 right-0 top-12 z-30 max-h-[420px] overflow-auto rounded-xl border border-border bg-card shadow-lg">
+                <div className="absolute left-0 right-0 top-12 z-30 max-h-105 overflow-auto rounded-xl border border-border bg-card shadow-lg">
                   {results.length === 0 ? (
                     <div className="p-4 text-[13px] text-muted-foreground">검색 결과가 없습니다.</div>
                   ) : (
@@ -402,7 +406,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 onClick={() => setNotifOpen((v) => !v)}
                 className="relative grid h-9 w-9 place-items-center rounded-lg text-foreground/70 hover:bg-secondary"
               >
-                <Bell className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                <Bell className="h-4.5 w-4.5" strokeWidth={1.75} />
                 {unreadCount > 0 && (
                   <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#EF4444] px-1 text-[9px] font-bold text-white">
                     {unreadCount}
@@ -410,7 +414,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               </button>
               {notifOpen && (
-                <div className="fixed left-3 right-3 top-[68px] z-30 overflow-hidden rounded-xl border border-border bg-card shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-11 sm:w-[380px] sm:max-w-[calc(100vw-3rem)]">
+                <div className="fixed left-3 right-3 top-17 z-30 overflow-hidden rounded-xl border border-border bg-card shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-11 sm:w-95 sm:max-w-[calc(100vw-3rem)]">
                   <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <div className="text-[13px] font-bold">알림 센터</div>
                     <button
@@ -436,7 +440,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       </button>
                     </div>
                   ) : (
-                  <ul className="max-h-[420px] divide-y divide-border overflow-auto">
+                  <ul className="max-h-105 divide-y divide-border overflow-auto">
                     {notifs.map((n) => (
                       <li key={n.id}>
                         <button
@@ -468,7 +472,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               className="grid h-9 w-9 place-items-center rounded-lg text-foreground/70 hover:bg-secondary"
               aria-label="환경 설정 열기"
             >
-              <Settings className="h-[18px] w-[18px]" strokeWidth={1.75} />
+              <Settings className="h-4.5 w-4.5" strokeWidth={1.75} />
             </button>
             <div className="mx-2 hidden h-6 w-px bg-border sm:block" />
             <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-secondary">
