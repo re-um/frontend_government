@@ -147,8 +147,8 @@ export function IndustrialOverview({
   )
 
   return (
-    <div className="relative min-h-130 overflow-auto bg-[#071321] sm:min-h-180">
-      <div className="relative mx-auto aspect-[16/9] min-h-130 min-w-[820px] overflow-hidden sm:min-h-180">
+    <div className="relative flex min-h-130 items-center overflow-auto bg-[#071321] sm:min-h-180">
+      <div className="relative mx-auto aspect-[16/9] w-full min-w-[720px] overflow-hidden md:min-w-0">
         <img
           src="/assets/industrial-symbiosis-overview.png"
           alt="폐합성수지 산업공생 단지 조감도"
