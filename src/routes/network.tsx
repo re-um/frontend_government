@@ -21,10 +21,15 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { KakaoNetworkMap } from '../components/KakaoNetworkMap'
 import { IndustrialOverview } from '../components/IndustrialOverview'
-import { DigitalTwinNetwork3D } from '../components/DigitalTwinNetwork3D'
+
+const DigitalTwinNetwork3D = lazy(() =>
+  import('../components/DigitalTwinNetwork3D').then((module) => ({
+    default: module.DigitalTwinNetwork3D,
+  })),
+)
 
 export const Route = createFileRoute('/network')({
   component: NetworkMapPage,
@@ -304,6 +309,174 @@ const companies: CompanyDetail[] = [
     latitude: 33.4996,
     longitude: 126.5312,
   },
+  {
+    id: 'emitter-g',
+    name: '강원필름',
+    type: 'emitter',
+    region: '강원 원주시',
+    material: '폐PE',
+    monthlyAmount: 46,
+    connections: 1,
+    approvedMatches: 1,
+    status: 'approved',
+    description: '농산물 포장필름 생산 과정에서 폐PE가 발생하는 공급기업',
+    latitude: 37.3422,
+    longitude: 127.9202,
+  },
+  {
+    id: 'processor-e',
+    name: '강원순환자원',
+    type: 'processor',
+    region: '강원 춘천시',
+    material: 'PE·PP',
+    monthlyAmount: 82,
+    connections: 3,
+    approvedMatches: 2,
+    status: 'approved',
+    description: '강원권 폐합성수지 세척·파쇄·펠릿화 공정을 운영하는 중간처리기업',
+    latitude: 37.8813,
+    longitude: 127.7298,
+  },
+  {
+    id: 'consumer-g',
+    name: '동해산업자재',
+    type: 'consumer',
+    region: '강원 강릉시',
+    material: '재생 PE',
+    monthlyAmount: 32,
+    connections: 1,
+    approvedMatches: 1,
+    status: 'approved',
+    description: '재생 PE를 물류용 포장재와 산업용 시트 생산에 활용하는 수요기업',
+    latitude: 37.7519,
+    longitude: 128.8761,
+  },
+  {
+    id: 'consumer-h',
+    name: '원주에코몰드',
+    type: 'consumer',
+    region: '강원 원주시',
+    material: '재생 PP',
+    monthlyAmount: 36,
+    connections: 1,
+    approvedMatches: 0,
+    status: 'active',
+    description: '재생 PP를 생활용 사출제품 생산에 활용하는 수요기업',
+    latitude: 37.3705,
+    longitude: 127.9422,
+  },
+  {
+    id: 'emitter-h',
+    name: '빛고을패키지',
+    type: 'emitter',
+    region: '광주 광산구',
+    material: '폐PP',
+    monthlyAmount: 54,
+    connections: 1,
+    approvedMatches: 0,
+    status: 'active',
+    description: '식품·생활용품 포장용기 생산 과정에서 폐PP가 발생하는 공급기업',
+    latitude: 35.1395,
+    longitude: 126.7937,
+  },
+  {
+    id: 'processor-f',
+    name: '호남리사이클링',
+    type: 'processor',
+    region: '전남 나주시',
+    material: 'PP·PET',
+    monthlyAmount: 105,
+    connections: 3,
+    approvedMatches: 1,
+    status: 'active',
+    description: '호남권 폐PP·폐PET 선별과 재생원료 생산을 수행하는 중간처리기업',
+    latitude: 35.0158,
+    longitude: 126.7108,
+  },
+  {
+    id: 'consumer-i',
+    name: '목포해양소재',
+    type: 'consumer',
+    region: '전남 목포시',
+    material: '재생 PP',
+    monthlyAmount: 39,
+    connections: 1,
+    approvedMatches: 1,
+    status: 'approved',
+    description: '재생 PP를 해양 부표와 수산업용 자재에 활용하는 수요기업',
+    latitude: 34.8118,
+    longitude: 126.3922,
+  },
+  {
+    id: 'consumer-j',
+    name: '광양그린텍',
+    type: 'consumer',
+    region: '전남 광양시',
+    material: '재생 PET',
+    monthlyAmount: 34,
+    connections: 1,
+    approvedMatches: 0,
+    status: 'pending',
+    description: '재생 PET 원료를 산업용 부직포 생산에 활용하는 수요기업',
+    latitude: 34.9407,
+    longitude: 127.6959,
+  },
+  {
+    id: 'emitter-i',
+    name: '경남포장산업',
+    type: 'emitter',
+    region: '경남 김해시',
+    material: '폐PE',
+    monthlyAmount: 62,
+    connections: 1,
+    approvedMatches: 1,
+    status: 'approved',
+    description: '자동차 부품 포장재 생산 과정에서 폐PE가 발생하는 공급기업',
+    latitude: 35.2285,
+    longitude: 128.8894,
+  },
+  {
+    id: 'processor-g',
+    name: '경남자원순환',
+    type: 'processor',
+    region: '경남 창원시',
+    material: 'PE·PP',
+    monthlyAmount: 118,
+    connections: 3,
+    approvedMatches: 2,
+    status: 'approved',
+    description: '경남권 폐합성수지 압축·세척·압출 공정을 운영하는 중간처리기업',
+    latitude: 35.2279,
+    longitude: 128.6811,
+  },
+  {
+    id: 'consumer-k',
+    name: '진주바이오플라',
+    type: 'consumer',
+    region: '경남 진주시',
+    material: '재생 PE',
+    monthlyAmount: 44,
+    connections: 1,
+    approvedMatches: 1,
+    status: 'approved',
+    description: '재생 PE를 농업용 자재와 복합소재 생산에 활용하는 수요기업',
+    latitude: 35.1799,
+    longitude: 128.1076,
+  },
+  {
+    id: 'consumer-l',
+    name: '거제모빌리티',
+    type: 'consumer',
+    region: '경남 거제시',
+    material: '재생 PP',
+    monthlyAmount: 42,
+    connections: 1,
+    approvedMatches: 0,
+    status: 'active',
+    description: '재생 PP를 선박·자동차 내장 부품 생산에 활용하는 수요기업',
+    latitude: 34.8806,
+    longitude: 128.6211,
+  },
 ]
 
 const matches: MatchDetail[] = [
@@ -322,6 +495,15 @@ const matches: MatchDetail[] = [
   { id: 'match-13', source: 'emitter-b', target: 'processor-c', material: '폐PE', amount: 39, score: 80, roi: 10.8, carbonReduction: 22.4, status: 'active' },
   { id: 'match-14', source: 'emitter-a', target: 'processor-c', material: '폐PP', amount: 32, score: 78, roi: 10.1, carbonReduction: 19.5, status: 'pending' },
   { id: 'match-15', source: 'processor-c', target: 'consumer-f', material: '재생 PET', amount: 21, score: 72, roi: 8.2, carbonReduction: 12.4, status: 'pending' },
+  { id: 'match-16', source: 'emitter-g', target: 'processor-e', material: '폐PE', amount: 41, score: 90, roi: 15.4, carbonReduction: 29.8, status: 'approved' },
+  { id: 'match-17', source: 'processor-e', target: 'consumer-g', material: '재생 PE', amount: 30, score: 88, roi: 14.7, carbonReduction: 23.6, status: 'approved' },
+  { id: 'match-18', source: 'processor-e', target: 'consumer-h', material: '재생 PP', amount: 33, score: 83, roi: 12.5, carbonReduction: 21.9, status: 'active' },
+  { id: 'match-19', source: 'emitter-h', target: 'processor-f', material: '폐PP', amount: 49, score: 86, roi: 13.8, carbonReduction: 32.4, status: 'active' },
+  { id: 'match-20', source: 'processor-f', target: 'consumer-i', material: '재생 PP', amount: 36, score: 89, roi: 15.1, carbonReduction: 26.7, status: 'approved' },
+  { id: 'match-21', source: 'processor-f', target: 'consumer-j', material: '재생 PET', amount: 31, score: 77, roi: 9.8, carbonReduction: 18.5, status: 'pending' },
+  { id: 'match-22', source: 'emitter-i', target: 'processor-g', material: '폐PE', amount: 56, score: 93, roi: 17.3, carbonReduction: 38.9, status: 'approved' },
+  { id: 'match-23', source: 'processor-g', target: 'consumer-k', material: '재생 PE', amount: 42, score: 91, roi: 16.4, carbonReduction: 30.8, status: 'approved' },
+  { id: 'match-24', source: 'processor-g', target: 'consumer-l', material: '재생 PP', amount: 39, score: 85, roi: 13.6, carbonReduction: 25.2, status: 'active' },
 ]
 
 function NetworkMapPage() {
@@ -680,9 +862,9 @@ function NetworkMapPage() {
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <SummaryCard label="연결 기업" value="8개" />
-          <SummaryCard label="승인 조합" value="2건" />
-          <SummaryCard label="예상 감축" value="190.4t" />
+          <SummaryCard label="연결 기업" value="28개" />
+          <SummaryCard label="승인 조합" value="10건" />
+          <SummaryCard label="예상 감축" value="658.6t" />
         </div>
       </header>
 
@@ -883,29 +1065,37 @@ function NetworkMapPage() {
           )}
 
           {viewMode === 'twin3d' && (
-            <DigitalTwinNetwork3D
-              companies={companies}
-              matches={matches}
-              visibleCompanyIds={filteredCompanyIds}
-              selectedCompanyId={selectedCompany?.id}
-              selectedMatchId={selectedMatch?.id}
-              onSelectCompany={(companyId) => {
-                const company = companies.find((item) => item.id === companyId)
-                if (!company) return
-                setSelectedCompany(company)
-                setSelectedMatch(null)
-              }}
-              onSelectMatch={(matchId) => {
-                const match = matches.find((item) => item.id === matchId)
-                if (!match) return
-                setSelectedMatch(match)
-                setSelectedCompany(null)
-              }}
-              onClearSelection={() => {
-                setSelectedCompany(null)
-                setSelectedMatch(null)
-              }}
-            />
+            <Suspense
+              fallback={
+                <div className="flex min-h-180 items-center justify-center bg-slate-950 text-sm font-medium text-cyan-200">
+                  3D 네트워크를 불러오는 중입니다...
+                </div>
+              }
+            >
+              <DigitalTwinNetwork3D
+                companies={companies}
+                matches={matches}
+                visibleCompanyIds={filteredCompanyIds}
+                selectedCompanyId={selectedCompany?.id}
+                selectedMatchId={selectedMatch?.id}
+                onSelectCompany={(companyId) => {
+                  const company = companies.find((item) => item.id === companyId)
+                  if (!company) return
+                  setSelectedCompany(company)
+                  setSelectedMatch(null)
+                }}
+                onSelectMatch={(matchId) => {
+                  const match = matches.find((item) => item.id === matchId)
+                  if (!match) return
+                  setSelectedMatch(match)
+                  setSelectedCompany(null)
+                }}
+                onClearSelection={() => {
+                  setSelectedCompany(null)
+                  setSelectedMatch(null)
+                }}
+              />
+            </Suspense>
           )}
 
           {viewMode === 'map' && (

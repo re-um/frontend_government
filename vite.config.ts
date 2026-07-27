@@ -9,7 +9,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 export default defineConfig({
   vite: {
     optimizeDeps: {
-      exclude: ["react-force-graph-3d", "three", "three-spritetext"],
+      include: ["react-force-graph-3d", "three", "three-spritetext"],
     },
   },
   tanstackStart: {
