@@ -24,6 +24,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { KakaoNetworkMap } from '../components/KakaoNetworkMap'
 import { IndustrialOverview } from '../components/IndustrialOverview'
+import { DigitalTwinNetwork3D } from '../components/DigitalTwinNetwork3D'
 
 export const Route = createFileRoute('/network')({
   component: NetworkMapPage,
@@ -31,7 +32,7 @@ export const Route = createFileRoute('/network')({
 
 type CompanyType = 'emitter' | 'processor' | 'consumer'
 type MatchStatus = 'approved' | 'active' | 'pending'
-type ViewMode = 'graph' | 'overview' | 'map'
+type ViewMode = 'graph' | 'overview' | 'twin3d' | 'map'
 
 interface CompanyDetail {
   id: string
@@ -803,6 +804,14 @@ function NetworkMapPage() {
             </ViewModeButton>
 
             <ViewModeButton
+              active={viewMode === 'twin3d'}
+              onClick={() => setViewMode('twin3d')}
+            >
+              <Network className="h-4 w-4" />
+              3D 네트워크
+            </ViewModeButton>
+
+            <ViewModeButton
               active={viewMode === 'map'}
               onClick={() => setViewMode('map')}
             >
@@ -870,6 +879,32 @@ function NetworkMapPage() {
                 setSelectedCompany(null)
               }}
               onBackToMap={() => setViewMode('map')}
+            />
+          )}
+
+          {viewMode === 'twin3d' && (
+            <DigitalTwinNetwork3D
+              companies={companies}
+              matches={matches}
+              visibleCompanyIds={filteredCompanyIds}
+              selectedCompanyId={selectedCompany?.id}
+              selectedMatchId={selectedMatch?.id}
+              onSelectCompany={(companyId) => {
+                const company = companies.find((item) => item.id === companyId)
+                if (!company) return
+                setSelectedCompany(company)
+                setSelectedMatch(null)
+              }}
+              onSelectMatch={(matchId) => {
+                const match = matches.find((item) => item.id === matchId)
+                if (!match) return
+                setSelectedMatch(match)
+                setSelectedCompany(null)
+              }}
+              onClearSelection={() => {
+                setSelectedCompany(null)
+                setSelectedMatch(null)
+              }}
             />
           )}
 
