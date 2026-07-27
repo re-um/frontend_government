@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { KakaoNetworkMap } from '../components/KakaoNetworkMap'
+import { NetworkGraph3D } from '../components/NetworkGraph3D'
 
 export const Route = createFileRoute('/network')({
   component: NetworkMapPage,
@@ -30,7 +31,7 @@ export const Route = createFileRoute('/network')({
 
 type CompanyType = 'emitter' | 'processor' | 'consumer'
 type MatchStatus = 'approved' | 'active' | 'pending'
-type ViewMode = 'graph' | 'map'
+type ViewMode = 'graph' | '3d' | 'map'
 
 interface CompanyDetail {
   id: string
@@ -800,6 +801,14 @@ function NetworkMapPage() {
             </ViewModeButton>
 
             <ViewModeButton
+              active={viewMode === '3d'}
+              onClick={() => setViewMode('3d')}
+            >
+              <Network className="h-4 w-4" />
+              3D형
+            </ViewModeButton>
+
+            <ViewModeButton
               active={viewMode === 'map'}
               onClick={() => setViewMode('map')}
             >
@@ -842,6 +851,34 @@ function NetworkMapPage() {
                 확인할 수 있습니다.
               </div>
             </>
+          )}
+
+          {viewMode === '3d' && (
+            <NetworkGraph3D
+              companies={companies}
+              matches={matches}
+              visibleCompanyIds={filteredCompanyIds}
+              selectedCompanyId={selectedCompany?.id}
+              selectedMatchId={selectedMatch?.id}
+              onSelectCompany={(companyId) => {
+                const company = companies.find(
+                  (item) => item.id === companyId,
+                )
+                if (!company) return
+                setSelectedCompany(company)
+                setSelectedMatch(null)
+              }}
+              onSelectMatch={(matchId) => {
+                const match = matches.find((item) => item.id === matchId)
+                if (!match) return
+                setSelectedMatch(match)
+                setSelectedCompany(null)
+              }}
+              onClearSelection={() => {
+                setSelectedCompany(null)
+                setSelectedMatch(null)
+              }}
+            />
           )}
 
           {viewMode === 'map' && (
