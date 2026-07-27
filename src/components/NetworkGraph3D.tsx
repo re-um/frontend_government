@@ -4,6 +4,15 @@ import ForceGraph3D, {
   type NodeObject,
 } from 'react-force-graph-3d'
 import SpriteText from 'three-spritetext'
+import {
+  AdditiveBlending,
+  Color,
+  Group,
+  Mesh,
+  MeshPhysicalMaterial,
+  SphereGeometry,
+  TorusGeometry,
+} from 'three'
 import { Maximize2, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -45,9 +54,9 @@ interface GraphLink {
 }
 
 const nodeColors: Record<CompanyType, string> = {
-  emitter: '#3b82f6',
-  processor: '#f97316',
-  consumer: '#22c55e',
+  emitter: '#2878ff',
+  processor: '#ff7a18',
+  consumer: '#00b875',
 }
 
 const linkColors: Record<MatchStatus, string> = {
@@ -139,6 +148,99 @@ export function NetworkGraph3D({
     )
   }
 
+  const createNodeObject = (node: NodeObject<GraphNode>) => {
+    const group = new Group()
+    const isSelected = node.id === selectedCompanyId
+    const isDimmed = Boolean(
+      selectedCompanyId && !isConnectedToSelection(String(node.id)),
+    )
+    const radius = 3.9 + Math.sqrt(node.amount) * 0.32
+    const baseColor = isDimmed
+      ? '#cbd5e1'
+      : isSelected
+        ? '#84cc16'
+        : node.color
+
+    const glow = new Mesh(
+      new SphereGeometry(radius * 1.28, 28, 28),
+      new MeshPhysicalMaterial({
+        color: new Color(baseColor),
+        transparent: true,
+        opacity: isDimmed ? 0.05 : isSelected ? 0.18 : 0.1,
+        roughness: 0.15,
+        metalness: 0.05,
+        emissive: new Color(baseColor),
+        emissiveIntensity: isSelected ? 1.2 : 0.65,
+        blending: AdditiveBlending,
+        depthWrite: false,
+      }),
+    )
+    group.add(glow)
+
+    const core = new Mesh(
+      new SphereGeometry(radius, 36, 36),
+      new MeshPhysicalMaterial({
+        color: new Color(baseColor),
+        roughness: 0.16,
+        metalness: 0.08,
+        clearcoat: 1,
+        clearcoatRoughness: 0.12,
+        transmission: isDimmed ? 0.08 : 0.16,
+        thickness: 1.2,
+        transparent: true,
+        opacity: isDimmed ? 0.32 : 0.96,
+        emissive: new Color(baseColor),
+        emissiveIntensity: isSelected ? 0.38 : 0.12,
+      }),
+    )
+    group.add(core)
+
+    if (!isDimmed) {
+      const orbitMaterial = new MeshPhysicalMaterial({
+        color: new Color(isSelected ? '#65a30d' : baseColor),
+        transparent: true,
+        opacity: isSelected ? 0.72 : 0.34,
+        roughness: 0.2,
+        emissive: new Color(baseColor),
+        emissiveIntensity: 0.45,
+      })
+      const orbit = new Mesh(
+        new TorusGeometry(radius * 1.48, 0.12, 10, 48),
+        orbitMaterial,
+      )
+      orbit.rotation.x = Math.PI * 0.32
+      orbit.rotation.y = Math.PI * 0.18
+      group.add(orbit)
+
+      if (node.type === 'processor' || isSelected) {
+        const secondOrbit = new Mesh(
+          new TorusGeometry(radius * 1.67, 0.075, 8, 48),
+          orbitMaterial.clone(),
+        )
+        secondOrbit.rotation.x = Math.PI * 0.68
+        secondOrbit.rotation.z = Math.PI * 0.22
+        group.add(secondOrbit)
+      }
+    }
+
+    const label = new SpriteText(node.name)
+    label.color = isDimmed
+      ? '#94a3b8'
+      : isSelected
+        ? '#365314'
+        : '#0f172a'
+    label.textHeight = isSelected ? 4.3 : 3.5
+    label.position.y = radius + 7
+    label.backgroundColor = isSelected
+      ? 'rgba(236, 252, 203, 0.96)'
+      : 'rgba(255, 255, 255, 0.90)'
+    label.padding = 2.5
+    label.borderRadius = 5
+    group.add(label)
+
+    return group
+  }
+
   return (
     <div
       ref={containerRef}
@@ -154,31 +256,7 @@ export function NetworkGraph3D({
         nodeLabel={(node) =>
           `<b>${node.name}</b><br/>월 취급량 ${node.amount}톤`
         }
-        nodeVal={(node) => 4 + Math.sqrt(node.amount) * 0.8}
-        nodeColor={(node) =>
-          selectedCompanyId && !isConnectedToSelection(node.id)
-            ? '#cbd5e1'
-            : node.id === selectedCompanyId
-              ? '#a3e635'
-              : node.color
-        }
-        nodeOpacity={0.94}
-        nodeResolution={24}
-        nodeThreeObjectExtend
-        nodeThreeObject={(node) => {
-          const label = new SpriteText(node.name)
-          label.color =
-            node.id === selectedCompanyId ? '#365314' : '#0f172a'
-          label.textHeight = node.id === selectedCompanyId ? 4.5 : 3.8
-          label.position.y = 10.5
-          label.backgroundColor =
-            node.id === selectedCompanyId
-              ? 'rgba(236, 252, 203, 0.96)'
-              : 'rgba(255, 255, 255, 0.92)'
-          label.padding = 2.5
-          label.borderRadius = 4
-          return label
-        }}
+        nodeThreeObject={createNodeObject}
         linkLabel={(link) =>
           `${link.material} · ${link.amount}톤`
         }
@@ -193,13 +271,26 @@ export function NetworkGraph3D({
             : Math.max(1.2, Math.min(link.amount / 15, 3.5))
         }
         linkOpacity={0.66}
+        linkCurvature={(link) =>
+          link.status === 'pending' ? 0.05 : link.status === 'active' ? 0.12 : 0.18
+        }
         linkDirectionalArrowLength={4}
         linkDirectionalArrowRelPos={0.92}
         linkDirectionalParticles={(link) =>
-          link.status === 'active' ? 3 : link.status === 'approved' ? 1 : 0
+          link.id === selectedMatchId
+            ? 7
+            : link.status === 'active'
+              ? 4
+              : link.status === 'approved'
+                ? 2
+                : 0
         }
-        linkDirectionalParticleWidth={2.8}
-        linkDirectionalParticleSpeed={0.004}
+        linkDirectionalParticleWidth={(link) =>
+          link.id === selectedMatchId ? 4 : 2.6
+        }
+        linkDirectionalParticleSpeed={(link) =>
+          link.id === selectedMatchId ? 0.009 : 0.0045
+        }
         cooldownTicks={120}
         d3AlphaDecay={0.025}
         d3VelocityDecay={0.28}
@@ -211,16 +302,17 @@ export function NetworkGraph3D({
         onEngineStop={() => graphRef.current?.zoomToFit(500, 70)}
       />
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-24 bg-gradient-to-b from-slate-50/90 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_45%_45%,transparent_0%,rgba(241,245,249,0.2)_52%,rgba(226,232,240,0.65)_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-28 bg-gradient-to-b from-white/90 to-transparent" />
 
       <div className="absolute left-3 top-3 z-10 hidden rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-md sm:block">
         <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
           Network legend
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600">
-          <LegendItem color="#3b82f6" label="배출기업" />
-          <LegendItem color="#f97316" label="중간처리기업" />
-          <LegendItem color="#22c55e" label="수요기업" />
+          <LegendItem color="#2878ff" label="배출기업" />
+          <LegendItem color="#ff7a18" label="중간처리기업" />
+          <LegendItem color="#00b875" label="수요기업" />
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-2 text-[11px] text-slate-500">
           <LineLegend color="#7c3aed" label="최종 승인" />
