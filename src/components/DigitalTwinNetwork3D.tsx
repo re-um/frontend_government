@@ -245,9 +245,9 @@ export function DigitalTwinNetwork3D({
 
     // 전국의 여러 네트워크가 화면 가장자리로 흩어지지 않도록
     // 노드의 반발력과 연결 거리를 줄이고 중심으로 모으는 힘을 높인다.
-    graphRef.current?.d3Force('charge')?.strength(-38)
-    graphRef.current?.d3Force('link')?.distance(42)
-    graphRef.current?.d3Force('center')?.strength(0.18)
+    graphRef.current?.d3Force('charge')?.strength(-18)
+    graphRef.current?.d3Force('link')?.distance(28)
+    graphRef.current?.d3Force('center')?.strength(0.48)
 
     ;[105, 155, 215, 285, 365].forEach((radius, index) => {
       const points: Vector3[] = []
@@ -338,7 +338,7 @@ export function DigitalTwinNetwork3D({
           initializeScene()
           if (!initialFitDoneRef.current) {
             initialFitDoneRef.current = true
-            graphRef.current?.zoomToFit(600, 42)
+            graphRef.current?.zoomToFit(600, 28)
           }
         }}
       />
@@ -348,7 +348,7 @@ export function DigitalTwinNetwork3D({
       <div className="absolute bottom-4 right-4 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-950/75 p-1 shadow-2xl backdrop-blur-xl">
         <TwinButton
           label="전체 보기"
-          onClick={() => graphRef.current?.zoomToFit(600, 42)}
+          onClick={() => graphRef.current?.zoomToFit(600, 28)}
         >
           <Maximize2 className="h-4 w-4" />
         </TwinButton>
