@@ -7,6 +7,7 @@ import {
   AdditiveBlending,
   BoxGeometry,
   BufferGeometry,
+  CanvasTexture,
   Color,
   EdgesGeometry,
   FogExp2,
@@ -19,6 +20,8 @@ import {
   MeshPhysicalMaterial,
   RingGeometry,
   SphereGeometry,
+  Sprite,
+  SpriteMaterial,
   Vector3,
 } from 'three'
 import { Maximize2, Pause, Play, RotateCcw } from 'lucide-react'
@@ -93,6 +96,7 @@ export function DigitalTwinNetwork3D({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const graphRef =
     useRef<ForceGraphMethods<TwinNode, TwinLink> | undefined>(undefined)
+  const initialFitDoneRef = useRef(false)
   const [size, setSize] = useState({ width: 800, height: 680 })
   const [flowing, setFlowing] = useState(true)
 
@@ -213,11 +217,10 @@ export function DigitalTwinNetwork3D({
       edges.rotation.copy(cube.rotation)
       group.add(edges)
 
-      const symbol = new SpriteText(node.type === 'emitter' ? '배' : '수')
-      symbol.color = color
-      symbol.textHeight = 3.5
-      symbol.position.z = 4.4
-      group.add(symbol)
+      const roleIcon = createRoleIcon(node.type, color)
+      roleIcon.position.z = 4.5
+      roleIcon.scale.set(5.2, 5.2, 1)
+      group.add(roleIcon)
     }
 
     const label = new SpriteText(node.name)
@@ -327,7 +330,10 @@ export function DigitalTwinNetwork3D({
         onEngineTick={initializeScene}
         onEngineStop={() => {
           initializeScene()
-          graphRef.current?.zoomToFit(600, 75)
+          if (!initialFitDoneRef.current) {
+            initialFitDoneRef.current = true
+            graphRef.current?.zoomToFit(600, 75)
+          }
         }}
       />
 
@@ -358,6 +364,75 @@ export function DigitalTwinNetwork3D({
         드래그 회전 · 휠 확대 · 플랫폼 선택 시 카메라 이동
       </div>
     </div>
+  )
+}
+
+function createRoleIcon(type: CompanyType, color: string) {
+  const canvas = document.createElement('canvas')
+  canvas.width = 160
+  canvas.height = 160
+  const context = canvas.getContext('2d')
+
+  if (context) {
+    context.clearRect(0, 0, 160, 160)
+    context.strokeStyle = color
+    context.fillStyle = color
+    context.lineWidth = 8
+    context.lineCap = 'round'
+    context.lineJoin = 'round'
+    context.shadowColor = color
+    context.shadowBlur = 18
+
+    if (type === 'emitter') {
+      context.beginPath()
+      context.moveTo(30, 120)
+      context.lineTo(30, 70)
+      context.lineTo(63, 88)
+      context.lineTo(63, 65)
+      context.lineTo(96, 84)
+      context.lineTo(96, 42)
+      context.lineTo(121, 42)
+      context.lineTo(121, 120)
+      context.closePath()
+      context.stroke()
+      context.fillRect(48, 101, 15, 19)
+      context.fillRect(78, 101, 15, 19)
+    } else {
+      context.beginPath()
+      context.moveTo(80, 25)
+      context.lineTo(127, 51)
+      context.lineTo(127, 105)
+      context.lineTo(80, 133)
+      context.lineTo(33, 105)
+      context.lineTo(33, 51)
+      context.closePath()
+      context.stroke()
+      context.beginPath()
+      context.moveTo(33, 51)
+      context.lineTo(80, 78)
+      context.lineTo(127, 51)
+      context.moveTo(80, 78)
+      context.lineTo(80, 133)
+      context.stroke()
+      context.beginPath()
+      context.arc(80, 78, 18, -0.8, 3.7)
+      context.stroke()
+      context.beginPath()
+      context.moveTo(61, 65)
+      context.lineTo(59, 86)
+      context.lineTo(77, 78)
+      context.fill()
+    }
+  }
+
+  const texture = new CanvasTexture(canvas)
+  texture.needsUpdate = true
+  return new Sprite(
+    new SpriteMaterial({
+      map: texture,
+      transparent: true,
+      depthTest: false,
+    }),
   )
 }
 
