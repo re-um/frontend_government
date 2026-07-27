@@ -4,15 +4,22 @@ import ForceGraph3D, {
 } from 'react-force-graph-3d'
 import SpriteText from 'three-spritetext'
 import {
+  AdditiveBlending,
   BoxGeometry,
+  BufferGeometry,
   Color,
-  CylinderGeometry,
+  EdgesGeometry,
   FogExp2,
-  GridHelper,
   Group,
+  LineBasicMaterial,
+  LineLoop,
+  LineSegments,
   Mesh,
+  MeshBasicMaterial,
   MeshPhysicalMaterial,
   RingGeometry,
+  SphereGeometry,
+  Vector3,
 } from 'three'
 import { Maximize2, Pause, Play, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -125,84 +132,101 @@ export function DigitalTwinNetwork3D({
     const group = new Group()
     const selected = node.id === selectedCompanyId
     const color = selected ? '#bef264' : node.color
-    const material = new MeshPhysicalMaterial({
-      color: new Color(color),
-      metalness: 0.3,
-      roughness: 0.22,
-      clearcoat: 1,
-      emissive: new Color(color),
-      emissiveIntensity: selected ? 0.55 : 0.16,
-    })
-    const darkMaterial = new MeshPhysicalMaterial({
-      color: '#102033',
-      metalness: 0.65,
-      roughness: 0.28,
-      clearcoat: 0.8,
-    })
+    if (node.type === 'processor') {
+      const glow = new Mesh(
+        new SphereGeometry(selected ? 12.5 : 11, 36, 36),
+        new MeshBasicMaterial({
+          color,
+          transparent: true,
+          opacity: selected ? 0.14 : 0.09,
+          blending: AdditiveBlending,
+          depthWrite: false,
+        }),
+      )
+      group.add(glow)
 
-    const platform = new Mesh(
-      new CylinderGeometry(8.5, 9.2, 1.5, 6),
-      darkMaterial,
-    )
-    platform.position.y = -1
-    group.add(platform)
-
-    const halo = new Mesh(
-      new RingGeometry(9.2, selected ? 10.4 : 9.65, 6),
-      new MeshPhysicalMaterial({
-        color,
-        emissive: color,
-        emissiveIntensity: 1,
-        transparent: true,
-        opacity: selected ? 0.9 : 0.45,
-        side: 2,
-      }),
-    )
-    halo.rotation.x = -Math.PI / 2
-    halo.position.y = -0.18
-    group.add(halo)
-
-    if (node.type === 'emitter') {
-      const factory = new Mesh(new BoxGeometry(9, 3.6, 6), material)
-      factory.position.y = 1.5
-      group.add(factory)
-      ;[-2.5, 2.5].forEach((x) => {
-        const chimney = new Mesh(
-          new CylinderGeometry(0.65, 0.8, 6, 12),
-          darkMaterial,
-        )
-        chimney.position.set(x, 5.6, 0.8)
-        group.add(chimney)
-      })
-    } else if (node.type === 'processor') {
       const core = new Mesh(
-        new CylinderGeometry(4.2, 5.3, 5.5, 6),
-        material,
+        new SphereGeometry(7.7, 40, 40),
+        new MeshPhysicalMaterial({
+          color: new Color(color),
+          roughness: 0.08,
+          metalness: 0.12,
+          clearcoat: 1,
+          transmission: 0.38,
+          thickness: 2,
+          transparent: true,
+          opacity: 0.9,
+          emissive: new Color(color),
+          emissiveIntensity: selected ? 0.8 : 0.42,
+        }),
       )
-      core.position.y = 2.1
       group.add(core)
-      const upper = new Mesh(
-        new CylinderGeometry(2.6, 3.5, 3.2, 6),
-        darkMaterial,
-      )
-      upper.position.y = 6.3
-      group.add(upper)
+
+      ;[10, 12.4].forEach((radius, index) => {
+        const orbit = new Mesh(
+          new RingGeometry(radius, radius + (index ? 0.18 : 0.28), 64),
+          new MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity: index ? 0.32 : 0.68,
+            side: 2,
+            blending: AdditiveBlending,
+          }),
+        )
+        orbit.rotation.x = index ? Math.PI * 0.62 : Math.PI * 0.42
+        orbit.rotation.y = index ? Math.PI * 0.2 : -Math.PI * 0.12
+        group.add(orbit)
+      })
+
+      const symbol = new SpriteText('♻')
+      symbol.color = '#ffffff'
+      symbol.textHeight = 7
+      symbol.position.z = 8
+      group.add(symbol)
     } else {
-      const building = new Mesh(new BoxGeometry(8.5, 4.5, 6.5), material)
-      building.position.y = 2
-      group.add(building)
-      const roof = new Mesh(new BoxGeometry(6.5, 0.55, 7.4), darkMaterial)
-      roof.position.y = 4.5
-      group.add(roof)
+      const cubeGeometry = new BoxGeometry(7.2, 7.2, 7.2)
+      const cube = new Mesh(
+        cubeGeometry,
+        new MeshPhysicalMaterial({
+          color: '#0b1d35',
+          metalness: 0.55,
+          roughness: 0.18,
+          clearcoat: 1,
+          transparent: true,
+          opacity: selected ? 1 : 0.94,
+          emissive: new Color(color),
+          emissiveIntensity: selected ? 0.38 : 0.15,
+        }),
+      )
+      cube.rotation.set(0.16, 0.38, 0)
+      group.add(cube)
+
+      const edges = new LineSegments(
+        new EdgesGeometry(cubeGeometry),
+        new LineBasicMaterial({
+          color,
+          transparent: true,
+          opacity: selected ? 1 : 0.78,
+          blending: AdditiveBlending,
+        }),
+      )
+      edges.rotation.copy(cube.rotation)
+      group.add(edges)
+
+      const symbol = new SpriteText(node.type === 'emitter' ? '배' : '수')
+      symbol.color = color
+      symbol.textHeight = 3.5
+      symbol.position.z = 4.4
+      group.add(symbol)
     }
 
     const label = new SpriteText(node.name)
     label.color = selected ? '#ecfccb' : '#e2e8f0'
-    label.textHeight = selected ? 3.6 : 3
-    label.position.y = 13
+    label.textHeight = selected ? 3.5 : node.type === 'processor' ? 3.2 : 2.7
+    label.position.y = node.type === 'processor' ? -14 : -8.5
     label.backgroundColor = selected
       ? 'rgba(54, 83, 20, 0.92)'
-      : 'rgba(8, 18, 34, 0.88)'
+      : 'rgba(3, 10, 24, 0.78)'
     label.padding = 2.2
     label.borderRadius = 5
     group.add(label)
@@ -214,12 +238,32 @@ export function DigitalTwinNetwork3D({
     const scene = graphRef.current?.scene()
     if (!scene || scene.userData.twinInitialized) return
     scene.userData.twinInitialized = true
-    scene.fog = new FogExp2('#07111f', 0.0013)
-    const grid = new GridHelper(900, 36, '#164e63', '#172554')
-    grid.position.y = -105
-    grid.material.transparent = true
-    grid.material.opacity = 0.18
-    scene.add(grid)
+    scene.fog = new FogExp2('#030712', 0.001)
+
+    ;[105, 155, 215, 285, 365].forEach((radius, index) => {
+      const points: Vector3[] = []
+      for (let step = 0; step < 128; step += 1) {
+        const angle = (step / 128) * Math.PI * 2
+        points.push(
+          new Vector3(
+            Math.cos(angle) * radius,
+            Math.sin(angle) * radius * 0.62,
+            -150 - index * 5,
+          ),
+        )
+      }
+      const geometry = new BufferGeometry().setFromPoints(points)
+      const orbit = new LineLoop(
+        geometry,
+        new LineBasicMaterial({
+          color: index % 2 ? '#1d4ed8' : '#0891b2',
+          transparent: true,
+          opacity: 0.12,
+          blending: AdditiveBlending,
+        }),
+      )
+      scene.add(orbit)
+    })
   }
 
   const focusNode = (node: NodeObject<TwinNode>) => {
@@ -241,14 +285,14 @@ export function DigitalTwinNetwork3D({
   return (
     <div
       ref={containerRef}
-      className="relative h-full min-h-140 overflow-hidden bg-[#07111f] sm:min-h-180"
+      className="relative h-full min-h-140 overflow-hidden bg-[#030712] sm:min-h-180"
     >
       <ForceGraph3D<TwinNode, TwinLink>
         ref={graphRef}
         width={size.width}
         height={size.height}
         graphData={graphData}
-        backgroundColor="#07111f"
+        backgroundColor="#030712"
         showNavInfo={false}
         nodeThreeObject={createPlatform}
         nodeLabel={(node) =>
@@ -259,10 +303,10 @@ export function DigitalTwinNetwork3D({
           selectedMatchId && link.id !== selectedMatchId ? '#1e293b' : link.color
         }
         linkWidth={(link) =>
-          link.id === selectedMatchId ? 4 : Math.max(1, link.amount / 22)
+          link.id === selectedMatchId ? 3.2 : Math.max(0.7, link.amount / 32)
         }
-        linkOpacity={0.72}
-        linkCurvature={0.12}
+        linkOpacity={0.64}
+        linkCurvature={0.18}
         linkDirectionalArrowLength={3}
         linkDirectionalArrowRelPos={0.86}
         linkDirectionalParticles={(link) =>
@@ -287,7 +331,7 @@ export function DigitalTwinNetwork3D({
         }}
       />
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(14,116,144,0.12),transparent_48%,rgba(2,6,23,0.6)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(30,64,175,0.18),transparent_42%,rgba(2,6,23,0.72)_100%)]" />
 
       <div className="absolute bottom-4 right-4 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-950/75 p-1 shadow-2xl backdrop-blur-xl">
         <TwinButton
