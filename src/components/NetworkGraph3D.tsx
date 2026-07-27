@@ -11,7 +11,6 @@ import {
   Mesh,
   MeshPhysicalMaterial,
   SphereGeometry,
-  TorusGeometry,
 } from 'three'
 import { Maximize2, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -154,7 +153,10 @@ export function NetworkGraph3D({
     const isDimmed = Boolean(
       selectedCompanyId && !isConnectedToSelection(String(node.id)),
     )
-    const radius = 3.9 + Math.sqrt(node.amount) * 0.32
+    const radius =
+      node.type === 'processor'
+        ? 5.1 + Math.sqrt(node.amount) * 0.12
+        : 3.7 + Math.sqrt(node.amount) * 0.1
     const baseColor = isDimmed
       ? '#cbd5e1'
       : isSelected
@@ -162,11 +164,11 @@ export function NetworkGraph3D({
         : node.color
 
     const glow = new Mesh(
-      new SphereGeometry(radius * 1.28, 28, 28),
+      new SphereGeometry(radius * 1.48, 28, 28),
       new MeshPhysicalMaterial({
         color: new Color(baseColor),
         transparent: true,
-        opacity: isDimmed ? 0.05 : isSelected ? 0.18 : 0.1,
+        opacity: isDimmed ? 0.025 : isSelected ? 0.14 : 0.055,
         roughness: 0.15,
         metalness: 0.05,
         emissive: new Color(baseColor),
@@ -181,62 +183,51 @@ export function NetworkGraph3D({
       new SphereGeometry(radius, 36, 36),
       new MeshPhysicalMaterial({
         color: new Color(baseColor),
-        roughness: 0.16,
-        metalness: 0.08,
+        roughness: 0.12,
+        metalness: 0.12,
         clearcoat: 1,
-        clearcoatRoughness: 0.12,
-        transmission: isDimmed ? 0.08 : 0.16,
-        thickness: 1.2,
+        clearcoatRoughness: 0.08,
+        transmission: isDimmed ? 0.1 : 0.22,
+        thickness: 1.5,
         transparent: true,
-        opacity: isDimmed ? 0.32 : 0.96,
+        opacity: isDimmed ? 0.25 : 0.94,
         emissive: new Color(baseColor),
-        emissiveIntensity: isSelected ? 0.38 : 0.12,
+        emissiveIntensity: isSelected ? 0.42 : 0.1,
       }),
     )
     group.add(core)
 
     if (!isDimmed) {
-      const orbitMaterial = new MeshPhysicalMaterial({
+      const shell = new Mesh(
+        new SphereGeometry(radius * 1.3, 20, 14),
+        new MeshPhysicalMaterial({
         color: new Color(isSelected ? '#65a30d' : baseColor),
         transparent: true,
-        opacity: isSelected ? 0.72 : 0.34,
+          opacity: isSelected ? 0.28 : 0.13,
         roughness: 0.2,
         emissive: new Color(baseColor),
-        emissiveIntensity: 0.45,
-      })
-      const orbit = new Mesh(
-        new TorusGeometry(radius * 1.48, 0.12, 10, 48),
-        orbitMaterial,
+          emissiveIntensity: 0.25,
+          wireframe: true,
+          depthWrite: false,
+        }),
       )
-      orbit.rotation.x = Math.PI * 0.32
-      orbit.rotation.y = Math.PI * 0.18
-      group.add(orbit)
-
-      if (node.type === 'processor' || isSelected) {
-        const secondOrbit = new Mesh(
-          new TorusGeometry(radius * 1.67, 0.075, 8, 48),
-          orbitMaterial.clone(),
-        )
-        secondOrbit.rotation.x = Math.PI * 0.68
-        secondOrbit.rotation.z = Math.PI * 0.22
-        group.add(secondOrbit)
-      }
+      shell.rotation.x = Math.PI * 0.12
+      shell.rotation.y = Math.PI * 0.2
+      group.add(shell)
     }
 
-    const label = new SpriteText(node.name)
-    label.color = isDimmed
-      ? '#94a3b8'
-      : isSelected
-        ? '#365314'
-        : '#0f172a'
-    label.textHeight = isSelected ? 4.3 : 3.5
-    label.position.y = radius + 7
-    label.backgroundColor = isSelected
-      ? 'rgba(236, 252, 203, 0.96)'
-      : 'rgba(255, 255, 255, 0.90)'
-    label.padding = 2.5
-    label.borderRadius = 5
-    group.add(label)
+    if (node.type === 'processor' || isSelected) {
+      const label = new SpriteText(node.name)
+      label.color = isSelected ? '#365314' : '#334155'
+      label.textHeight = isSelected ? 3.8 : 3.15
+      label.position.y = -(radius + 5.5)
+      label.backgroundColor = isSelected
+        ? 'rgba(236, 252, 203, 0.96)'
+        : 'rgba(255, 255, 255, 0.88)'
+      label.padding = 2.2
+      label.borderRadius = 5
+      group.add(label)
+    }
 
     return group
   }
@@ -267,26 +258,26 @@ export function NetworkGraph3D({
         }
         linkWidth={(link) =>
           link.id === selectedMatchId
-            ? 5
-            : Math.max(1.2, Math.min(link.amount / 15, 3.5))
+            ? 3.2
+            : Math.max(0.65, Math.min(link.amount / 32, 1.65))
         }
-        linkOpacity={0.66}
+        linkOpacity={0.5}
         linkCurvature={(link) =>
-          link.status === 'pending' ? 0.05 : link.status === 'active' ? 0.12 : 0.18
+          link.status === 'pending' ? 0.025 : link.status === 'active' ? 0.07 : 0.1
         }
-        linkDirectionalArrowLength={4}
-        linkDirectionalArrowRelPos={0.92}
+        linkDirectionalArrowLength={2.4}
+        linkDirectionalArrowRelPos={0.88}
         linkDirectionalParticles={(link) =>
           link.id === selectedMatchId
             ? 7
             : link.status === 'active'
               ? 4
               : link.status === 'approved'
-                ? 2
+                ? 1
                 : 0
         }
         linkDirectionalParticleWidth={(link) =>
-          link.id === selectedMatchId ? 4 : 2.6
+          link.id === selectedMatchId ? 3.2 : 2
         }
         linkDirectionalParticleSpeed={(link) =>
           link.id === selectedMatchId ? 0.009 : 0.0045
