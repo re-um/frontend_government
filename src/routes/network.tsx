@@ -1135,12 +1135,6 @@ function CompanyPanel({
         <DetailRow label="최근 연결일" value="2026.07.21" />
       </DetailSection>
 
-      <button
-        type="button"
-        className="mt-5 h-11 w-full rounded-lg bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800"
-      >
-        기업 상세 보기
-      </button>
     </div>
   )
 }
