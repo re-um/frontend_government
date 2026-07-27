@@ -6,15 +6,11 @@ import ForceGraph3D, {
 import SpriteText from 'three-spritetext'
 import {
   AdditiveBlending,
-  BufferGeometry,
   Color,
-  Float32BufferAttribute,
   FogExp2,
   Group,
   Mesh,
   MeshPhysicalMaterial,
-  Points,
-  PointsMaterial,
   SphereGeometry,
 } from 'three'
 import { Maximize2, RotateCcw } from 'lucide-react'
@@ -242,57 +238,20 @@ export function NetworkGraph3D({
     if (!scene || scene.userData.spaceInitialized) return
 
     scene.userData.spaceInitialized = true
-    scene.fog = new FogExp2('#030712', 0.0012)
-
-    const positions: number[] = []
-    let seed = 314159
-    const random = () => {
-      seed = (seed * 16807) % 2147483647
-      return (seed - 1) / 2147483646
-    }
-
-    for (let index = 0; index < 950; index += 1) {
-      const radius = 380 + random() * 720
-      const theta = random() * Math.PI * 2
-      const phi = Math.acos(2 * random() - 1)
-      positions.push(
-        radius * Math.sin(phi) * Math.cos(theta),
-        radius * Math.sin(phi) * Math.sin(theta),
-        radius * Math.cos(phi),
-      )
-    }
-
-    const geometry = new BufferGeometry()
-    geometry.setAttribute(
-      'position',
-      new Float32BufferAttribute(positions, 3),
-    )
-    const stars = new Points(
-      geometry,
-      new PointsMaterial({
-        color: '#dbeafe',
-        size: 1.8,
-        transparent: true,
-        opacity: 0.72,
-        sizeAttenuation: true,
-        depthWrite: false,
-      }),
-    )
-    stars.name = 'ai-space-stars'
-    scene.add(stars)
+    scene.fog = new FogExp2('#07101e', 0.0014)
   }
 
   return (
     <div
       ref={containerRef}
-      className="relative h-full min-h-130 w-full overflow-hidden bg-[#030712] sm:min-h-180"
+      className="relative h-full min-h-130 w-full overflow-hidden bg-[#07101e] sm:min-h-180"
     >
       <ForceGraph3D<GraphNode, GraphLink>
         ref={graphRef}
         width={size.width}
         height={size.height}
         graphData={graphData}
-        backgroundColor="#030712"
+        backgroundColor="#07101e"
         showNavInfo={false}
         nodeLabel={(node) =>
           `<b>${node.name}</b><br/>월 취급량 ${node.amount}톤`
@@ -347,14 +306,15 @@ export function NetworkGraph3D({
         }}
       />
 
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_48%_46%,rgba(30,64,175,0.08)_0%,rgba(15,23,42,0.08)_42%,rgba(2,6,23,0.58)_100%)]" />
-      <div className="pointer-events-none absolute -left-32 top-1/4 z-[1] h-80 w-80 rounded-full bg-cyan-500/5 blur-3xl" />
-      <div className="pointer-events-none absolute -right-32 bottom-1/4 z-[1] h-96 w-96 rounded-full bg-violet-600/8 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_52%_42%,rgba(37,99,235,0.12)_0%,rgba(8,18,34,0.2)_38%,rgba(3,9,19,0.72)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 z-[1] opacity-[0.055] [background-image:linear-gradient(rgba(148,163,184,0.8)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.8)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:radial-gradient(circle_at_center,black,transparent_82%)]" />
+      <div className="pointer-events-none absolute -left-24 top-[38%] z-[1] h-64 w-[34rem] -rotate-12 rounded-full bg-cyan-500/6 blur-[90px]" />
+      <div className="pointer-events-none absolute -right-24 top-[18%] z-[1] h-64 w-[32rem] rotate-12 rounded-full bg-indigo-500/8 blur-[100px]" />
 
-      <div className="absolute left-3 top-3 z-10 hidden rounded-2xl border border-white/10 bg-slate-950/65 px-4 py-3 shadow-2xl shadow-blue-950/30 backdrop-blur-xl sm:block">
+      <div className="absolute bottom-4 left-4 z-10 hidden rounded-2xl border border-white/[0.08] bg-[#0b1526]/80 px-4 py-3 shadow-[0_20px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:block">
         <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-300/70">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]" />
-          AI Network Live
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]" />
+          Network Intelligence
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-300">
           <LegendItem color="#2878ff" label="배출기업" />
@@ -368,7 +328,7 @@ export function NetworkGraph3D({
         </div>
       </div>
 
-      <div className="absolute right-3 top-3 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-950/65 p-1 shadow-2xl backdrop-blur-xl">
+      <div className="absolute right-3 top-3 z-10 flex gap-1 rounded-xl border border-white/[0.08] bg-[#0b1526]/80 p-1 shadow-[0_16px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl">
         <button
           type="button"
           title="전체 보기"
@@ -387,7 +347,7 @@ export function NetworkGraph3D({
         </button>
       </div>
 
-      <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 w-max max-w-[calc(100%-24px)] -translate-x-1/2 rounded-full border border-white/10 bg-slate-950/65 px-4 py-2 text-center text-[11px] font-medium text-slate-400 shadow-2xl backdrop-blur-xl sm:text-xs">
+      <div className="pointer-events-none absolute bottom-4 right-4 z-10 hidden rounded-full border border-white/[0.08] bg-[#0b1526]/80 px-4 py-2 text-center text-[11px] font-medium text-slate-400 shadow-lg backdrop-blur-xl lg:block">
         드래그로 회전 · 휠/핀치로 확대 · 노드를 잡아 위치 이동
       </div>
     </div>
