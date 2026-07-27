@@ -23,7 +23,6 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { KakaoNetworkMap } from '../components/KakaoNetworkMap'
-import { NetworkGraph3D } from '../components/NetworkGraph3D'
 import { IndustrialOverview } from '../components/IndustrialOverview'
 
 export const Route = createFileRoute('/network')({
@@ -32,7 +31,7 @@ export const Route = createFileRoute('/network')({
 
 type CompanyType = 'emitter' | 'processor' | 'consumer'
 type MatchStatus = 'approved' | 'active' | 'pending'
-type ViewMode = 'graph' | 'overview' | '3d' | 'map'
+type ViewMode = 'graph' | 'overview' | 'map'
 
 interface CompanyDetail {
   id: string
@@ -804,14 +803,6 @@ function NetworkMapPage() {
             </ViewModeButton>
 
             <ViewModeButton
-              active={viewMode === '3d'}
-              onClick={() => setViewMode('3d')}
-            >
-              <Network className="h-4 w-4" />
-              3D형
-            </ViewModeButton>
-
-            <ViewModeButton
               active={viewMode === 'map'}
               onClick={() => setViewMode('map')}
             >
@@ -879,34 +870,6 @@ function NetworkMapPage() {
                 setSelectedCompany(null)
               }}
               onBackToMap={() => setViewMode('map')}
-            />
-          )}
-
-          {viewMode === '3d' && (
-            <NetworkGraph3D
-              companies={companies}
-              matches={matches}
-              visibleCompanyIds={filteredCompanyIds}
-              selectedCompanyId={selectedCompany?.id}
-              selectedMatchId={selectedMatch?.id}
-              onSelectCompany={(companyId) => {
-                const company = companies.find(
-                  (item) => item.id === companyId,
-                )
-                if (!company) return
-                setSelectedCompany(company)
-                setSelectedMatch(null)
-              }}
-              onSelectMatch={(matchId) => {
-                const match = matches.find((item) => item.id === matchId)
-                if (!match) return
-                setSelectedMatch(match)
-                setSelectedCompany(null)
-              }}
-              onClearSelection={() => {
-                setSelectedCompany(null)
-                setSelectedMatch(null)
-              }}
             />
           )}
 
