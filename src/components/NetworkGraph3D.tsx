@@ -45,14 +45,14 @@ interface GraphLink {
 }
 
 const nodeColors: Record<CompanyType, string> = {
-  emitter: '#2563eb',
+  emitter: '#3b82f6',
   processor: '#f97316',
-  consumer: '#16a34a',
+  consumer: '#22c55e',
 }
 
 const linkColors: Record<MatchStatus, string> = {
-  approved: '#8b5cf6',
-  active: '#22c55e',
+  approved: '#7c3aed',
+  active: '#16a34a',
   pending: '#94a3b8',
 }
 
@@ -142,14 +142,14 @@ export function NetworkGraph3D({
   return (
     <div
       ref={containerRef}
-      className="relative h-full min-h-130 w-full overflow-hidden bg-slate-950 sm:min-h-180"
+      className="relative h-full min-h-130 w-full overflow-hidden bg-white sm:min-h-180"
     >
       <ForceGraph3D<GraphNode, GraphLink>
         ref={graphRef}
         width={size.width}
         height={size.height}
         graphData={graphData}
-        backgroundColor="#020617"
+        backgroundColor="#ffffff"
         showNavInfo={false}
         nodeLabel={(node) =>
           `<b>${node.name}</b><br/>월 취급량 ${node.amount}톤`
@@ -157,23 +157,26 @@ export function NetworkGraph3D({
         nodeVal={(node) => 4 + Math.sqrt(node.amount) * 0.8}
         nodeColor={(node) =>
           selectedCompanyId && !isConnectedToSelection(node.id)
-            ? '#334155'
+            ? '#cbd5e1'
             : node.id === selectedCompanyId
-              ? '#bef264'
+              ? '#a3e635'
               : node.color
         }
-        nodeOpacity={0.95}
-        nodeResolution={18}
+        nodeOpacity={0.94}
+        nodeResolution={24}
         nodeThreeObjectExtend
         nodeThreeObject={(node) => {
           const label = new SpriteText(node.name)
           label.color =
-            node.id === selectedCompanyId ? '#d9f99d' : '#f8fafc'
-          label.textHeight = 4
-          label.position.y = 10
-          label.backgroundColor = 'rgba(2, 6, 23, 0.72)'
-          label.padding = 2
-          label.borderRadius = 3
+            node.id === selectedCompanyId ? '#365314' : '#0f172a'
+          label.textHeight = node.id === selectedCompanyId ? 4.5 : 3.8
+          label.position.y = 10.5
+          label.backgroundColor =
+            node.id === selectedCompanyId
+              ? 'rgba(236, 252, 203, 0.96)'
+              : 'rgba(255, 255, 255, 0.92)'
+          label.padding = 2.5
+          label.borderRadius = 4
           return label
         }}
         linkLabel={(link) =>
@@ -181,7 +184,7 @@ export function NetworkGraph3D({
         }
         linkColor={(link) =>
           selectedMatchId && link.id !== selectedMatchId
-            ? '#334155'
+            ? '#dbe2ea'
             : link.color
         }
         linkWidth={(link) =>
@@ -189,13 +192,13 @@ export function NetworkGraph3D({
             ? 5
             : Math.max(1.2, Math.min(link.amount / 15, 3.5))
         }
-        linkOpacity={0.78}
+        linkOpacity={0.66}
         linkDirectionalArrowLength={4}
         linkDirectionalArrowRelPos={0.92}
         linkDirectionalParticles={(link) =>
           link.status === 'active' ? 3 : link.status === 'approved' ? 1 : 0
         }
-        linkDirectionalParticleWidth={2.2}
+        linkDirectionalParticleWidth={2.8}
         linkDirectionalParticleSpeed={0.004}
         cooldownTicks={120}
         d3AlphaDecay={0.025}
@@ -208,12 +211,30 @@ export function NetworkGraph3D({
         onEngineStop={() => graphRef.current?.zoomToFit(500, 70)}
       />
 
-      <div className="absolute right-3 top-3 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-900/85 p-1 shadow-lg backdrop-blur">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-24 bg-gradient-to-b from-slate-50/90 to-transparent" />
+
+      <div className="absolute left-3 top-3 z-10 hidden rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-md sm:block">
+        <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+          Network legend
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600">
+          <LegendItem color="#3b82f6" label="배출기업" />
+          <LegendItem color="#f97316" label="중간처리기업" />
+          <LegendItem color="#22c55e" label="수요기업" />
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-2 text-[11px] text-slate-500">
+          <LineLegend color="#7c3aed" label="최종 승인" />
+          <LineLegend color="#16a34a" label="산업공생 진행" />
+          <LineLegend color="#94a3b8" label="응답 대기" dashed />
+        </div>
+      </div>
+
+      <div className="absolute right-3 top-3 z-10 flex gap-1 rounded-xl border border-slate-200 bg-white/92 p-1 shadow-md backdrop-blur">
         <button
           type="button"
           title="전체 보기"
           onClick={() => graphRef.current?.zoomToFit(500, 70)}
-          className="rounded-lg p-2 text-slate-200 transition hover:bg-white/10 hover:text-white"
+          className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-950"
         >
           <Maximize2 className="h-4 w-4" />
         </button>
@@ -221,15 +242,47 @@ export function NetworkGraph3D({
           type="button"
           title="배치 다시 계산"
           onClick={() => graphRef.current?.d3ReheatSimulation()}
-          className="rounded-lg p-2 text-slate-200 transition hover:bg-white/10 hover:text-white"
+          className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-950"
         >
           <RotateCcw className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 w-max max-w-[calc(100%-24px)] -translate-x-1/2 rounded-full border border-white/10 bg-slate-900/85 px-4 py-2 text-center text-[11px] text-slate-300 backdrop-blur sm:text-xs">
+      <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 w-max max-w-[calc(100%-24px)] -translate-x-1/2 rounded-full border border-slate-200 bg-white/92 px-4 py-2 text-center text-[11px] font-medium text-slate-500 shadow-sm backdrop-blur sm:text-xs">
         드래그로 회전 · 휠/핀치로 확대 · 노드를 잡아 위치 이동
       </div>
     </div>
+  )
+}
+
+function LegendItem({ color, label }: { color: string; label: string }) {
+  return (
+    <span className="flex items-center gap-1.5">
+      <span
+        className="h-2.5 w-2.5 rounded-full shadow-sm ring-2 ring-white"
+        style={{ backgroundColor: color }}
+      />
+      {label}
+    </span>
+  )
+}
+
+function LineLegend({
+  color,
+  label,
+  dashed = false,
+}: {
+  color: string
+  label: string
+  dashed?: boolean
+}) {
+  return (
+    <span className="flex items-center gap-1.5">
+      <span
+        className={`w-5 border-t-2 ${dashed ? 'border-dashed' : ''}`}
+        style={{ borderColor: color }}
+      />
+      {label}
+    </span>
   )
 }
