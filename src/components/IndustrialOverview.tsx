@@ -1,4 +1,4 @@
-import { Factory, Recycle, Sparkles } from 'lucide-react'
+import { ArrowLeft, Factory, Recycle, Sparkles } from 'lucide-react'
 
 type CompanyType = 'emitter' | 'processor' | 'consumer'
 type MatchStatus = 'approved' | 'active' | 'pending'
@@ -7,6 +7,7 @@ interface OverviewCompany {
   id: string
   name: string
   type: CompanyType
+  region: string
   material: string
   monthlyAmount: number
 }
@@ -20,15 +21,15 @@ interface OverviewMatch {
   status: MatchStatus
 }
 
-const positions: Record<string, { x: number; y: number }> = {
-  'emitter-a': { x: 28, y: 20 },
-  'emitter-b': { x: 73, y: 20 },
-  'processor-a': { x: 50, y: 43 },
-  'emitter-d': { x: 22, y: 60 },
-  'processor-b': { x: 74, y: 59 },
-  'consumer-a': { x: 48, y: 79 },
-  'consumer-b': { x: 76, y: 76 },
-}
+const overviewSlots = [
+  { x: 50, y: 43 },
+  { x: 28, y: 20 },
+  { x: 73, y: 20 },
+  { x: 22, y: 60 },
+  { x: 74, y: 59 },
+  { x: 48, y: 79 },
+  { x: 76, y: 76 },
+]
 
 const typeStyle: Record<
   CompanyType,
@@ -63,22 +64,81 @@ export function IndustrialOverview({
   visibleCompanyIds,
   selectedCompanyId,
   selectedMatchId,
+  focusCompanyId,
   onSelectCompany,
   onSelectMatch,
+  onBackToMap,
 }: {
   companies: OverviewCompany[]
   matches: OverviewMatch[]
   visibleCompanyIds: Set<string>
   selectedCompanyId?: string
   selectedMatchId?: string
+  focusCompanyId?: string
   onSelectCompany: (id: string) => void
   onSelectMatch: (id: string) => void
+  onBackToMap: () => void
 }) {
-  const overviewCompanies = companies.filter(
-    (company) => positions[company.id] && visibleCompanyIds.has(company.id),
+  const visibleMatches = matches.filter(
+    (match) =>
+      visibleCompanyIds.has(match.source) &&
+      visibleCompanyIds.has(match.target),
+  )
+  const adjacency = new Map<string, Set<string>>()
+  visibleMatches.forEach((match) => {
+    if (!adjacency.has(match.source)) adjacency.set(match.source, new Set())
+    if (!adjacency.has(match.target)) adjacency.set(match.target, new Set())
+    adjacency.get(match.source)?.add(match.target)
+    adjacency.get(match.target)?.add(match.source)
+  })
+
+  const fallbackId =
+    companies.find(
+      (company) =>
+        company.type === 'processor' && visibleCompanyIds.has(company.id),
+    )?.id ?? companies.find((company) => visibleCompanyIds.has(company.id))?.id
+  const rootId =
+    focusCompanyId && visibleCompanyIds.has(focusCompanyId)
+      ? focusCompanyId
+      : fallbackId
+
+  const connectedIds: string[] = []
+  if (rootId) {
+    const queue = [rootId]
+    const visited = new Set<string>()
+    while (queue.length && connectedIds.length < overviewSlots.length) {
+      const id = queue.shift()
+      if (!id || visited.has(id)) continue
+      visited.add(id)
+      connectedIds.push(id)
+      adjacency.get(id)?.forEach((neighbor) => {
+        if (!visited.has(neighbor)) queue.push(neighbor)
+      })
+    }
+  }
+
+  const degree = (id: string) => adjacency.get(id)?.size ?? 0
+  const hubId =
+    connectedIds
+      .filter(
+        (id) => companies.find((company) => company.id === id)?.type === 'processor',
+      )
+      .sort((a, b) => degree(b) - degree(a))[0] ?? rootId
+  const orderedIds = [
+    ...(hubId ? [hubId] : []),
+    ...connectedIds
+      .filter((id) => id !== hubId)
+      .sort((a, b) => degree(b) - degree(a)),
+  ].slice(0, overviewSlots.length)
+  const positions = Object.fromEntries(
+    orderedIds.map((id, index) => [id, overviewSlots[index]]),
+  ) as Record<string, { x: number; y: number }>
+
+  const overviewCompanies = companies.filter((company) =>
+    orderedIds.includes(company.id),
   )
   const overviewIds = new Set(overviewCompanies.map((company) => company.id))
-  const overviewMatches = matches.filter(
+  const overviewMatches = visibleMatches.filter(
     (match) =>
       positions[match.source] &&
       positions[match.target] &&
@@ -221,14 +281,24 @@ export function IndustrialOverview({
           )
         })}
 
-        <div className="absolute left-4 top-4 z-10 rounded-xl border border-white/10 bg-[#071321]/80 px-3 py-2 text-white shadow-xl backdrop-blur-md">
-          <div className="flex items-center gap-2 text-xs font-semibold">
-            <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
-            수도권 폐합성수지 산업공생 단지
+        <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onBackToMap}
+            className="flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-[#071321]/85 px-3 text-xs font-semibold text-white shadow-xl backdrop-blur-md transition hover:bg-slate-800"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            전국 지도
+          </button>
+          <div className="rounded-xl border border-white/10 bg-[#071321]/85 px-3 py-2 text-white shadow-xl backdrop-blur-md">
+            <div className="flex items-center gap-2 text-xs font-semibold">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+              선택 기업 연결 조감도
+            </div>
+            <p className="mt-1 text-[10px] text-slate-400">
+              {overviewCompanies.length}개 기업 · {overviewMatches.length}개 자원 흐름
+            </p>
           </div>
-          <p className="mt-1 text-[10px] text-slate-400">
-            현재 데이터 기반 조감도 프로토타입
-          </p>
         </div>
       </div>
     </div>

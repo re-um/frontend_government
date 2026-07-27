@@ -332,6 +332,8 @@ function NetworkMapPage() {
   const [companyType, setCompanyType] = useState<CompanyType | 'all'>('all')
   const [status, setStatus] = useState<MatchStatus | 'all'>('all')
   const [viewMode, setViewMode] = useState<ViewMode>('map')
+  const [overviewFocusCompanyId, setOverviewFocusCompanyId] =
+    useState<string | undefined>()
   const [selectedCompany, setSelectedCompany] =
     useState<CompanyDetail | null>(companies[3])
   const [selectedMatch, setSelectedMatch] = useState<MatchDetail | null>(null)
@@ -803,7 +805,12 @@ function NetworkMapPage() {
 
             <ViewModeButton
               active={viewMode === 'overview'}
-              onClick={() => setViewMode('overview')}
+              onClick={() => {
+                setOverviewFocusCompanyId(
+                  selectedCompany?.id ?? overviewFocusCompanyId,
+                )
+                setViewMode('overview')
+              }}
             >
               <Factory className="h-4 w-4" />
               조감도형
@@ -869,6 +876,7 @@ function NetworkMapPage() {
               visibleCompanyIds={filteredCompanyIds}
               selectedCompanyId={selectedCompany?.id}
               selectedMatchId={selectedMatch?.id}
+              focusCompanyId={overviewFocusCompanyId}
               onSelectCompany={(companyId) => {
                 const company = companies.find(
                   (item) => item.id === companyId,
@@ -883,6 +891,7 @@ function NetworkMapPage() {
                 setSelectedMatch(match)
                 setSelectedCompany(null)
               }}
+              onBackToMap={() => setViewMode('map')}
             />
           )}
 
@@ -924,6 +933,8 @@ function NetworkMapPage() {
               onSelectCompany={(company) => {
                 setSelectedCompany(company)
                 setSelectedMatch(null)
+                setOverviewFocusCompanyId(company.id)
+                setViewMode('overview')
               }}
               onSelectMatch={(match) => {
                 setSelectedMatch(match)
