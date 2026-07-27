@@ -804,19 +804,6 @@ function NetworkMapPage() {
             </ViewModeButton>
 
             <ViewModeButton
-              active={viewMode === 'overview'}
-              onClick={() => {
-                setOverviewFocusCompanyId(
-                  selectedCompany?.id ?? overviewFocusCompanyId,
-                )
-                setViewMode('overview')
-              }}
-            >
-              <Factory className="h-4 w-4" />
-              조감도형
-            </ViewModeButton>
-
-            <ViewModeButton
               active={viewMode === '3d'}
               onClick={() => setViewMode('3d')}
             >
