@@ -281,7 +281,7 @@ export function IndustrialOverview({
           )
         })}
 
-        <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
+        <div className="absolute left-4 top-20 z-20 flex items-center gap-2">
           <button
             type="button"
             onClick={onBackToMap}
