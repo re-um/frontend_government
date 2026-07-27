@@ -294,14 +294,14 @@ export function DigitalTwinNetwork3D({
   return (
     <div
       ref={containerRef}
-      className="relative h-full min-h-140 overflow-hidden bg-[#030712] sm:min-h-180"
+      className="relative h-full min-h-140 overflow-hidden bg-[#020611] bg-[url('/assets/ai-space-network-bg.png')] bg-cover bg-center sm:min-h-180"
     >
       <ForceGraph3D<TwinNode, TwinLink>
         ref={graphRef}
         width={size.width}
         height={size.height}
         graphData={graphData}
-        backgroundColor="#030712"
+        backgroundColor="rgba(2, 6, 17, 0.28)"
         showNavInfo={false}
         nodeThreeObject={createPlatform}
         nodeLabel={(node) =>
@@ -343,7 +343,7 @@ export function DigitalTwinNetwork3D({
         }}
       />
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(30,64,175,0.18),transparent_42%,rgba(2,6,23,0.72)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(2,6,23,0.04)_0%,rgba(2,6,23,0.14)_48%,rgba(2,6,23,0.5)_100%)]" />
 
       <div className="absolute bottom-4 right-4 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-950/75 p-1 shadow-2xl backdrop-blur-xl">
         <TwinButton
