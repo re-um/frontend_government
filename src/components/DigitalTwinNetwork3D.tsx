@@ -5,10 +5,10 @@ import ForceGraph3D, {
 import SpriteText from 'three-spritetext'
 import {
   AdditiveBlending,
-  BoxGeometry,
   BufferGeometry,
   CanvasTexture,
   Color,
+  CylinderGeometry,
   EdgesGeometry,
   FogExp2,
   Group,
@@ -22,8 +22,12 @@ import {
   SphereGeometry,
   Sprite,
   SpriteMaterial,
+  TorusGeometry,
+  Vector2,
   Vector3,
 } from 'three'
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { Maximize2, Pause, Play, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -136,13 +140,18 @@ export function DigitalTwinNetwork3D({
     const group = new Group()
     const selected = node.id === selectedCompanyId
     const color = selected ? '#bef264' : node.color
+
+    const pedestal = createPedestal(color, selected)
+    pedestal.position.y = node.type === 'processor' ? -9.8 : -6.7
+    group.add(pedestal)
+
     if (node.type === 'processor') {
       const glow = new Mesh(
-        new SphereGeometry(selected ? 12.5 : 11, 36, 36),
+        new SphereGeometry(selected ? 13.5 : 12, 40, 40),
         new MeshBasicMaterial({
           color,
           transparent: true,
-          opacity: selected ? 0.14 : 0.09,
+          opacity: selected ? 0.2 : 0.11,
           blending: AdditiveBlending,
           depthWrite: false,
         }),
@@ -150,31 +159,33 @@ export function DigitalTwinNetwork3D({
       group.add(glow)
 
       const core = new Mesh(
-        new SphereGeometry(7.7, 40, 40),
+        new SphereGeometry(8.2, 48, 48),
         new MeshPhysicalMaterial({
           color: new Color(color),
-          roughness: 0.08,
-          metalness: 0.12,
+          roughness: 0.04,
+          metalness: 0.18,
           clearcoat: 1,
-          transmission: 0.38,
-          thickness: 2,
+          clearcoatRoughness: 0.04,
+          transmission: 0.55,
+          thickness: 2.8,
+          ior: 1.38,
           transparent: true,
-          opacity: 0.9,
+          opacity: 0.88,
           emissive: new Color(color),
-          emissiveIntensity: selected ? 0.8 : 0.42,
+          emissiveIntensity: selected ? 1.25 : 0.72,
         }),
       )
       group.add(core)
 
-      ;[10, 12.4].forEach((radius, index) => {
+      ;[11, 13.5].forEach((radius, index) => {
         const orbit = new Mesh(
-          new RingGeometry(radius, radius + (index ? 0.18 : 0.28), 64),
+          new TorusGeometry(radius, index ? 0.1 : 0.16, 12, 80),
           new MeshBasicMaterial({
             color,
             transparent: true,
-            opacity: index ? 0.32 : 0.68,
-            side: 2,
+            opacity: index ? 0.45 : 0.8,
             blending: AdditiveBlending,
+            depthWrite: false,
           }),
         )
         orbit.rotation.x = index ? Math.PI * 0.62 : Math.PI * 0.42
@@ -188,39 +199,64 @@ export function DigitalTwinNetwork3D({
       symbol.position.z = 8
       group.add(symbol)
     } else {
-      const cubeGeometry = new BoxGeometry(7.2, 7.2, 7.2)
-      const cube = new Mesh(
-        cubeGeometry,
+      const bodyGeometry =
+        node.type === 'emitter'
+          ? new CylinderGeometry(5.4, 5.4, 8.4, 6, 1, false)
+          : new RoundedBoxGeometry(8.4, 8.4, 8.4, 5, 1.25)
+      const body = new Mesh(
+        bodyGeometry,
         new MeshPhysicalMaterial({
-          color: '#0b1d35',
-          metalness: 0.55,
-          roughness: 0.18,
+          color: node.type === 'emitter' ? '#071a36' : '#10230d',
+          metalness: 0.42,
+          roughness: 0.08,
           clearcoat: 1,
+          clearcoatRoughness: 0.05,
+          transmission: node.type === 'consumer' ? 0.34 : 0.18,
+          thickness: 1.8,
           transparent: true,
-          opacity: selected ? 1 : 0.94,
+          opacity: selected ? 0.98 : 0.9,
           emissive: new Color(color),
-          emissiveIntensity: selected ? 0.38 : 0.15,
+          emissiveIntensity: selected ? 0.9 : 0.38,
         }),
       )
-      cube.rotation.set(0.16, 0.38, 0)
-      group.add(cube)
+      body.rotation.set(0.1, 0.42, 0)
+      group.add(body)
 
       const edges = new LineSegments(
-        new EdgesGeometry(cubeGeometry),
+        new EdgesGeometry(bodyGeometry),
         new LineBasicMaterial({
           color,
           transparent: true,
-          opacity: selected ? 1 : 0.78,
+          opacity: selected ? 1 : 0.86,
           blending: AdditiveBlending,
         }),
       )
-      edges.rotation.copy(cube.rotation)
+      edges.rotation.copy(body.rotation)
       group.add(edges)
 
       const roleIcon = createRoleIcon(node.type, color)
-      roleIcon.position.z = 4.5
-      roleIcon.scale.set(5.2, 5.2, 1)
+      roleIcon.position.z = 5.1
+      roleIcon.scale.set(5.6, 5.6, 1)
       group.add(roleIcon)
+    }
+
+    if (selected) {
+      ;[12.5, 15].forEach((radius, index) => {
+        const pulse = new Mesh(
+          new RingGeometry(radius, radius + 0.18, 72),
+          new MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity: index ? 0.22 : 0.48,
+            blending: AdditiveBlending,
+            depthWrite: false,
+            side: 2,
+          }),
+        )
+        pulse.rotation.x = Math.PI / 2
+        pulse.position.y = node.type === 'processor' ? -10 : -7
+        group.add(pulse)
+      })
     }
 
     const label = new SpriteText(node.name)
@@ -242,6 +278,17 @@ export function DigitalTwinNetwork3D({
     if (!scene || scene.userData.twinInitialized) return
     scene.userData.twinInitialized = true
     scene.fog = new FogExp2('#030712', 0.001)
+
+    const composer = graphRef.current?.postProcessingComposer()
+    if (composer) {
+      const bloom = new UnrealBloomPass(
+        new Vector2(size.width, size.height),
+        size.width < 768 ? 0.48 : 0.72,
+        0.52,
+        0.72,
+      )
+      composer.addPass(bloom)
+    }
 
     // 전국의 여러 네트워크가 화면 가장자리로 흩어지지 않도록
     // 노드의 반발력과 연결 거리를 줄이고 중심으로 모으는 힘을 높인다.
@@ -301,6 +348,11 @@ export function DigitalTwinNetwork3D({
         width={size.width}
         height={size.height}
         graphData={graphData}
+        rendererConfig={{
+          alpha: true,
+          antialias: true,
+          powerPreference: 'high-performance',
+        }}
         backgroundColor="rgba(2, 6, 17, 0.28)"
         showNavInfo={false}
         nodeThreeObject={createPlatform}
@@ -371,6 +423,37 @@ export function DigitalTwinNetwork3D({
       </div>
     </div>
   )
+}
+
+function createPedestal(color: string, selected: boolean) {
+  const group = new Group()
+  const base = new Mesh(
+    new CylinderGeometry(7.4, 8.6, 1.3, 8),
+    new MeshPhysicalMaterial({
+      color: '#07111f',
+      metalness: 0.82,
+      roughness: 0.24,
+      clearcoat: 1,
+      emissive: new Color(color),
+      emissiveIntensity: selected ? 0.3 : 0.12,
+    }),
+  )
+  group.add(base)
+
+  const lightBand = new Mesh(
+    new TorusGeometry(7.25, 0.12, 8, 64),
+    new MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: selected ? 0.95 : 0.62,
+      blending: AdditiveBlending,
+      depthWrite: false,
+    }),
+  )
+  lightBand.rotation.x = Math.PI / 2
+  lightBand.position.y = 0.72
+  group.add(lightBand)
+  return group
 }
 
 function createRoleIcon(type: CompanyType, color: string) {
