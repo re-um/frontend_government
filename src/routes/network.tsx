@@ -1278,7 +1278,17 @@ function NetworkMapPage() {
                   setSelectedCompany(null)
                   setSelectedMatch(null)
                 }}
-                onSimulationProposal={setSimulationProposal}
+                onSimulationProposal={(proposal) => {
+                  setSimulationProposal(proposal)
+                  setSelectedCompany(
+                    proposal
+                      ? companies.find(
+                          (company) => company.id === proposal.targetId,
+                        ) ?? null
+                      : null,
+                  )
+                  setSelectedMatch(null)
+                }}
               />
             </Suspense>
           )}

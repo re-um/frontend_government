@@ -116,7 +116,6 @@ export function DigitalTwinNetwork3D({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const graphRef =
     useRef<ForceGraphMethods<TwinNode, TwinLink> | undefined>(undefined)
-  const initialFitDoneRef = useRef(false)
   const [size, setSize] = useState({ width: 800, height: 680 })
   const [flowing, setFlowing] = useState(true)
   const activeProposalRef = useRef<string | null>(null)
@@ -411,22 +410,14 @@ export function DigitalTwinNetwork3D({
   const focusNode = (node: NodeObject<TwinNode>) => {
     if (simulationMode) return
     onSelectCompany(String(node.id))
-    const distance = 85
-    const ratio =
-      1 + distance / Math.hypot(node.x ?? 1, node.y ?? 1, node.z ?? 1)
-    graphRef.current?.cameraPosition(
-      {
-        x: (node.x ?? 0) * ratio,
-        y: (node.y ?? 0) * ratio,
-        z: (node.z ?? 0) * ratio,
-      },
-      { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
-      700,
-    )
   }
 
-  const detectSimulationTarget = (node: NodeObject<TwinNode>) => {
+  const detectSimulationTarget = (
+    node: NodeObject<TwinNode>,
+    translate?: { x: number; y: number },
+  ) => {
     if (!simulationMode) return
+    if (translate && Math.hypot(translate.x, translate.y) < 24) return
     const sourceId = String(node.id)
     const endpointId = (endpoint: string | TwinNode) =>
       typeof endpoint === 'object' ? String(endpoint.id) : String(endpoint)
@@ -469,7 +460,7 @@ export function DigitalTwinNetwork3D({
       .sort((a, b) => a.distance - b.distance)
 
     const nearest = candidates[0]
-    if (nearest && nearest.distance < 160) {
+    if (nearest) {
       const proposalKey = `${sourceId}:${nearest.candidate.id}`
       if (activeProposalRef.current === proposalKey) return
       activeProposalRef.current = proposalKey
@@ -483,9 +474,12 @@ export function DigitalTwinNetwork3D({
     }
   }
 
-  const handleSimulationDrop = (node: NodeObject<TwinNode>) => {
+  const handleSimulationDrop = (
+    node: NodeObject<TwinNode>,
+    translate: { x: number; y: number },
+  ) => {
     if (!simulationMode) return
-    detectSimulationTarget(node)
+    detectSimulationTarget(node, translate)
     node.fx = undefined
     node.fy = undefined
     node.fz = undefined
@@ -502,7 +496,6 @@ export function DigitalTwinNetwork3D({
     })
     onToggleSimulation()
     graphRef.current?.d3ReheatSimulation()
-    window.setTimeout(() => graphRef.current?.zoomToFit(650, 20), 750)
   }
 
   return (
@@ -562,13 +555,6 @@ export function DigitalTwinNetwork3D({
         onLinkClick={(link) => onSelectMatch(link.id)}
         onBackgroundClick={onClearSelection}
         onEngineTick={initializeScene}
-        onEngineStop={() => {
-          initializeScene()
-          if (!initialFitDoneRef.current) {
-            initialFitDoneRef.current = true
-            graphRef.current?.zoomToFit(600, 20)
-          }
-        }}
       />
 
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(2,6,23,0.04)_0%,rgba(2,6,23,0.14)_48%,rgba(2,6,23,0.5)_100%)]" />
