@@ -457,15 +457,13 @@ export function DigitalTwinNetwork3D({
           candidate.id !== sourceId &&
           !sourceNetwork.has(candidate.id) &&
           Number.isFinite(candidate.x) &&
-          Number.isFinite(candidate.y) &&
-          Number.isFinite(candidate.z),
+          Number.isFinite(candidate.y),
       )
       .map((candidate) => ({
         candidate,
         distance: Math.hypot(
           (candidate.x ?? 0) - (node.x ?? 0),
           (candidate.y ?? 0) - (node.y ?? 0),
-          (candidate.z ?? 0) - (node.z ?? 0),
         ),
       }))
       .sort((a, b) => a.distance - b.distance)
@@ -517,6 +515,7 @@ export function DigitalTwinNetwork3D({
         width={size.width}
         height={size.height}
         graphData={graphData}
+        numDimensions={2}
         rendererConfig={{
           alpha: true,
           antialias: true,
