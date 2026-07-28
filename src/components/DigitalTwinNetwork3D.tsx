@@ -79,6 +79,7 @@ export function DigitalTwinNetwork3D({
   onSelectMatch,
   onClearSelection,
   simulationMode,
+  simulationProposal,
   onToggleSimulation,
   onSimulationProposal,
 }: {
@@ -108,6 +109,7 @@ export function DigitalTwinNetwork3D({
   onSelectMatch: (id: string) => void
   onClearSelection: () => void
   simulationMode: boolean
+  simulationProposal: { sourceId: string; targetId: string } | null
   onToggleSimulation: () => void
   onSimulationProposal: (
     proposal: { sourceId: string; targetId: string } | null,
@@ -188,8 +190,15 @@ export function DigitalTwinNetwork3D({
 
   const createPlatform = (node: NodeObject<TwinNode>) => {
     const group = new Group()
-    const selected = node.id === selectedCompanyId
-    const color = selected ? '#bef264' : node.color
+    const simulationSource = simulationProposal?.sourceId === node.id
+    const simulationTarget = simulationProposal?.targetId === node.id
+    const selected =
+      node.id === selectedCompanyId || simulationSource || simulationTarget
+    const color = simulationSource
+      ? '#f59e0b'
+      : simulationTarget || node.id === selectedCompanyId
+        ? '#bef264'
+        : node.color
 
     const pedestal = createPedestal(color, selected)
     pedestal.position.y = node.type === 'processor' ? -9.8 : -6.7
@@ -348,11 +357,28 @@ export function DigitalTwinNetwork3D({
     label.textHeight = selected ? 3.5 : node.type === 'processor' ? 3.2 : 2.7
     label.position.y = node.type === 'processor' ? -14 : -8.5
     label.backgroundColor = selected
-      ? 'rgba(54, 83, 20, 0.92)'
+      ? simulationSource
+        ? 'rgba(120, 53, 15, 0.94)'
+        : 'rgba(54, 83, 20, 0.92)'
       : 'rgba(3, 10, 24, 0.78)'
     label.padding = 2.2
     label.borderRadius = 5
     group.add(label)
+
+    if (simulationSource || simulationTarget) {
+      const roleBadge = new SpriteText(
+        simulationSource ? '이동 기업' : '비교 대상',
+      )
+      roleBadge.color = simulationSource ? '#fde68a' : '#ecfccb'
+      roleBadge.textHeight = 2.5
+      roleBadge.position.y = node.type === 'processor' ? 16 : 11
+      roleBadge.backgroundColor = simulationSource
+        ? 'rgba(120, 53, 15, 0.95)'
+        : 'rgba(54, 83, 20, 0.95)'
+      roleBadge.padding = 2
+      roleBadge.borderRadius = 5
+      group.add(roleBadge)
+    }
 
     group.scale.setScalar(0.82 + node.weight * 0.42)
     return group
@@ -575,7 +601,9 @@ export function DigitalTwinNetwork3D({
 
       {simulationMode && (
         <div className="pointer-events-none absolute left-1/2 top-17 z-10 -translate-x-1/2 rounded-full border border-lime-300/30 bg-slate-950/80 px-4 py-2 text-xs font-medium text-lime-200 shadow-xl backdrop-blur-xl">
-          기업을 다른 네트워크 가까이 드래그해 가상 조합을 비교하세요.
+          {simulationProposal
+            ? `${companies.find((company) => company.id === simulationProposal.sourceId)?.name ?? '이동 기업'} → ${companies.find((company) => company.id === simulationProposal.targetId)?.name ?? '비교 대상'} 네트워크`
+            : '기업을 다른 네트워크 가까이 드래그해 가상 조합을 비교하세요.'}
         </div>
       )}
 

@@ -1272,6 +1272,7 @@ function NetworkMapPage() {
                   setSelectedMatch(null)
                 }}
                 simulationMode={simulationMode}
+                simulationProposal={simulationProposal}
                 onToggleSimulation={() => {
                   setSimulationMode((current) => !current)
                   setSimulationProposal(null)
