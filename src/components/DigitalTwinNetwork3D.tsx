@@ -28,7 +28,7 @@ import {
 } from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
-import { Maximize2, Pause, Play, RotateCcw } from 'lucide-react'
+import { FlaskConical, Maximize2, Pause, Play, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 type CompanyType = 'emitter' | 'processor' | 'consumer'
@@ -78,6 +78,9 @@ export function DigitalTwinNetwork3D({
   onSelectCompany,
   onSelectMatch,
   onClearSelection,
+  simulationMode,
+  onToggleSimulation,
+  onSimulationProposal,
 }: {
   companies: Array<{
     id: string
@@ -104,6 +107,11 @@ export function DigitalTwinNetwork3D({
   onSelectCompany: (id: string) => void
   onSelectMatch: (id: string) => void
   onClearSelection: () => void
+  simulationMode: boolean
+  onToggleSimulation: () => void
+  onSimulationProposal: (
+    proposal: { sourceId: string; targetId: string } | null,
+  ) => void
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const graphRef =
@@ -400,6 +408,7 @@ export function DigitalTwinNetwork3D({
   }
 
   const focusNode = (node: NodeObject<TwinNode>) => {
+    if (simulationMode) return
     onSelectCompany(String(node.id))
     const distance = 85
     const ratio =
@@ -413,6 +422,64 @@ export function DigitalTwinNetwork3D({
       { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
       700,
     )
+  }
+
+  const handleSimulationDrop = (node: NodeObject<TwinNode>) => {
+    if (!simulationMode) return
+
+    const endpointId = (endpoint: string | TwinNode) =>
+      typeof endpoint === 'string' ? endpoint : endpoint.id
+    const sourceId = String(node.id)
+    const sourceNetwork = new Set<string>([sourceId])
+    const queue = [sourceId]
+
+    while (queue.length > 0) {
+      const currentId = queue.shift()!
+      graphData.links.forEach((link) => {
+        const source = endpointId(link.source)
+        const target = endpointId(link.target)
+        const neighbor =
+          source === currentId ? target : target === currentId ? source : null
+        if (neighbor && !sourceNetwork.has(neighbor)) {
+          sourceNetwork.add(neighbor)
+          queue.push(neighbor)
+        }
+      })
+    }
+
+    const candidates = graphData.nodes
+      .filter(
+        (candidate) =>
+          candidate.id !== sourceId &&
+          !sourceNetwork.has(candidate.id) &&
+          Number.isFinite(candidate.x) &&
+          Number.isFinite(candidate.y) &&
+          Number.isFinite(candidate.z),
+      )
+      .map((candidate) => ({
+        candidate,
+        distance: Math.hypot(
+          (candidate.x ?? 0) - (node.x ?? 0),
+          (candidate.y ?? 0) - (node.y ?? 0),
+          (candidate.z ?? 0) - (node.z ?? 0),
+        ),
+      }))
+      .sort((a, b) => a.distance - b.distance)
+
+    const nearest = candidates[0]
+    if (nearest && nearest.distance < 90) {
+      onSimulationProposal({
+        sourceId,
+        targetId: nearest.candidate.id,
+      })
+    } else {
+      onSimulationProposal(null)
+    }
+
+    node.fx = undefined
+    node.fy = undefined
+    node.fz = undefined
+    graphRef.current?.d3ReheatSimulation()
   }
 
   return (
@@ -466,6 +533,7 @@ export function DigitalTwinNetwork3D({
         enableNodeDrag
         enableNavigationControls
         onNodeClick={focusNode}
+        onNodeDragEnd={handleSimulationDrop}
         onLinkClick={(link) => onSelectMatch(link.id)}
         onBackgroundClick={onClearSelection}
         onEngineTick={initializeScene}
@@ -479,6 +547,26 @@ export function DigitalTwinNetwork3D({
       />
 
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(2,6,23,0.04)_0%,rgba(2,6,23,0.14)_48%,rgba(2,6,23,0.5)_100%)]" />
+
+      <button
+        type="button"
+        onClick={onToggleSimulation}
+        className={[
+          'absolute right-4 top-4 z-10 flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold shadow-2xl backdrop-blur-xl transition',
+          simulationMode
+            ? 'border-lime-300/60 bg-lime-300 text-slate-950'
+            : 'border-white/15 bg-slate-950/75 text-slate-200 hover:border-cyan-300/50 hover:text-cyan-200',
+        ].join(' ')}
+      >
+        <FlaskConical className="h-4 w-4" />
+        {simulationMode ? '시뮬레이션 종료' : '조합 시뮬레이션'}
+      </button>
+
+      {simulationMode && (
+        <div className="pointer-events-none absolute left-1/2 top-17 z-10 -translate-x-1/2 rounded-full border border-lime-300/30 bg-slate-950/80 px-4 py-2 text-xs font-medium text-lime-200 shadow-xl backdrop-blur-xl">
+          기업을 다른 네트워크 가까이 드래그해 가상 조합을 비교하세요.
+        </div>
+      )}
 
       <div className="absolute bottom-4 right-4 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-950/75 p-1 shadow-2xl backdrop-blur-xl">
         <TwinButton

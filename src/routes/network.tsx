@@ -683,6 +683,11 @@ function NetworkMapPage() {
   const [selectedCompany, setSelectedCompany] =
     useState<CompanyDetail | null>(companies[3])
   const [selectedMatch, setSelectedMatch] = useState<MatchDetail | null>(null)
+  const [simulationMode, setSimulationMode] = useState(false)
+  const [simulationProposal, setSimulationProposal] = useState<{
+    sourceId: string
+    targetId: string
+  } | null>(null)
 
   const selectedNetwork = useMemo(
     () =>
@@ -1266,6 +1271,14 @@ function NetworkMapPage() {
                   setSelectedCompany(null)
                   setSelectedMatch(null)
                 }}
+                simulationMode={simulationMode}
+                onToggleSimulation={() => {
+                  setSimulationMode((current) => !current)
+                  setSimulationProposal(null)
+                  setSelectedCompany(null)
+                  setSelectedMatch(null)
+                }}
+                onSimulationProposal={setSimulationProposal}
               />
             </Suspense>
           )}
@@ -1292,7 +1305,16 @@ function NetworkMapPage() {
         </main>
 
         <aside className="border-t border-slate-200 bg-white p-5 xl:border-l xl:border-t-0">
-          {selectedNetwork && selectedCompany ? (
+          {viewMode === 'twin3d' && simulationProposal ? (
+            <SimulationPanel
+              proposal={simulationProposal}
+              onReset={() => setSimulationProposal(null)}
+              onClose={() => {
+                setSimulationProposal(null)
+                setSimulationMode(false)
+              }}
+            />
+          ) : selectedNetwork && selectedCompany ? (
             <NetworkPanel
               anchorCompany={selectedCompany}
               networkCompanies={selectedNetwork.companies}
@@ -1473,6 +1495,150 @@ function GraphButton({
     >
       {children}
     </button>
+  )
+}
+
+function SimulationPanel({
+  proposal,
+  onReset,
+  onClose,
+}: {
+  proposal: { sourceId: string; targetId: string }
+  onReset: () => void
+  onClose: () => void
+}) {
+  const [saved, setSaved] = useState(false)
+  const source = companies.find((company) => company.id === proposal.sourceId)!
+  const target = companies.find((company) => company.id === proposal.targetId)!
+  const targetNetwork = getCompanyNetwork(target.id)
+  const beforeFlow = targetNetwork.matches.reduce(
+    (sum, match) => sum + match.amount,
+    0,
+  )
+  const beforeCarbon = targetNetwork.matches.reduce(
+    (sum, match) => sum + match.carbonReduction,
+    0,
+  )
+  const beforeScore = Math.round(
+    targetNetwork.matches.reduce((sum, match) => sum + match.score, 0) /
+      Math.max(targetNetwork.matches.length, 1),
+  )
+  const materialKey = (material: string) =>
+    material.replace(/폐|재생|\s|·/g, '').toUpperCase()
+  const compatible =
+    materialKey(source.material).includes(materialKey(target.material)) ||
+    materialKey(target.material).includes(materialKey(source.material))
+  const projectedFlow = Math.round(
+    Math.min(source.monthlyAmount, target.monthlyAmount) *
+      (compatible ? 0.82 : 0.58),
+  )
+  const projectedCarbon = projectedFlow * (compatible ? 0.72 : 0.54)
+  const projectedScore = Math.min(
+    98,
+    Math.round(beforeScore * 0.72 + (compatible ? 94 : 76) * 0.28),
+  )
+  const beforeBalance = Math.min(
+    96,
+    Math.round((beforeFlow / Math.max(beforeFlow + 45, 1)) * 100),
+  )
+  const afterBalance = Math.min(98, beforeBalance + (compatible ? 9 : 4))
+
+  const comparisons = [
+    {
+      label: '참여 기업',
+      before: `${targetNetwork.companies.length}개`,
+      after: `${targetNetwork.companies.length + 1}개`,
+    },
+    {
+      label: '월 자원순환량',
+      before: `${beforeFlow}t`,
+      after: `${beforeFlow + projectedFlow}t`,
+    },
+    {
+      label: '예상 탄소감축',
+      before: `${beforeCarbon.toFixed(1)}t`,
+      after: `${(beforeCarbon + projectedCarbon).toFixed(1)}t`,
+    },
+    {
+      label: '평균 매칭 적합도',
+      before: `${beforeScore}점`,
+      after: `${projectedScore}점`,
+    },
+    {
+      label: '공급·수요 균형',
+      before: `${beforeBalance}%`,
+      after: `${afterBalance}%`,
+    },
+  ]
+
+  return (
+    <div>
+      <PanelHeader title="조합 시뮬레이션" onClose={onClose} />
+
+      <div className="mb-4 rounded-xl border border-lime-200 bg-lime-50 p-4">
+        <div className="text-xs font-semibold text-lime-700">가상 이동안</div>
+        <div className="mt-2 flex items-center gap-2 text-sm font-bold text-slate-950">
+          <span className="min-w-0 flex-1 truncate">{source.name}</span>
+          <span className="text-lime-600">→</span>
+          <span className="min-w-0 flex-1 truncate text-right">
+            {target.name} 네트워크
+          </span>
+        </div>
+        <p className="mt-2 text-[11px] leading-4 text-slate-500">
+          실제 연결은 변경되지 않은 가상 후보안입니다.
+        </p>
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-slate-200">
+        <div className="grid grid-cols-[1fr_64px_64px] bg-slate-50 px-3 py-2 text-[10px] font-semibold text-slate-500">
+          <span>분석 항목</span>
+          <span className="text-right">변경 전</span>
+          <span className="text-right">변경 후</span>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {comparisons.map((item) => (
+            <div
+              key={item.label}
+              className="grid grid-cols-[1fr_64px_64px] items-center px-3 py-3 text-xs"
+            >
+              <span className="text-slate-500">{item.label}</span>
+              <span className="text-right font-semibold text-slate-600">
+                {item.before}
+              </span>
+              <span className="text-right font-bold text-emerald-600">
+                {item.after}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setSaved(false)
+            onReset()
+          }}
+          className="h-10 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          원래대로
+        </button>
+        <button
+          type="button"
+          onClick={() => setSaved(true)}
+          className="h-10 rounded-lg bg-lime-400 text-xs font-bold text-slate-950 transition hover:bg-lime-300"
+        >
+          후보안 저장
+        </button>
+      </div>
+
+      {saved && (
+        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+          가상 후보안이 검토 목록에 저장되었습니다.
+        </div>
+      )}
+    </div>
   )
 }
 
