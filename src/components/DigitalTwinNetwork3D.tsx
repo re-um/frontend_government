@@ -354,10 +354,13 @@ export function DigitalTwinNetwork3D({
     const scene = graphRef.current?.scene()
     if (!scene || scene.userData.twinInitialized) return
     scene.userData.twinInitialized = true
+    scene.background = null
     scene.fog = new FogExp2('#030712', 0.001)
-    graphRef.current
-      ?.renderer()
-      .setPixelRatio(Math.min(window.devicePixelRatio, size.width < 768 ? 1 : 1.5))
+    const renderer = graphRef.current?.renderer()
+    renderer?.setClearColor(0x000000, 0)
+    renderer?.setPixelRatio(
+      Math.min(window.devicePixelRatio, size.width < 768 ? 1 : 1.5),
+    )
 
     const composer = graphRef.current?.postProcessingComposer()
     if (composer) {
@@ -415,7 +418,7 @@ export function DigitalTwinNetwork3D({
         src="/assets/ai-space-network-bg.png"
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center brightness-125 saturate-125"
       />
       <ForceGraph3D<TwinNode, TwinLink>
         ref={graphRef}
@@ -469,7 +472,7 @@ export function DigitalTwinNetwork3D({
         onEngineTick={initializeScene}
       />
 
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(2,6,23,0.04)_0%,rgba(2,6,23,0.14)_48%,rgba(2,6,23,0.5)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(2,6,23,0)_0%,rgba(2,6,23,0.06)_55%,rgba(2,6,23,0.22)_100%)]" />
 
       <div className="absolute bottom-4 right-4 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-950/75 p-1 shadow-2xl backdrop-blur-xl">
         <TwinButton
