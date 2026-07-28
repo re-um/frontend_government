@@ -119,6 +119,7 @@ export function DigitalTwinNetwork3D({
   const initialFitDoneRef = useRef(false)
   const [size, setSize] = useState({ width: 800, height: 680 })
   const [flowing, setFlowing] = useState(true)
+  const activeProposalRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -424,22 +425,25 @@ export function DigitalTwinNetwork3D({
     )
   }
 
-  const handleSimulationDrop = (node: NodeObject<TwinNode>) => {
+  const detectSimulationTarget = (node: NodeObject<TwinNode>) => {
     if (!simulationMode) return
-
-    const endpointId = (endpoint: string | TwinNode) =>
-      typeof endpoint === 'string' ? endpoint : endpoint.id
     const sourceId = String(node.id)
+    const endpointId = (endpoint: string | TwinNode) =>
+      typeof endpoint === 'object' ? String(endpoint.id) : String(endpoint)
     const sourceNetwork = new Set<string>([sourceId])
     const queue = [sourceId]
 
     while (queue.length > 0) {
       const currentId = queue.shift()!
       graphData.links.forEach((link) => {
-        const source = endpointId(link.source)
-        const target = endpointId(link.target)
+        const linkSource = endpointId(link.source)
+        const linkTarget = endpointId(link.target)
         const neighbor =
-          source === currentId ? target : target === currentId ? source : null
+          linkSource === currentId
+            ? linkTarget
+            : linkTarget === currentId
+              ? linkSource
+              : null
         if (neighbor && !sourceNetwork.has(neighbor)) {
           sourceNetwork.add(neighbor)
           queue.push(neighbor)
@@ -467,19 +471,40 @@ export function DigitalTwinNetwork3D({
       .sort((a, b) => a.distance - b.distance)
 
     const nearest = candidates[0]
-    if (nearest && nearest.distance < 90) {
+    if (nearest && nearest.distance < 160) {
+      const proposalKey = `${sourceId}:${nearest.candidate.id}`
+      if (activeProposalRef.current === proposalKey) return
+      activeProposalRef.current = proposalKey
       onSimulationProposal({
         sourceId,
         targetId: nearest.candidate.id,
       })
-    } else {
+    } else if (activeProposalRef.current) {
+      activeProposalRef.current = null
       onSimulationProposal(null)
     }
+  }
 
+  const handleSimulationDrop = (node: NodeObject<TwinNode>) => {
+    if (!simulationMode) return
+    detectSimulationTarget(node)
     node.fx = undefined
     node.fy = undefined
     node.fz = undefined
     graphRef.current?.d3ReheatSimulation()
+  }
+
+  const exitSimulation = () => {
+    activeProposalRef.current = null
+    onSimulationProposal(null)
+    graphData.nodes.forEach((node) => {
+      node.fx = undefined
+      node.fy = undefined
+      node.fz = undefined
+    })
+    onToggleSimulation()
+    graphRef.current?.d3ReheatSimulation()
+    window.setTimeout(() => graphRef.current?.zoomToFit(650, 20), 750)
   }
 
   return (
@@ -533,6 +558,7 @@ export function DigitalTwinNetwork3D({
         enableNodeDrag
         enableNavigationControls
         onNodeClick={focusNode}
+        onNodeDrag={detectSimulationTarget}
         onNodeDragEnd={handleSimulationDrop}
         onLinkClick={(link) => onSelectMatch(link.id)}
         onBackgroundClick={onClearSelection}
@@ -550,7 +576,7 @@ export function DigitalTwinNetwork3D({
 
       <button
         type="button"
-        onClick={onToggleSimulation}
+        onClick={simulationMode ? exitSimulation : onToggleSimulation}
         className={[
           'absolute right-4 top-4 z-10 flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold shadow-2xl backdrop-blur-xl transition',
           simulationMode
