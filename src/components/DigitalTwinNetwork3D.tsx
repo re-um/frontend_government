@@ -195,7 +195,7 @@ export function DigitalTwinNetwork3D({
     const selected =
       node.id === selectedCompanyId || simulationSource || simulationTarget
     const color = simulationSource
-      ? '#f59e0b'
+      ? '#ff2bd6'
       : simulationTarget || node.id === selectedCompanyId
         ? '#bef264'
         : node.color
@@ -206,7 +206,7 @@ export function DigitalTwinNetwork3D({
 
     if (node.type === 'processor') {
       const glow = new Mesh(
-        new SphereGeometry(selected ? 13.5 : 12, 40, 40),
+        new SphereGeometry(selected ? 13.5 : 12, 24, 24),
         new MeshBasicMaterial({
           color,
           transparent: true,
@@ -218,7 +218,7 @@ export function DigitalTwinNetwork3D({
       group.add(glow)
 
       const core = new Mesh(
-        new SphereGeometry(8.2, 48, 48),
+        new SphereGeometry(8.2, 28, 28),
         new MeshPhysicalMaterial({
           color: new Color(color),
           roughness: 0.12,
@@ -237,7 +237,7 @@ export function DigitalTwinNetwork3D({
       group.add(core)
 
       const innerCore = new Mesh(
-        new SphereGeometry(4.8, 32, 32),
+        new SphereGeometry(4.8, 20, 20),
         new MeshPhysicalMaterial({
           color: '#d5fff7',
           roughness: 0.2,
@@ -252,7 +252,7 @@ export function DigitalTwinNetwork3D({
 
       ;[11, 13.5].forEach((radius, index) => {
         const orbit = new Mesh(
-          new TorusGeometry(radius, index ? 0.1 : 0.16, 12, 80),
+          new TorusGeometry(radius, index ? 0.1 : 0.16, 8, 40),
           new MeshBasicMaterial({
             color,
             transparent: true,
@@ -358,7 +358,7 @@ export function DigitalTwinNetwork3D({
     label.position.y = node.type === 'processor' ? -14 : -8.5
     label.backgroundColor = selected
       ? simulationSource
-        ? 'rgba(120, 53, 15, 0.94)'
+        ? 'rgba(112, 0, 93, 0.96)'
         : 'rgba(54, 83, 20, 0.92)'
       : 'rgba(3, 10, 24, 0.78)'
     label.padding = 2.2
@@ -369,11 +369,11 @@ export function DigitalTwinNetwork3D({
       const roleBadge = new SpriteText(
         simulationSource ? '이동 기업' : '비교 대상',
       )
-      roleBadge.color = simulationSource ? '#fde68a' : '#ecfccb'
+      roleBadge.color = simulationSource ? '#ffffff' : '#ecfccb'
       roleBadge.textHeight = 2.5
       roleBadge.position.y = node.type === 'processor' ? 16 : 11
       roleBadge.backgroundColor = simulationSource
-        ? 'rgba(120, 53, 15, 0.95)'
+        ? 'rgba(128, 0, 107, 0.97)'
         : 'rgba(54, 83, 20, 0.95)'
       roleBadge.padding = 2
       roleBadge.borderRadius = 5
@@ -389,6 +389,9 @@ export function DigitalTwinNetwork3D({
     if (!scene || scene.userData.twinInitialized) return
     scene.userData.twinInitialized = true
     scene.fog = new FogExp2('#030712', 0.001)
+    graphRef.current
+      ?.renderer()
+      .setPixelRatio(Math.min(window.devicePixelRatio, size.width < 768 ? 1 : 1.5))
 
     const composer = graphRef.current?.postProcessingComposer()
     if (composer) {
@@ -409,8 +412,8 @@ export function DigitalTwinNetwork3D({
 
     ;[105, 155, 215, 285, 365].forEach((radius, index) => {
       const points: Vector3[] = []
-      for (let step = 0; step < 128; step += 1) {
-        const angle = (step / 128) * Math.PI * 2
+      for (let step = 0; step < 64; step += 1) {
+        const angle = (step / 64) * Math.PI * 2
         points.push(
           new Vector3(
             Math.cos(angle) * radius,
@@ -443,7 +446,8 @@ export function DigitalTwinNetwork3D({
     translate?: { x: number; y: number },
   ) => {
     if (!simulationMode) return
-    if (translate && Math.hypot(translate.x, translate.y) < 24) return
+    // 드래그 이벤트의 translate 값은 브라우저/프레임마다 작게 나뉠 수 있다.
+    // 최소 이동거리 제한을 두지 않아 드래그하는 즉시 비교 대상을 찾는다.
     const sourceId = String(node.id)
     const endpointId = (endpoint: string | TwinNode) =>
       typeof endpoint === 'object' ? String(endpoint.id) : String(endpoint)
@@ -570,9 +574,9 @@ export function DigitalTwinNetwork3D({
           link.id === selectedMatchId ? 3.2 : 1.65
         }
         linkDirectionalParticleSpeed={(link) => 0.0025 + link.weight * 0.005}
-        cooldownTicks={130}
-        d3AlphaDecay={0.025}
-        d3VelocityDecay={0.3}
+        cooldownTicks={75}
+        d3AlphaDecay={0.04}
+        d3VelocityDecay={0.34}
         enableNodeDrag
         enableNavigationControls
         onNodeClick={focusNode}

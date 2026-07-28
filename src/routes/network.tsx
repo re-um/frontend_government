@@ -689,6 +689,18 @@ function NetworkMapPage() {
     targetId: string
   } | null>(null)
 
+  // 사용자가 3D 버튼을 누르기 전에 무거운 Three.js 청크를 유휴 시간에
+  // 미리 받아 두어 첫 진입 대기 시간을 줄인다.
+  useEffect(() => {
+    const preload = () => void import('../components/DigitalTwinNetwork3D')
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(preload, { timeout: 1500 })
+      return () => window.cancelIdleCallback(idleId)
+    }
+    const timerId = window.setTimeout(preload, 400)
+    return () => window.clearTimeout(timerId)
+  }, [])
+
   const selectedNetwork = useMemo(
     () =>
       viewMode === 'twin3d' && selectedCompany
