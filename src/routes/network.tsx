@@ -1546,51 +1546,134 @@ function SimulationPanel({
     targetNetwork.matches.reduce((sum, match) => sum + match.score, 0) /
       Math.max(targetNetwork.matches.length, 1),
   )
-  const materialKey = (material: string) =>
-    material.replace(/폐|재생|\s|·/g, '').toUpperCase()
-  const compatible =
-    materialKey(source.material).includes(materialKey(target.material)) ||
-    materialKey(target.material).includes(materialKey(source.material))
-  const projectedFlow = Math.round(
-    Math.min(source.monthlyAmount, target.monthlyAmount) *
-      (compatible ? 0.82 : 0.58),
+  const materialTokens = (material: string) =>
+    ['PP', 'PE', 'PET', 'PS', 'ABS'].filter((token) =>
+      material.toUpperCase().includes(token),
+    )
+  const sourceMaterials = materialTokens(source.material)
+  const targetMaterials = new Set(
+    targetNetwork.companies.flatMap((company) =>
+      materialTokens(company.material),
+    ),
   )
-  const projectedCarbon = projectedFlow * (compatible ? 0.72 : 0.54)
-  const projectedScore = Math.min(
-    98,
-    Math.round(beforeScore * 0.72 + (compatible ? 94 : 76) * 0.28),
+  const materialScore =
+    sourceMaterials.length > 0 &&
+    sourceMaterials.some((material) => targetMaterials.has(material))
+      ? 100
+      : 28
+  const roleScore =
+    source.type === target.type
+      ? 32
+      : source.type === 'processor' || target.type === 'processor'
+        ? 96
+        : 82
+  const amountScore = Math.round(
+    (Math.min(source.monthlyAmount, target.monthlyAmount) /
+      Math.max(source.monthlyAmount, target.monthlyAmount, 1)) *
+      100,
   )
-  const beforeBalance = Math.min(
-    96,
-    Math.round((beforeFlow / Math.max(beforeFlow + 45, 1)) * 100),
+  const toRadians = (value: number) => (value * Math.PI) / 180
+  const latitudeDelta = toRadians(target.latitude - source.latitude)
+  const longitudeDelta = toRadians(target.longitude - source.longitude)
+  const distanceA =
+    Math.sin(latitudeDelta / 2) ** 2 +
+    Math.cos(toRadians(source.latitude)) *
+      Math.cos(toRadians(target.latitude)) *
+      Math.sin(longitudeDelta / 2) ** 2
+  const distanceKm =
+    6371 * 2 * Math.atan2(Math.sqrt(distanceA), Math.sqrt(1 - distanceA))
+  const distanceScore = Math.max(8, Math.round(100 - distanceKm / 4.5))
+  const networkCapacity = targetNetwork.companies.reduce(
+    (sum, company) => sum + company.monthlyAmount,
+    0,
   )
-  const afterBalance = Math.min(98, beforeBalance + (compatible ? 9 : 4))
+  const utilization = beforeFlow / Math.max(networkCapacity, 1)
+  const capacityScore = Math.max(
+    12,
+    Math.min(100, Math.round((1.08 - utilization) * 115)),
+  )
+  const combinationScore = Math.round(
+    materialScore * 0.3 +
+      amountScore * 0.25 +
+      distanceScore * 0.2 +
+      roleScore * 0.15 +
+      capacityScore * 0.1,
+  )
+  const changeRate =
+    combinationScore >= 80
+      ? 0.08 + ((combinationScore - 80) / 20) * 0.1
+      : combinationScore >= 60
+        ? -0.02 + ((combinationScore - 60) / 20) * 0.08
+        : -0.06 - ((60 - combinationScore) / 60) * 0.12
+  const afterFlow = Math.max(0, Math.round(beforeFlow * (1 + changeRate)))
+  const transportPenalty = Math.max(0, distanceKm - 80) * 0.018
+  const afterCarbon = Math.max(
+    0,
+    beforeCarbon * (1 + changeRate * 1.18) - transportPenalty,
+  )
+  const projectedScore = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(
+        (beforeScore * targetNetwork.matches.length + combinationScore) /
+          Math.max(targetNetwork.matches.length + 1, 1),
+      ),
+    ),
+  )
+  const networkSupply = targetNetwork.companies
+    .filter((company) => company.type !== 'consumer')
+    .reduce((sum, company) => sum + company.monthlyAmount, 0)
+  const networkDemand = targetNetwork.companies
+    .filter((company) => company.type === 'consumer')
+    .reduce((sum, company) => sum + company.monthlyAmount, 0)
+  const balanceScore = (supply: number, demand: number) =>
+    Math.round(
+      (Math.min(supply, demand) / Math.max(supply, demand, 1)) * 100,
+    )
+  const beforeBalance = balanceScore(networkSupply, networkDemand)
+  const afterSupply =
+    networkSupply + (source.type === 'consumer' ? 0 : source.monthlyAmount)
+  const afterDemand =
+    networkDemand + (source.type === 'consumer' ? source.monthlyAmount : 0)
+  const afterBalance = balanceScore(afterSupply, afterDemand)
+  const verdict =
+    combinationScore >= 80
+      ? { label: '개선 예상', className: 'bg-emerald-100 text-emerald-700' }
+      : combinationScore >= 60
+        ? { label: '변화 제한적', className: 'bg-amber-100 text-amber-700' }
+        : { label: '악화 가능성', className: 'bg-rose-100 text-rose-700' }
 
   const comparisons = [
     {
       label: '참여 기업',
       before: `${targetNetwork.companies.length}개`,
       after: `${targetNetwork.companies.length + 1}개`,
+      direction: 0,
     },
     {
-      label: '월 자원순환량',
+      label: '유효 자원순환량',
       before: `${beforeFlow}t`,
-      after: `${beforeFlow + projectedFlow}t`,
+      after: `${afterFlow}t`,
+      direction: Math.sign(afterFlow - beforeFlow),
     },
     {
       label: '예상 탄소감축',
       before: `${beforeCarbon.toFixed(1)}t`,
-      after: `${(beforeCarbon + projectedCarbon).toFixed(1)}t`,
+      after: `${afterCarbon.toFixed(1)}t`,
+      direction: Math.sign(afterCarbon - beforeCarbon),
     },
     {
       label: '평균 매칭 적합도',
       before: `${beforeScore}점`,
       after: `${projectedScore}점`,
+      direction: Math.sign(projectedScore - beforeScore),
     },
     {
       label: '공급·수요 균형',
       before: `${beforeBalance}%`,
       after: `${afterBalance}%`,
+      direction: Math.sign(afterBalance - beforeBalance),
     },
   ]
 
@@ -1610,6 +1693,16 @@ function SimulationPanel({
         <p className="mt-2 text-[11px] leading-4 text-slate-500">
           실제 연결은 변경되지 않은 가상 후보안입니다.
         </p>
+        <div className="mt-3 flex items-center justify-between border-t border-lime-200 pt-3">
+          <span className="text-[11px] text-slate-500">
+            종합 적합도 {combinationScore}점 · 거리 {Math.round(distanceKm)}km
+          </span>
+          <span
+            className={`rounded-full px-2 py-1 text-[10px] font-bold ${verdict.className}`}
+          >
+            {verdict.label}
+          </span>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-slate-200">
@@ -1628,7 +1721,21 @@ function SimulationPanel({
               <span className="text-right font-semibold text-slate-600">
                 {item.before}
               </span>
-              <span className="text-right font-bold text-emerald-600">
+              <span
+                className={[
+                  'text-right font-bold',
+                  item.direction === 0
+                    ? 'text-slate-700'
+                    : item.direction > 0
+                      ? 'text-emerald-600'
+                      : 'text-rose-600',
+                ].join(' ')}
+              >
+                {item.direction !== 0
+                  ? item.direction > 0
+                    ? '▲ '
+                    : '▼ '
+                  : ''}
                 {item.after}
               </span>
             </div>
