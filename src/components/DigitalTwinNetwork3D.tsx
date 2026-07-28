@@ -162,20 +162,34 @@ export function DigitalTwinNetwork3D({
         new SphereGeometry(8.2, 48, 48),
         new MeshPhysicalMaterial({
           color: new Color(color),
-          roughness: 0.04,
-          metalness: 0.18,
+          roughness: 0.12,
+          metalness: 0.08,
           clearcoat: 1,
-          clearcoatRoughness: 0.04,
-          transmission: 0.55,
+          clearcoatRoughness: 0.08,
+          transmission: 0.68,
           thickness: 2.8,
           ior: 1.38,
           transparent: true,
-          opacity: 0.88,
+          opacity: 0.82,
           emissive: new Color(color),
-          emissiveIntensity: selected ? 1.25 : 0.72,
+          emissiveIntensity: selected ? 0.62 : 0.24,
         }),
       )
       group.add(core)
+
+      const innerCore = new Mesh(
+        new SphereGeometry(4.8, 32, 32),
+        new MeshPhysicalMaterial({
+          color: '#d5fff7',
+          roughness: 0.2,
+          metalness: 0.12,
+          transparent: true,
+          opacity: 0.78,
+          emissive: new Color(color),
+          emissiveIntensity: selected ? 0.72 : 0.36,
+        }),
+      )
+      group.add(innerCore)
 
       ;[11, 13.5].forEach((radius, index) => {
         const orbit = new Mesh(
@@ -207,20 +221,40 @@ export function DigitalTwinNetwork3D({
         bodyGeometry,
         new MeshPhysicalMaterial({
           color: node.type === 'emitter' ? '#071a36' : '#10230d',
-          metalness: 0.42,
-          roughness: 0.08,
+          metalness: 0.34,
+          roughness: 0.16,
           clearcoat: 1,
-          clearcoatRoughness: 0.05,
-          transmission: node.type === 'consumer' ? 0.34 : 0.18,
+          clearcoatRoughness: 0.1,
+          transmission: node.type === 'consumer' ? 0.48 : 0.24,
           thickness: 1.8,
           transparent: true,
-          opacity: selected ? 0.98 : 0.9,
+          opacity: selected ? 0.94 : 0.86,
           emissive: new Color(color),
-          emissiveIntensity: selected ? 0.9 : 0.38,
+          emissiveIntensity: selected ? 0.48 : 0.16,
         }),
       )
       body.rotation.set(0.1, 0.42, 0)
       group.add(body)
+
+      const glassShell = new Mesh(
+        bodyGeometry.clone(),
+        new MeshPhysicalMaterial({
+          color: new Color(color),
+          roughness: 0.04,
+          metalness: 0,
+          clearcoat: 1,
+          transmission: 0.82,
+          thickness: 0.8,
+          transparent: true,
+          opacity: 0.14,
+          emissive: new Color(color),
+          emissiveIntensity: selected ? 0.24 : 0.06,
+          depthWrite: false,
+        }),
+      )
+      glassShell.scale.setScalar(1.14)
+      glassShell.rotation.copy(body.rotation)
+      group.add(glassShell)
 
       const edges = new LineSegments(
         new EdgesGeometry(bodyGeometry),
@@ -283,9 +317,9 @@ export function DigitalTwinNetwork3D({
     if (composer) {
       const bloom = new UnrealBloomPass(
         new Vector2(size.width, size.height),
-        size.width < 768 ? 0.48 : 0.72,
-        0.52,
-        0.72,
+        size.width < 768 ? 0.18 : 0.32,
+        0.28,
+        0.86,
       )
       composer.addPass(bloom)
     }
@@ -366,7 +400,7 @@ export function DigitalTwinNetwork3D({
         linkWidth={(link) =>
           link.id === selectedMatchId ? 3.2 : Math.max(0.7, link.amount / 32)
         }
-        linkOpacity={0.64}
+        linkOpacity={0.76}
         linkCurvature={0.18}
         linkDirectionalArrowLength={3}
         linkDirectionalArrowRelPos={0.86}
@@ -374,7 +408,7 @@ export function DigitalTwinNetwork3D({
           !flowing ? 0 : link.id === selectedMatchId ? 7 : link.status === 'pending' ? 0 : 3
         }
         linkDirectionalParticleWidth={(link) =>
-          link.id === selectedMatchId ? 3.8 : 2.2
+          link.id === selectedMatchId ? 3.2 : 1.65
         }
         linkDirectionalParticleSpeed={0.005}
         cooldownTicks={130}
@@ -427,32 +461,53 @@ export function DigitalTwinNetwork3D({
 
 function createPedestal(color: string, selected: boolean) {
   const group = new Group()
-  const base = new Mesh(
-    new CylinderGeometry(7.4, 8.6, 1.3, 8),
-    new MeshPhysicalMaterial({
-      color: '#07111f',
-      metalness: 0.82,
-      roughness: 0.24,
-      clearcoat: 1,
-      emissive: new Color(color),
-      emissiveIntensity: selected ? 0.3 : 0.12,
-    }),
-  )
-  group.add(base)
+  const tiers = [
+    { top: 7.6, bottom: 8.8, height: 1.1, y: -0.45, tone: '#050b15' },
+    { top: 6.8, bottom: 7.6, height: 0.75, y: 0.45, tone: '#0a1727' },
+    { top: 5.9, bottom: 6.5, height: 0.45, y: 1.05, tone: '#10243a' },
+  ]
+
+  tiers.forEach((tier, index) => {
+    const base = new Mesh(
+      new CylinderGeometry(tier.top, tier.bottom, tier.height, 8),
+      new MeshPhysicalMaterial({
+        color: tier.tone,
+        metalness: 0.84 - index * 0.08,
+        roughness: 0.2 + index * 0.05,
+        clearcoat: 1,
+        emissive: new Color(color),
+        emissiveIntensity: selected ? 0.16 : 0.035,
+      }),
+    )
+    base.position.y = tier.y
+    group.add(base)
+  })
 
   const lightBand = new Mesh(
     new TorusGeometry(7.25, 0.12, 8, 64),
     new MeshBasicMaterial({
       color,
       transparent: true,
-      opacity: selected ? 0.95 : 0.62,
+      opacity: selected ? 0.9 : 0.48,
       blending: AdditiveBlending,
       depthWrite: false,
     }),
   )
   lightBand.rotation.x = Math.PI / 2
-  lightBand.position.y = 0.72
+  lightBand.position.y = 0.88
   group.add(lightBand)
+
+  const topDisc = new Mesh(
+    new CylinderGeometry(5.4, 5.4, 0.12, 48),
+    new MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: selected ? 0.22 : 0.09,
+      depthWrite: false,
+    }),
+  )
+  topDisc.position.y = 1.32
+  group.add(topDisc)
   return group
 }
 
