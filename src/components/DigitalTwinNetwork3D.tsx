@@ -197,7 +197,9 @@ export function DigitalTwinNetwork3D({
     const color = simulationSource
       ? '#ff2bd6'
       : simulationTarget || node.id === selectedCompanyId
-        ? '#bef264'
+        ? simulationTarget
+          ? '#00f5ff'
+          : '#bef264'
         : node.color
 
     const pedestal = createPedestal(color, selected)
@@ -350,6 +352,23 @@ export function DigitalTwinNetwork3D({
         pulse.position.y = node.type === 'processor' ? -10 : -7
         group.add(pulse)
       })
+
+      if (simulationTarget) {
+        const targetHalo = new Mesh(
+          new RingGeometry(16.8, 17.55, 72),
+          new MeshBasicMaterial({
+            color: '#ffffff',
+            transparent: true,
+            opacity: 0.92,
+            blending: AdditiveBlending,
+            depthWrite: false,
+            side: 2,
+          }),
+        )
+        targetHalo.rotation.x = Math.PI / 2
+        targetHalo.position.y = node.type === 'processor' ? -10 : -7
+        group.add(targetHalo)
+      }
     }
 
     const label = new SpriteText(node.name)
@@ -359,7 +378,9 @@ export function DigitalTwinNetwork3D({
     label.backgroundColor = selected
       ? simulationSource
         ? 'rgba(112, 0, 93, 0.96)'
-        : 'rgba(54, 83, 20, 0.92)'
+        : simulationTarget
+          ? 'rgba(0, 76, 84, 0.96)'
+          : 'rgba(54, 83, 20, 0.92)'
       : 'rgba(3, 10, 24, 0.78)'
     label.padding = 2.2
     label.borderRadius = 5
@@ -369,12 +390,12 @@ export function DigitalTwinNetwork3D({
       const roleBadge = new SpriteText(
         simulationSource ? '이동 기업' : '비교 대상',
       )
-      roleBadge.color = simulationSource ? '#ffffff' : '#ecfccb'
+      roleBadge.color = '#ffffff'
       roleBadge.textHeight = 2.5
       roleBadge.position.y = node.type === 'processor' ? 16 : 11
       roleBadge.backgroundColor = simulationSource
         ? 'rgba(128, 0, 107, 0.97)'
-        : 'rgba(54, 83, 20, 0.95)'
+        : 'rgba(0, 104, 116, 0.97)'
       roleBadge.padding = 2
       roleBadge.borderRadius = 5
       group.add(roleBadge)
