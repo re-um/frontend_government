@@ -41,6 +41,7 @@ interface TwinNode {
   material: string
   amount: number
   color: string
+  weight: number
 }
 
 interface TwinLink {
@@ -51,6 +52,9 @@ interface TwinLink {
   amount: number
   status: MatchStatus
   color: string
+  score: number
+  carbonReduction: number
+  weight: number
 }
 
 const nodeColors: Record<CompanyType, string> = {
@@ -81,6 +85,8 @@ export function DigitalTwinNetwork3D({
     type: CompanyType
     material: string
     monthlyAmount: number
+    connections: number
+    approvedMatches: number
   }>
   matches: Array<{
     id: string
@@ -89,6 +95,8 @@ export function DigitalTwinNetwork3D({
     material: string
     amount: number
     status: MatchStatus
+    score: number
+    carbonReduction: number
   }>
   visibleCompanyIds: Set<string>
   selectedCompanyId?: string
@@ -119,6 +127,27 @@ export function DigitalTwinNetwork3D({
   }, [])
 
   const graphData = useMemo(() => {
+    const maxAmount = Math.max(...companies.map((company) => company.monthlyAmount), 1)
+    const maxConnections = Math.max(...companies.map((company) => company.connections), 1)
+    const maxApproved = Math.max(...companies.map((company) => company.approvedMatches), 1)
+    const companyCarbon = new Map<string, number>()
+    matches.forEach((match) => {
+      companyCarbon.set(
+        match.source,
+        (companyCarbon.get(match.source) ?? 0) + match.carbonReduction,
+      )
+      companyCarbon.set(
+        match.target,
+        (companyCarbon.get(match.target) ?? 0) + match.carbonReduction,
+      )
+    })
+    const maxCompanyCarbon = Math.max(...companyCarbon.values(), 1)
+    const maxLinkAmount = Math.max(...matches.map((match) => match.amount), 1)
+    const maxLinkCarbon = Math.max(
+      ...matches.map((match) => match.carbonReduction),
+      1,
+    )
+
     const nodes: TwinNode[] = companies
       .filter((company) => visibleCompanyIds.has(company.id))
       .map((company) => ({
@@ -128,11 +157,24 @@ export function DigitalTwinNetwork3D({
         material: company.material,
         amount: company.monthlyAmount,
         color: nodeColors[company.type],
+        weight:
+          (company.connections / maxConnections) * 0.35 +
+          (company.monthlyAmount / maxAmount) * 0.3 +
+          ((companyCarbon.get(company.id) ?? 0) / maxCompanyCarbon) * 0.2 +
+          (company.approvedMatches / maxApproved) * 0.15,
       }))
     const ids = new Set(nodes.map((node) => node.id))
     const links: TwinLink[] = matches
       .filter((match) => ids.has(match.source) && ids.has(match.target))
-      .map((match) => ({ ...match, color: linkColors[match.status] }))
+      .map((match) => ({
+        ...match,
+        color: linkColors[match.status],
+        weight:
+          (match.amount / maxLinkAmount) * 0.4 +
+          (match.score / 100) * 0.25 +
+          (match.carbonReduction / maxLinkCarbon) * 0.2 +
+          ({ approved: 1, active: 0.72, pending: 0.4 }[match.status] * 0.15),
+      }))
     return { nodes, links }
   }, [companies, matches, visibleCompanyIds])
 
@@ -304,6 +346,7 @@ export function DigitalTwinNetwork3D({
     label.borderRadius = 5
     group.add(label)
 
+    group.scale.setScalar(0.82 + node.weight * 0.42)
     return group
   }
 
@@ -398,19 +441,25 @@ export function DigitalTwinNetwork3D({
           selectedMatchId && link.id !== selectedMatchId ? '#1e293b' : link.color
         }
         linkWidth={(link) =>
-          link.id === selectedMatchId ? 3.2 : Math.max(0.7, link.amount / 32)
+          link.id === selectedMatchId ? 3.2 : 0.55 + link.weight * 2.15
         }
         linkOpacity={0.76}
         linkCurvature={0.18}
         linkDirectionalArrowLength={3}
         linkDirectionalArrowRelPos={0.86}
         linkDirectionalParticles={(link) =>
-          !flowing ? 0 : link.id === selectedMatchId ? 7 : link.status === 'pending' ? 0 : 3
+          !flowing
+            ? 0
+            : link.id === selectedMatchId
+              ? 7
+              : link.status === 'pending'
+                ? 0
+                : Math.max(2, Math.round(link.weight * 5))
         }
         linkDirectionalParticleWidth={(link) =>
           link.id === selectedMatchId ? 3.2 : 1.65
         }
-        linkDirectionalParticleSpeed={0.005}
+        linkDirectionalParticleSpeed={(link) => 0.0025 + link.weight * 0.005}
         cooldownTicks={130}
         d3AlphaDecay={0.025}
         d3VelocityDecay={0.3}

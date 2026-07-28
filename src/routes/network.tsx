@@ -641,6 +641,35 @@ const matches: MatchDetail[] = [
   { id: 'match-33', source: 'processor-g', target: 'consumer-o', material: '재생 PP', amount: 30, score: 84, roi: 12.1, carbonReduction: 21.7, status: 'active' },
 ]
 
+function getCompanyNetwork(companyId: string) {
+  const connectedIds = new Set<string>([companyId])
+  const queue = [companyId]
+
+  while (queue.length > 0) {
+    const currentId = queue.shift()!
+    matches.forEach((match) => {
+      const neighbor =
+        match.source === currentId
+          ? match.target
+          : match.target === currentId
+            ? match.source
+            : null
+      if (neighbor && !connectedIds.has(neighbor)) {
+        connectedIds.add(neighbor)
+        queue.push(neighbor)
+      }
+    })
+  }
+
+  return {
+    companies: companies.filter((company) => connectedIds.has(company.id)),
+    matches: matches.filter(
+      (match) =>
+        connectedIds.has(match.source) && connectedIds.has(match.target),
+    ),
+  }
+}
+
 function NetworkMapPage() {
   const graphContainerRef = useRef<HTMLDivElement | null>(null)
   const cyRef = useRef<Core | null>(null)
@@ -654,6 +683,14 @@ function NetworkMapPage() {
   const [selectedCompany, setSelectedCompany] =
     useState<CompanyDetail | null>(companies[3])
   const [selectedMatch, setSelectedMatch] = useState<MatchDetail | null>(null)
+
+  const selectedNetwork = useMemo(
+    () =>
+      viewMode === 'twin3d' && selectedCompany
+        ? getCompanyNetwork(selectedCompany.id)
+        : null,
+    [selectedCompany, viewMode],
+  )
 
   const filteredCompanyIds = useMemo(() => {
     return new Set(
@@ -1255,7 +1292,14 @@ function NetworkMapPage() {
         </main>
 
         <aside className="border-t border-slate-200 bg-white p-5 xl:border-l xl:border-t-0">
-          {selectedCompany ? (
+          {selectedNetwork && selectedCompany ? (
+            <NetworkPanel
+              anchorCompany={selectedCompany}
+              networkCompanies={selectedNetwork.companies}
+              networkMatches={selectedNetwork.matches}
+              onClose={() => setSelectedCompany(null)}
+            />
+          ) : selectedCompany ? (
             <CompanyPanel
               company={selectedCompany}
               onClose={() => setSelectedCompany(null)}
@@ -1429,6 +1473,148 @@ function GraphButton({
     >
       {children}
     </button>
+  )
+}
+
+function NetworkPanel({
+  anchorCompany,
+  networkCompanies,
+  networkMatches,
+  onClose,
+}: {
+  anchorCompany: CompanyDetail
+  networkCompanies: CompanyDetail[]
+  networkMatches: MatchDetail[]
+  onClose: () => void
+}) {
+  const companyMetrics = networkCompanies.map((company) => {
+    const relatedMatches = networkMatches.filter(
+      (match) => match.source === company.id || match.target === company.id,
+    )
+    return {
+      company,
+      connections: relatedMatches.length,
+      approved: relatedMatches.filter((match) => match.status === 'approved')
+        .length,
+      carbon: relatedMatches.reduce(
+        (sum, match) => sum + match.carbonReduction,
+        0,
+      ),
+    }
+  })
+  const maxConnections = Math.max(
+    ...companyMetrics.map((item) => item.connections),
+    1,
+  )
+  const maxAmount = Math.max(
+    ...companyMetrics.map((item) => item.company.monthlyAmount),
+    1,
+  )
+  const maxApproved = Math.max(
+    ...companyMetrics.map((item) => item.approved),
+    1,
+  )
+  const maxCarbon = Math.max(...companyMetrics.map((item) => item.carbon), 1)
+  const weightedCompanies = companyMetrics
+    .map((item) => ({
+      ...item,
+      importance: Math.round(
+        ((item.connections / maxConnections) * 0.35 +
+          (item.company.monthlyAmount / maxAmount) * 0.3 +
+          (item.carbon / maxCarbon) * 0.2 +
+          (item.approved / maxApproved) * 0.15) *
+          100,
+      ),
+    }))
+    .sort((a, b) => b.importance - a.importance)
+  const totalAmount = networkMatches.reduce(
+    (sum, match) => sum + match.amount,
+    0,
+  )
+  const totalCarbon = networkMatches.reduce(
+    (sum, match) => sum + match.carbonReduction,
+    0,
+  )
+
+  return (
+    <div>
+      <PanelHeader title="네트워크 분석" onClose={onClose} />
+
+      <div className="mb-4 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-blue-50 p-4">
+        <p className="text-xs font-semibold text-cyan-700">선택 기준 기업</p>
+        <p className="mt-1 font-bold text-slate-950">{anchorCompany.name}</p>
+        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+          <NetworkMetric label="기업" value={`${networkCompanies.length}개`} />
+          <NetworkMetric label="이동량" value={`${totalAmount}t`} />
+          <NetworkMetric
+            label="탄소감축"
+            value={`${totalCarbon.toFixed(1)}t`}
+          />
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          기업별 가중치
+        </h3>
+        <p className="mt-1 text-[11px] leading-4 text-slate-400">
+          연결 수 35% · 월 물량 30% · 탄소감축 20% · 승인 연결 15%
+        </p>
+      </div>
+
+      <div className="max-h-105 overflow-auto rounded-xl border border-slate-200">
+        <table className="w-full table-fixed text-left text-[11px]">
+          <thead className="sticky top-0 bg-slate-50 text-slate-500">
+            <tr>
+              <th className="w-[42%] px-2.5 py-2 font-semibold">기업</th>
+              <th className="w-[19%] px-1 py-2 font-semibold">유형</th>
+              <th className="w-[19%] px-1 py-2 text-right font-semibold">
+                물량
+              </th>
+              <th className="w-[20%] px-2.5 py-2 text-right font-semibold">
+                중요도
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {weightedCompanies.map(({ company, importance }) => (
+              <tr
+                key={company.id}
+                className={
+                  company.id === anchorCompany.id ? 'bg-lime-50' : 'bg-white'
+                }
+              >
+                <td className="truncate px-2.5 py-2.5 font-semibold text-slate-900">
+                  {company.name}
+                </td>
+                <td className="px-1 py-2.5 text-slate-500">
+                  {companyTypeLabel[company.type].replace('기업', '')}
+                </td>
+                <td className="px-1 py-2.5 text-right text-slate-600">
+                  {company.monthlyAmount}t
+                </td>
+                <td className="px-2.5 py-2.5 text-right">
+                  <span className="font-bold text-cyan-700">{importance}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="mt-3 text-[11px] leading-4 text-slate-400">
+        중요도가 높은 기업일수록 3D 화면에서 크게 표시됩니다.
+      </p>
+    </div>
+  )
+}
+
+function NetworkMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-white/80 px-1 py-2 shadow-sm">
+      <div className="text-[10px] text-slate-400">{label}</div>
+      <div className="mt-0.5 text-xs font-bold text-slate-900">{value}</div>
+    </div>
   )
 }
 
