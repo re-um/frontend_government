@@ -683,12 +683,6 @@ function NetworkMapPage() {
   const [selectedCompany, setSelectedCompany] =
     useState<CompanyDetail | null>(companies[3])
   const [selectedMatch, setSelectedMatch] = useState<MatchDetail | null>(null)
-  const [simulationMode, setSimulationMode] = useState(false)
-  const [simulationProposal, setSimulationProposal] = useState<{
-    sourceId: string
-    targetId: string
-  } | null>(null)
-
   // 사용자가 3D 버튼을 누르기 전에 무거운 Three.js 청크를 유휴 시간에
   // 미리 받아 두어 첫 진입 대기 시간을 줄인다.
   useEffect(() => {
@@ -1283,25 +1277,6 @@ function NetworkMapPage() {
                   setSelectedCompany(null)
                   setSelectedMatch(null)
                 }}
-                simulationMode={simulationMode}
-                simulationProposal={simulationProposal}
-                onToggleSimulation={() => {
-                  setSimulationMode((current) => !current)
-                  setSimulationProposal(null)
-                  setSelectedCompany(null)
-                  setSelectedMatch(null)
-                }}
-                onSimulationProposal={(proposal) => {
-                  setSimulationProposal(proposal)
-                  setSelectedCompany(
-                    proposal
-                      ? companies.find(
-                          (company) => company.id === proposal.targetId,
-                        ) ?? null
-                      : null,
-                  )
-                  setSelectedMatch(null)
-                }}
               />
             </Suspense>
           )}
@@ -1328,16 +1303,7 @@ function NetworkMapPage() {
         </main>
 
         <aside className="border-t border-slate-200 bg-white p-5 xl:border-l xl:border-t-0">
-          {viewMode === 'twin3d' && simulationProposal ? (
-            <SimulationPanel
-              proposal={simulationProposal}
-              onReset={() => setSimulationProposal(null)}
-              onClose={() => {
-                setSimulationProposal(null)
-                setSimulationMode(false)
-              }}
-            />
-          ) : selectedNetwork && selectedCompany ? (
+          {selectedNetwork && selectedCompany ? (
             <NetworkPanel
               anchorCompany={selectedCompany}
               networkCompanies={selectedNetwork.companies}

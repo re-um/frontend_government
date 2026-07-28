@@ -28,7 +28,7 @@ import {
 } from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
-import { FlaskConical, Maximize2, Pause, Play, RotateCcw } from 'lucide-react'
+import { Maximize2, Pause, Play, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 type CompanyType = 'emitter' | 'processor' | 'consumer'
@@ -78,10 +78,6 @@ export function DigitalTwinNetwork3D({
   onSelectCompany,
   onSelectMatch,
   onClearSelection,
-  simulationMode,
-  simulationProposal,
-  onToggleSimulation,
-  onSimulationProposal,
 }: {
   companies: Array<{
     id: string
@@ -108,19 +104,12 @@ export function DigitalTwinNetwork3D({
   onSelectCompany: (id: string) => void
   onSelectMatch: (id: string) => void
   onClearSelection: () => void
-  simulationMode: boolean
-  simulationProposal: { sourceId: string; targetId: string } | null
-  onToggleSimulation: () => void
-  onSimulationProposal: (
-    proposal: { sourceId: string; targetId: string } | null,
-  ) => void
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const graphRef =
     useRef<ForceGraphMethods<TwinNode, TwinLink> | undefined>(undefined)
   const [size, setSize] = useState({ width: 800, height: 680 })
   const [flowing, setFlowing] = useState(true)
-  const activeProposalRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -190,17 +179,8 @@ export function DigitalTwinNetwork3D({
 
   const createPlatform = (node: NodeObject<TwinNode>) => {
     const group = new Group()
-    const simulationSource = simulationProposal?.sourceId === node.id
-    const simulationTarget = simulationProposal?.targetId === node.id
-    const selected =
-      node.id === selectedCompanyId || simulationSource || simulationTarget
-    const color = simulationSource
-      ? '#ff2bd6'
-      : simulationTarget || node.id === selectedCompanyId
-        ? simulationTarget
-          ? '#00f5ff'
-          : '#bef264'
-        : node.color
+    const selected = node.id === selectedCompanyId
+    const color = selected ? '#bef264' : node.color
 
     const pedestal = createPedestal(color, selected)
     pedestal.position.y = node.type === 'processor' ? -9.8 : -6.7
@@ -353,22 +333,6 @@ export function DigitalTwinNetwork3D({
         group.add(pulse)
       })
 
-      if (simulationTarget) {
-        const targetHalo = new Mesh(
-          new RingGeometry(16.8, 17.55, 72),
-          new MeshBasicMaterial({
-            color: '#ffffff',
-            transparent: true,
-            opacity: 0.92,
-            blending: AdditiveBlending,
-            depthWrite: false,
-            side: 2,
-          }),
-        )
-        targetHalo.rotation.x = Math.PI / 2
-        targetHalo.position.y = node.type === 'processor' ? -10 : -7
-        group.add(targetHalo)
-      }
     }
 
     const label = new SpriteText(node.name)
@@ -376,30 +340,11 @@ export function DigitalTwinNetwork3D({
     label.textHeight = selected ? 3.5 : node.type === 'processor' ? 3.2 : 2.7
     label.position.y = node.type === 'processor' ? -14 : -8.5
     label.backgroundColor = selected
-      ? simulationSource
-        ? 'rgba(112, 0, 93, 0.96)'
-        : simulationTarget
-          ? 'rgba(0, 76, 84, 0.96)'
-          : 'rgba(54, 83, 20, 0.92)'
+      ? 'rgba(54, 83, 20, 0.92)'
       : 'rgba(3, 10, 24, 0.78)'
     label.padding = 2.2
     label.borderRadius = 5
     group.add(label)
-
-    if (simulationSource || simulationTarget) {
-      const roleBadge = new SpriteText(
-        simulationSource ? '이동 기업' : '비교 대상',
-      )
-      roleBadge.color = '#ffffff'
-      roleBadge.textHeight = 2.5
-      roleBadge.position.y = node.type === 'processor' ? 16 : 11
-      roleBadge.backgroundColor = simulationSource
-        ? 'rgba(128, 0, 107, 0.97)'
-        : 'rgba(0, 104, 116, 0.97)'
-      roleBadge.padding = 2
-      roleBadge.borderRadius = 5
-      group.add(roleBadge)
-    }
 
     group.scale.setScalar(0.82 + node.weight * 0.42)
     return group
@@ -458,95 +403,7 @@ export function DigitalTwinNetwork3D({
   }
 
   const focusNode = (node: NodeObject<TwinNode>) => {
-    if (simulationMode) return
     onSelectCompany(String(node.id))
-  }
-
-  const detectSimulationTarget = (
-    node: NodeObject<TwinNode>,
-    translate?: { x: number; y: number },
-  ) => {
-    if (!simulationMode) return
-    // 드래그 이벤트의 translate 값은 브라우저/프레임마다 작게 나뉠 수 있다.
-    // 최소 이동거리 제한을 두지 않아 드래그하는 즉시 비교 대상을 찾는다.
-    const sourceId = String(node.id)
-    const endpointId = (endpoint: string | TwinNode) =>
-      typeof endpoint === 'object' ? String(endpoint.id) : String(endpoint)
-    const sourceNetwork = new Set<string>([sourceId])
-    const queue = [sourceId]
-
-    while (queue.length > 0) {
-      const currentId = queue.shift()!
-      graphData.links.forEach((link) => {
-        const linkSource = endpointId(link.source)
-        const linkTarget = endpointId(link.target)
-        const neighbor =
-          linkSource === currentId
-            ? linkTarget
-            : linkTarget === currentId
-              ? linkSource
-              : null
-        if (neighbor && !sourceNetwork.has(neighbor)) {
-          sourceNetwork.add(neighbor)
-          queue.push(neighbor)
-        }
-      })
-    }
-
-    const candidates = graphData.nodes
-      .filter(
-        (candidate) =>
-          candidate.id !== sourceId &&
-          !sourceNetwork.has(candidate.id) &&
-          Number.isFinite(candidate.x) &&
-          Number.isFinite(candidate.y),
-      )
-      .map((candidate) => ({
-        candidate,
-        distance: Math.hypot(
-          (candidate.x ?? 0) - (node.x ?? 0),
-          (candidate.y ?? 0) - (node.y ?? 0),
-        ),
-      }))
-      .sort((a, b) => a.distance - b.distance)
-
-    const nearest = candidates[0]
-    if (nearest) {
-      const proposalKey = `${sourceId}:${nearest.candidate.id}`
-      if (activeProposalRef.current === proposalKey) return
-      activeProposalRef.current = proposalKey
-      onSimulationProposal({
-        sourceId,
-        targetId: nearest.candidate.id,
-      })
-    } else if (activeProposalRef.current) {
-      activeProposalRef.current = null
-      onSimulationProposal(null)
-    }
-  }
-
-  const handleSimulationDrop = (
-    node: NodeObject<TwinNode>,
-    translate: { x: number; y: number },
-  ) => {
-    if (!simulationMode) return
-    detectSimulationTarget(node, translate)
-    node.fx = undefined
-    node.fy = undefined
-    node.fz = undefined
-    graphRef.current?.d3ReheatSimulation()
-  }
-
-  const exitSimulation = () => {
-    activeProposalRef.current = null
-    onSimulationProposal(null)
-    graphData.nodes.forEach((node) => {
-      node.fx = undefined
-      node.fy = undefined
-      node.fz = undefined
-    })
-    onToggleSimulation()
-    graphRef.current?.d3ReheatSimulation()
   }
 
   return (
@@ -601,36 +458,12 @@ export function DigitalTwinNetwork3D({
         enableNodeDrag
         enableNavigationControls
         onNodeClick={focusNode}
-        onNodeDrag={detectSimulationTarget}
-        onNodeDragEnd={handleSimulationDrop}
         onLinkClick={(link) => onSelectMatch(link.id)}
         onBackgroundClick={onClearSelection}
         onEngineTick={initializeScene}
       />
 
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(2,6,23,0.04)_0%,rgba(2,6,23,0.14)_48%,rgba(2,6,23,0.5)_100%)]" />
-
-      <button
-        type="button"
-        onClick={simulationMode ? exitSimulation : onToggleSimulation}
-        className={[
-          'absolute right-4 top-4 z-10 flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold shadow-2xl backdrop-blur-xl transition',
-          simulationMode
-            ? 'border-lime-300/60 bg-lime-300 text-slate-950'
-            : 'border-white/15 bg-slate-950/75 text-slate-200 hover:border-cyan-300/50 hover:text-cyan-200',
-        ].join(' ')}
-      >
-        <FlaskConical className="h-4 w-4" />
-        {simulationMode ? '시뮬레이션 종료' : '조합 시뮬레이션'}
-      </button>
-
-      {simulationMode && (
-        <div className="pointer-events-none absolute left-1/2 top-17 z-10 -translate-x-1/2 rounded-full border border-lime-300/30 bg-slate-950/80 px-4 py-2 text-xs font-medium text-lime-200 shadow-xl backdrop-blur-xl">
-          {simulationProposal
-            ? `${companies.find((company) => company.id === simulationProposal.sourceId)?.name ?? '이동 기업'} → ${companies.find((company) => company.id === simulationProposal.targetId)?.name ?? '비교 대상'} 네트워크`
-            : '기업을 다른 네트워크 가까이 드래그해 가상 조합을 비교하세요.'}
-        </div>
-      )}
 
       <div className="absolute bottom-4 right-4 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-950/75 p-1 shadow-2xl backdrop-blur-xl">
         <TwinButton
