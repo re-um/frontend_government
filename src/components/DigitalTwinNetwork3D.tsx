@@ -22,6 +22,8 @@ import {
   SphereGeometry,
   Sprite,
   SpriteMaterial,
+  SRGBColorSpace,
+  TextureLoader,
   TorusGeometry,
   Vector2,
   Vector3,
@@ -354,7 +356,17 @@ export function DigitalTwinNetwork3D({
     const scene = graphRef.current?.scene()
     if (!scene || scene.userData.twinInitialized) return
     scene.userData.twinInitialized = true
-    scene.background = null
+    new TextureLoader().load(
+      '/assets/ai-space-network-bg.png',
+      (texture) => {
+        texture.colorSpace = SRGBColorSpace
+        scene.background = texture
+      },
+      undefined,
+      () => {
+        scene.background = new Color('#020611')
+      },
+    )
     scene.fog = new FogExp2('#030712', 0.001)
     const renderer = graphRef.current?.renderer()
     renderer?.setClearColor(0x000000, 0)
@@ -414,12 +426,6 @@ export function DigitalTwinNetwork3D({
       ref={containerRef}
       className="relative h-full min-h-140 overflow-hidden bg-[#020611] sm:min-h-180"
     >
-      <img
-        src="/assets/ai-space-network-bg.png"
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center brightness-125 saturate-125"
-      />
       <ForceGraph3D<TwinNode, TwinLink>
         ref={graphRef}
         width={size.width}
