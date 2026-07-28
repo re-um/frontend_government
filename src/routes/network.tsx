@@ -1599,28 +1599,6 @@ function SimulationPanel({
       roleScore * 0.15 +
       capacityScore * 0.1,
   )
-  const changeRate =
-    combinationScore >= 80
-      ? 0.08 + ((combinationScore - 80) / 20) * 0.1
-      : combinationScore >= 60
-        ? -0.02 + ((combinationScore - 60) / 20) * 0.08
-        : -0.06 - ((60 - combinationScore) / 60) * 0.12
-  const afterFlow = Math.max(0, Math.round(beforeFlow * (1 + changeRate)))
-  const transportPenalty = Math.max(0, distanceKm - 80) * 0.018
-  const afterCarbon = Math.max(
-    0,
-    beforeCarbon * (1 + changeRate * 1.18) - transportPenalty,
-  )
-  const projectedScore = Math.max(
-    0,
-    Math.min(
-      100,
-      Math.round(
-        (beforeScore * targetNetwork.matches.length + combinationScore) /
-          Math.max(targetNetwork.matches.length + 1, 1),
-      ),
-    ),
-  )
   const networkSupply = targetNetwork.companies
     .filter((company) => company.type !== 'consumer')
     .reduce((sum, company) => sum + company.monthlyAmount, 0)
@@ -1637,10 +1615,40 @@ function SimulationPanel({
   const afterDemand =
     networkDemand + (source.type === 'consumer' ? source.monthlyAmount : 0)
   const afterBalance = balanceScore(afterSupply, afterDemand)
+  const balanceChange = afterBalance - beforeBalance
+  const balanceAdjustment =
+    balanceChange < 0 ? balanceChange * 0.5 : balanceChange * 0.25
+  const projectedScore = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(
+        (beforeScore * targetNetwork.matches.length + combinationScore) /
+          Math.max(targetNetwork.matches.length + 1, 1) +
+          balanceAdjustment,
+      ),
+    ),
+  )
+  const adjustedCombinationScore = Math.max(
+    0,
+    Math.min(100, Math.round(combinationScore + balanceAdjustment)),
+  )
+  const changeRate =
+    adjustedCombinationScore >= 80
+      ? 0.08 + ((adjustedCombinationScore - 80) / 20) * 0.1
+      : adjustedCombinationScore >= 60
+        ? -0.02 + ((adjustedCombinationScore - 60) / 20) * 0.08
+        : -0.06 - ((60 - adjustedCombinationScore) / 60) * 0.12
+  const afterFlow = Math.max(0, Math.round(beforeFlow * (1 + changeRate)))
+  const transportPenalty = Math.max(0, distanceKm - 80) * 0.018
+  const afterCarbon = Math.max(
+    0,
+    beforeCarbon * (1 + changeRate * 1.18) - transportPenalty,
+  )
   const verdict =
-    combinationScore >= 80
+    adjustedCombinationScore >= 80
       ? { label: '개선 예상', className: 'bg-emerald-100 text-emerald-700' }
-      : combinationScore >= 60
+      : adjustedCombinationScore >= 60
         ? { label: '변화 제한적', className: 'bg-amber-100 text-amber-700' }
         : { label: '악화 가능성', className: 'bg-rose-100 text-rose-700' }
 
@@ -1695,7 +1703,8 @@ function SimulationPanel({
         </p>
         <div className="mt-3 flex items-center justify-between border-t border-lime-200 pt-3">
           <span className="text-[11px] text-slate-500">
-            종합 적합도 {combinationScore}점 · 거리 {Math.round(distanceKm)}km
+            종합 적합도 {adjustedCombinationScore}점 · 거리{' '}
+            {Math.round(distanceKm)}km
           </span>
           <span
             className={`rounded-full px-2 py-1 text-[10px] font-bold ${verdict.className}`}
