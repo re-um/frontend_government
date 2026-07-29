@@ -33,27 +33,61 @@ const addMesh = (group, geometry, surface, position = [0, 0, 0], rotation = [0, 
 
 function emitterModel() {
   const group = new Group()
-  const dark = material('#07182d', 0.88, 0.22)
-  const blue = material('#1677d2', 0.72, 0.2)
-  const steel = material('#7896b8', 0.92, 0.18)
-  addMesh(group, new CylinderGeometry(4.5, 4.8, 7.8, 6), dark)
-  addMesh(group, new CylinderGeometry(4.65, 4.65, 0.45, 6), blue, [0, 3.75, 0])
-  addMesh(group, new CylinderGeometry(4.65, 4.65, 0.35, 6), blue, [0, -3.75, 0])
-  for (let i = 0; i < 6; i += 1) {
-    const angle = (i / 6) * Math.PI * 2
-    addMesh(
-      group,
-      new BoxGeometry(0.42, 4.8, 1.15),
-      steel,
-      [Math.cos(angle) * 4.15, 0, Math.sin(angle) * 4.15],
-      [0, -angle, 0],
-    )
-  }
-  ;[-1.45, 0, 1.45].forEach((x) =>
-    addMesh(group, new BoxGeometry(0.8, 2.2, 0.28), blue, [x, 0.6, 4.18]),
+  const dark = material('#151b23', 0.76, 0.34)
+  const inset = material('#070b11', 0.5, 0.46)
+  const blue = material('#1769b3', 0.5, 0.3)
+  const steel = material('#7e8d9d', 0.84, 0.24)
+  const bale = material('#6683a0', 0.22, 0.62)
+
+  // 세로형 압축·선별 챔버
+  addMesh(group, new RoundedBoxGeometry(7.2, 10.2, 5.8, 6, 0.55), dark, [-0.65, 0, 0])
+  addMesh(group, new RoundedBoxGeometry(2.1, 6.7, 0.48, 5, 0.28), inset, [-0.65, 0.35, 3])
+  addMesh(group, new RoundedBoxGeometry(1.35, 5.85, 0.55, 4, 0.24), blue, [-0.65, 0.35, 3.25])
+  ;[-3.65, 2.35].forEach((x) => {
+    addMesh(group, new CylinderGeometry(0.48, 0.48, 7.4, 12), steel, [x, 0.25, 1.65])
+    addMesh(group, new CylinderGeometry(0.68, 0.68, 0.6, 12), blue, [x, 3.65, 1.65])
+  })
+
+  // 상단 폐합성수지 투입 호퍼
+  addMesh(
+    group,
+    new CylinderGeometry(4.75, 2.85, 3.25, 4),
+    dark,
+    [-0.65, 6.6, 0],
+    [0, Math.PI / 4, 0],
   )
-  addMesh(group, new CylinderGeometry(0.65, 0.8, 2.3, 12), steel, [-1.4, 4.9, 0])
-  addMesh(group, new CylinderGeometry(0.5, 0.62, 3.1, 12), steel, [1.35, 5.3, 0.4])
+  addMesh(
+    group,
+    new CylinderGeometry(4.92, 4.92, 0.35, 4),
+    blue,
+    [-0.65, 8.12, 0],
+    [0, Math.PI / 4, 0],
+  )
+  ;[-2.4, -0.8, 0.8, 2.4].forEach((x) =>
+    addMesh(group, new RoundedBoxGeometry(0.75, 0.75, 0.75, 2, 0.14), bale, [x - 0.65, 7.9, 0.15]),
+  )
+
+  // 측면 배출 슈트
+  addMesh(
+    group,
+    new RoundedBoxGeometry(5.2, 1.55, 2.35, 4, 0.28),
+    steel,
+    [4.05, -1.25, 0.35],
+    [0, 0, -0.48],
+  )
+  addMesh(
+    group,
+    new RoundedBoxGeometry(4.35, 0.85, 1.55, 3, 0.18),
+    inset,
+    [4.15, -1.35, 0.42],
+    [0, 0, -0.48],
+  )
+
+  // 압축 블록과 수거 컨테이너
+  addMesh(group, new RoundedBoxGeometry(4.4, 3.1, 4.4, 5, 0.38), dark, [5.1, -5.1, 0])
+  addMesh(group, new RoundedBoxGeometry(3.55, 2.05, 3.5, 4, 0.28), inset, [5.1, -4.65, 0])
+  addMesh(group, new RoundedBoxGeometry(2.65, 1.5, 2.65, 3, 0.18), bale, [5.1, -3.65, 0])
+  addMesh(group, new RoundedBoxGeometry(6.1, 0.9, 4.9, 4, 0.22), steel, [-0.65, -5.45, 0])
   return group
 }
 
@@ -150,6 +184,6 @@ async function exportModel(name, model) {
 }
 
 await mkdir(new URL('../public/models', import.meta.url), { recursive: true })
-await exportModel('company-emitter', emitterModel())
+await exportModel('company-emitter-collector', emitterModel())
 await exportModel('company-processor', processorModel())
 await exportModel('company-consumer-factory', consumerModel())

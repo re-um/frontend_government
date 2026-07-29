@@ -144,7 +144,7 @@ export function DigitalTwinNetwork3D({
     let cancelled = false
     const loader = new GLTFLoader()
     Promise.all([
-      loader.loadAsync('/models/company-emitter.glb'),
+      loader.loadAsync('/models/company-emitter-collector.glb'),
       loader.loadAsync('/models/company-processor.glb'),
       loader.loadAsync('/models/company-consumer-factory.glb'),
     ]).then(([emitter, processor, consumer]) => {
@@ -269,7 +269,7 @@ export function DigitalTwinNetwork3D({
       group.add(label)
 
       const modelScale =
-        node.type === 'consumer' ? 0.64 : node.type === 'processor' ? 0.88 : 0.9
+        node.type === 'consumer' ? 0.7 : node.type === 'processor' ? 0.97 : 1
       group.scale.setScalar(
         (0.9 + node.weight * 0.38) *
           modelScale *
