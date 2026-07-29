@@ -681,7 +681,7 @@ function NetworkMapPage() {
   const [overviewFocusCompanyId, setOverviewFocusCompanyId] =
     useState<string | undefined>()
   const [selectedCompany, setSelectedCompany] =
-    useState<CompanyDetail | null>(companies[3])
+    useState<CompanyDetail | null>(null)
   const [selectedMatch, setSelectedMatch] = useState<MatchDetail | null>(null)
   // 사용자가 3D 버튼을 누르기 전에 무거운 Three.js 청크를 유휴 시간에
   // 미리 받아 두어 첫 진입 대기 시간을 줄인다.
@@ -1799,17 +1799,23 @@ function NetworkPanel({
         statusScore < 0.6 ? '응답 대기' : null,
         scarcityScore < 0.34 ? '동일 재질 기업 많음' : null,
       ].filter((reason): reason is string => Boolean(reason))
+      const importance = Math.round(
+        (amountScore * 0.4 +
+          carbonScore * 0.35 +
+          statusScore * 0.15 +
+          scarcityScore * 0.1) *
+          100,
+      )
       return {
         ...item,
-        importance: Math.round(
-          (amountScore * 0.4 +
-            carbonScore * 0.35 +
-            statusScore * 0.15 +
-            scarcityScore * 0.1) *
-            100,
-        ),
+        importance,
+        level: importance >= 70 ? '높음' : importance >= 50 ? '보통' : '낮음',
         reason:
-          reasons.length > 0 ? reasons.slice(0, 2).join(' · ') : '성과 기여 양호',
+          importance < 50
+            ? reasons.length > 0
+              ? reasons.slice(0, 2).join(' · ')
+              : '종합 기여도 부족'
+            : null,
       }
     })
     .sort((a, b) => b.importance - a.importance)
@@ -1862,7 +1868,8 @@ function NetworkPanel({
             </span>
           </div>
           <p className="mt-1 text-[11px] font-medium leading-4 text-amber-700">
-            평가 사유: {anchorWeight.reason}
+            평가 결과: {anchorWeight.level}
+            {anchorWeight.reason ? ` · 낮은 이유: ${anchorWeight.reason}` : ''}
           </p>
         </div>
       )}
@@ -1882,7 +1889,8 @@ function NetworkPanel({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {weightedCompanies.map(({ company, importance, reason }) => (
+            {weightedCompanies.map(
+              ({ company, importance, level, reason }) => (
               <tr
                 key={company.id}
                 className={
@@ -1896,14 +1904,15 @@ function NetworkPanel({
                   <div
                     className={[
                       'mt-1 text-[10px] font-medium leading-3.5',
-                      reason === '성과 기여 양호'
+                      level === '높음'
                         ? 'text-emerald-600'
-                        : 'text-amber-600',
+                        : level === '보통'
+                          ? 'text-slate-500'
+                          : 'text-amber-600',
                     ].join(' ')}
                   >
-                    {reason === '성과 기여 양호'
-                      ? reason
-                      : `낮은 이유: ${reason}`}
+                    {level}
+                    {reason ? ` · 낮은 이유: ${reason}` : ''}
                   </div>
                 </td>
                 <td className="px-1 py-2.5 text-slate-500">
@@ -1916,7 +1925,8 @@ function NetworkPanel({
                   <span className="font-bold text-cyan-700">{importance}</span>
                 </td>
               </tr>
-            ))}
+              ),
+            )}
           </tbody>
         </table>
       </div>
