@@ -1764,36 +1764,35 @@ function NetworkPanel({
     )
     return {
       company,
-      connections: relatedMatches.length,
-      approved: relatedMatches.filter((match) => match.status === 'approved')
-        .length,
       carbon: relatedMatches.reduce(
         (sum, match) => sum + match.carbonReduction,
         0,
       ),
     }
   })
-  const maxConnections = Math.max(
-    ...companyMetrics.map((item) => item.connections),
-    1,
-  )
   const maxAmount = Math.max(
     ...companyMetrics.map((item) => item.company.monthlyAmount),
     1,
   )
-  const maxApproved = Math.max(
-    ...companyMetrics.map((item) => item.approved),
-    1,
-  )
   const maxCarbon = Math.max(...companyMetrics.map((item) => item.carbon), 1)
+  const materialCounts = new Map<string, number>()
+  networkCompanies.forEach((company) => {
+    materialCounts.set(
+      company.material,
+      (materialCounts.get(company.material) ?? 0) + 1,
+    )
+  })
   const weightedCompanies = companyMetrics
     .map((item) => ({
       ...item,
       importance: Math.round(
-        ((item.connections / maxConnections) * 0.35 +
-          (item.company.monthlyAmount / maxAmount) * 0.3 +
-          (item.carbon / maxCarbon) * 0.2 +
-          (item.approved / maxApproved) * 0.15) *
+        ((item.company.monthlyAmount / maxAmount) * 0.4 +
+          (item.carbon / maxCarbon) * 0.35 +
+          ({ approved: 1, active: 0.75, pending: 0.4 }[
+            item.company.status
+          ] *
+            0.15) +
+          (1 / (materialCounts.get(item.company.material) ?? 1)) * 0.1) *
           100,
       ),
     }))
@@ -1829,7 +1828,7 @@ function NetworkPanel({
           기업별 가중치
         </h3>
         <p className="mt-1 text-[11px] leading-4 text-slate-400">
-          직접 연결 관계 35% · 월 물량 30% · 탄소감축 20% · 승인 연결 15%
+          월 물량 40% · 탄소감축 35% · 운영상태 15% · 재질 희소성 10%
         </p>
       </div>
 

@@ -88,6 +88,7 @@ export function DigitalTwinNetwork3D({
     monthlyAmount: number
     connections: number
     approvedMatches: number
+    status: MatchStatus
   }>
   matches: Array<{
     id: string
@@ -128,8 +129,6 @@ export function DigitalTwinNetwork3D({
 
   const graphData = useMemo(() => {
     const maxAmount = Math.max(...companies.map((company) => company.monthlyAmount), 1)
-    const maxConnections = Math.max(...companies.map((company) => company.connections), 1)
-    const maxApproved = Math.max(...companies.map((company) => company.approvedMatches), 1)
     const companyCarbon = new Map<string, number>()
     matches.forEach((match) => {
       companyCarbon.set(
@@ -142,6 +141,13 @@ export function DigitalTwinNetwork3D({
       )
     })
     const maxCompanyCarbon = Math.max(...companyCarbon.values(), 1)
+    const materialCounts = new Map<string, number>()
+    companies.forEach((company) => {
+      materialCounts.set(
+        company.material,
+        (materialCounts.get(company.material) ?? 0) + 1,
+      )
+    })
     const maxLinkAmount = Math.max(...matches.map((match) => match.amount), 1)
     const maxLinkCarbon = Math.max(
       ...matches.map((match) => match.carbonReduction),
@@ -158,10 +164,10 @@ export function DigitalTwinNetwork3D({
         amount: company.monthlyAmount,
         color: nodeColors[company.type],
         weight:
-          (company.connections / maxConnections) * 0.35 +
-          (company.monthlyAmount / maxAmount) * 0.3 +
-          ((companyCarbon.get(company.id) ?? 0) / maxCompanyCarbon) * 0.2 +
-          (company.approvedMatches / maxApproved) * 0.15,
+          (company.monthlyAmount / maxAmount) * 0.4 +
+          ((companyCarbon.get(company.id) ?? 0) / maxCompanyCarbon) * 0.35 +
+          ({ approved: 1, active: 0.75, pending: 0.4 }[company.status] * 0.15) +
+          (1 / (materialCounts.get(company.material) ?? 1)) * 0.1,
       }))
     const ids = new Set(nodes.map((node) => node.id))
     const links: TwinLink[] = matches
@@ -510,20 +516,6 @@ function createPedestal(color: string, selected: boolean) {
     base.position.y = tier.y
     group.add(base)
   })
-
-  const lightBand = new Mesh(
-    new TorusGeometry(7.25, 0.12, 8, 64),
-    new MeshBasicMaterial({
-      color,
-      transparent: true,
-      opacity: selected ? 0.9 : 0.48,
-      blending: AdditiveBlending,
-      depthWrite: false,
-    }),
-  )
-  lightBand.rotation.x = Math.PI / 2
-  lightBand.position.y = 0.88
-  group.add(lightBand)
 
   const topDisc = new Mesh(
     new CylinderGeometry(5.4, 5.4, 0.12, 48),
