@@ -1,11 +1,12 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import {
   BoxGeometry,
-  ConeGeometry,
   CylinderGeometry,
   Group,
   Mesh,
   MeshStandardMaterial,
+  Shape,
+  ShapeGeometry,
   SphereGeometry,
   TorusGeometry,
 } from 'three'
@@ -30,6 +31,34 @@ const addMesh = (group, geometry, surface, position = [0, 0, 0], rotation = [0, 
   mesh.rotation.set(...rotation)
   group.add(mesh)
   return mesh
+}
+
+function addRecycleMark(group, center, scale, surface) {
+  const arrowShape = new Shape()
+  arrowShape.moveTo(-1.15, -0.22)
+  arrowShape.lineTo(0.25, -0.22)
+  arrowShape.lineTo(0.25, -0.62)
+  arrowShape.lineTo(1.18, 0)
+  arrowShape.lineTo(0.25, 0.62)
+  arrowShape.lineTo(0.25, 0.22)
+  arrowShape.lineTo(-1.15, 0.22)
+  arrowShape.closePath()
+
+  ;[0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].forEach((angle) => {
+    const radius = scale * 0.66
+    const arrow = addMesh(
+      group,
+      new ShapeGeometry(arrowShape),
+      surface,
+      [
+        center[0] + Math.cos(angle) * radius,
+        center[1] + Math.sin(angle) * radius,
+        center[2],
+      ],
+      [0, 0, angle + Math.PI / 2],
+    )
+    arrow.scale.setScalar(scale * 0.48)
+  })
 }
 
 function emitterModel() {
@@ -103,26 +132,7 @@ function emitterModel() {
   // 전면 원형 재활용 배지
   addMesh(group, new CylinderGeometry(2.65, 2.65, 0.52, 32), badgeFace, [4.65, -2.65, 3.75], [Math.PI / 2, 0, 0])
   addMesh(group, new TorusGeometry(2.25, 0.24, 10, 40), blue, [4.65, -2.65, 4.05])
-  ;[0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].forEach((angle) => {
-    const centerX = 4.65 + Math.cos(angle) * 0.92
-    const centerY = -2.65 + Math.sin(angle) * 0.92
-    const tangentX = -Math.sin(angle)
-    const tangentY = Math.cos(angle)
-    addMesh(
-      group,
-      new RoundedBoxGeometry(0.42, 1.2, 0.22, 2, 0.08),
-      blue,
-      [centerX, centerY, 4.13],
-      [0, 0, angle],
-    )
-    addMesh(
-      group,
-      new ConeGeometry(0.52, 0.78, 3),
-      blue,
-      [centerX + tangentX * 0.72, centerY + tangentY * 0.72, 4.13],
-      [0, 0, angle],
-    )
-  })
+  addRecycleMark(group, [4.65, -2.65, 4.13], 1.7, blue)
   return group
 }
 
@@ -174,44 +184,12 @@ function processorModel() {
   )
 
   // 적재함 측면의 선명한 재활용 마크
-  ;[0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].forEach((angle) => {
-    const centerX = 2.1 + Math.cos(angle) * 1.45
-    const centerY = 0.35 + Math.sin(angle) * 1.45
-    const tangentX = -Math.sin(angle)
-    const tangentY = Math.cos(angle)
-    addMesh(
-      group,
-      new RoundedBoxGeometry(0.52, 1.55, 0.25, 2, 0.08),
-      badgeFace,
-      [centerX, centerY, 3.08],
-      [0, 0, angle],
-    )
-    addMesh(
-      group,
-      new ConeGeometry(0.62, 0.9, 3),
-      badgeFace,
-      [centerX + tangentX * 0.9, centerY + tangentY * 0.9, 3.08],
-      [0, 0, angle],
-    )
-  })
+  addRecycleMark(group, [2.1, 0.35, 3.08], 2.2, badgeFace)
 
   // 전면 원형 유형 배지
   addMesh(group, new CylinderGeometry(2.65, 2.65, 0.5, 32), badgeFace, [6.3, -2.15, 3.25], [Math.PI / 2, 0, 0])
   addMesh(group, new TorusGeometry(2.25, 0.24, 10, 40), teal, [6.3, -2.15, 3.55])
-  ;[0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].forEach((angle) => {
-    const centerX = 6.3 + Math.cos(angle) * 0.92
-    const centerY = -2.15 + Math.sin(angle) * 0.92
-    const tangentX = -Math.sin(angle)
-    const tangentY = Math.cos(angle)
-    addMesh(group, new RoundedBoxGeometry(0.42, 1.2, 0.22, 2, 0.08), teal, [centerX, centerY, 3.62], [0, 0, angle])
-    addMesh(
-      group,
-      new ConeGeometry(0.52, 0.78, 3),
-      teal,
-      [centerX + tangentX * 0.72, centerY + tangentY * 0.72, 3.62],
-      [0, 0, angle],
-    )
-  })
+  addRecycleMark(group, [6.3, -2.15, 3.62], 1.7, teal)
   return group
 }
 
