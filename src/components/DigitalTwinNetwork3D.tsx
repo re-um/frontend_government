@@ -145,7 +145,7 @@ export function DigitalTwinNetwork3D({
     const loader = new GLTFLoader()
     Promise.all([
       loader.loadAsync('/models/company-emitter-collector.glb'),
-      loader.loadAsync('/models/company-processor.glb'),
+      loader.loadAsync('/models/company-processor-reactor.glb'),
       loader.loadAsync('/models/company-consumer-factory.glb'),
     ]).then(([emitter, processor, consumer]) => {
       if (cancelled) return

@@ -93,25 +93,93 @@ function emitterModel() {
 
 function processorModel() {
   const group = new Group()
-  const teal = material('#0c928b', 0.58, 0.2)
-  const dark = material('#062525', 0.86, 0.24)
-  const steel = material('#91b9ba', 0.9, 0.16)
-  addMesh(group, new SphereGeometry(5.2, 32, 24), dark)
-  addMesh(group, new SphereGeometry(4.55, 32, 24), teal)
-  ;[0, Math.PI / 2].forEach((rotation) =>
-    addMesh(group, new TorusGeometry(5.55, 0.24, 10, 64), steel, [0, 0, 0], [rotation, 0, 0]),
-  )
-  addMesh(group, new TorusGeometry(5.55, 0.24, 10, 64), steel, [0, 0, 0], [0, Math.PI / 2, 0])
-  for (let i = 0; i < 6; i += 1) {
-    const angle = (i / 6) * Math.PI * 2
+  const dark = material('#151c22', 0.76, 0.34)
+  const inset = material('#071014', 0.52, 0.44)
+  const teal = material('#128b84', 0.48, 0.28)
+  const steel = material('#89989c', 0.84, 0.24)
+  const inputBlue = material('#176bb7', 0.5, 0.3)
+  const outputLime = material('#82b72b', 0.46, 0.3)
+
+  // 다단계 원통형 처리 챔버
+  ;[
+    { y: 2.8, height: 4.1, radius: 4.35 },
+    { y: -0.95, height: 3.35, radius: 4.15 },
+    { y: -4.25, height: 3.2, radius: 4.05 },
+  ].forEach((stage) => {
     addMesh(
       group,
-      new CylinderGeometry(0.75, 0.95, 2.3, 12),
-      steel,
-      [Math.cos(angle) * 5.9, Math.sin(angle) * 5.9, 0],
-      [0, 0, angle + Math.PI / 2],
+      new CylinderGeometry(stage.radius, stage.radius, stage.height, 24),
+      dark,
+      [0, stage.y, 0],
     )
-  }
+  })
+
+  ;[5.05, 0.95, -2.65, -5.95].forEach((y) =>
+    addMesh(group, new TorusGeometry(4.42, 0.28, 10, 48), steel, [0, y, 0], [Math.PI / 2, 0, 0]),
+  )
+
+  // 상단 파쇄 호퍼와 맞물림 커터
+  addMesh(group, new CylinderGeometry(4.7, 3.7, 2.1, 6), dark, [0, 6.15, 0])
+  addMesh(group, new CylinderGeometry(4.82, 4.82, 0.32, 6), teal, [0, 7.15, 0])
+  ;[-1.35, 1.35].forEach((x) => {
+    addMesh(
+      group,
+      new CylinderGeometry(0.82, 0.82, 3.2, 12),
+      steel,
+      [x, 5.75, 2.7],
+      [0, 0, Math.PI / 2],
+    )
+    ;[-1.1, 0, 1.1].forEach((offset) =>
+      addMesh(group, new TorusGeometry(1.02, 0.18, 8, 18), teal, [x + offset, 5.75, 2.7]),
+    )
+  })
+
+  // 세척·선별 및 펠릿 상태 확인창
+  addMesh(group, new RoundedBoxGeometry(1.8, 3.05, 0.45, 4, 0.24), inset, [0, 2.9, 4.18])
+  addMesh(group, new RoundedBoxGeometry(1.18, 2.4, 0.52, 4, 0.2), teal, [0, 2.9, 4.38])
+  addMesh(group, new RoundedBoxGeometry(3.1, 1.45, 0.45, 4, 0.22), inset, [0, -4.25, 3.88])
+  ;[-0.9, -0.3, 0.3, 0.9].forEach((x) =>
+    addMesh(group, new SphereGeometry(0.22, 10, 8), outputLime, [x, -4.25, 4.18]),
+  )
+
+  // 건조·여과 밴드
+  ;[-1.55, -0.75, 0.05, 0.85, 1.65].forEach((x) =>
+    addMesh(group, new BoxGeometry(0.32, 2.15, 0.34), steel, [x, -0.95, 4.02]),
+  )
+
+  // 좌측 폐합성수지 유입 포트 / 우측 재생원료 배출 포트
+  ;[3.25, 0, -3.25].forEach((y) => {
+    addMesh(
+      group,
+      new CylinderGeometry(0.95, 1.18, 2.2, 14),
+      steel,
+      [-4.85, y, 0],
+      [0, 0, Math.PI / 2],
+    )
+    addMesh(
+      group,
+      new CylinderGeometry(0.72, 0.72, 0.55, 14),
+      inputBlue,
+      [-5.95, y, 0],
+      [0, 0, Math.PI / 2],
+    )
+    addMesh(
+      group,
+      new CylinderGeometry(0.95, 1.18, 2.2, 14),
+      steel,
+      [4.85, y, 0],
+      [0, 0, Math.PI / 2],
+    )
+    addMesh(
+      group,
+      new CylinderGeometry(0.72, 0.72, 0.55, 14),
+      outputLime,
+      [5.95, y, 0],
+      [0, 0, Math.PI / 2],
+    )
+  })
+
+  addMesh(group, new CylinderGeometry(4.55, 4.85, 0.65, 20), steel, [0, -6.3, 0])
   return group
 }
 
@@ -185,5 +253,5 @@ async function exportModel(name, model) {
 
 await mkdir(new URL('../public/models', import.meta.url), { recursive: true })
 await exportModel('company-emitter-collector', emitterModel())
-await exportModel('company-processor', processorModel())
+await exportModel('company-processor-reactor', processorModel())
 await exportModel('company-consumer-factory', consumerModel())
