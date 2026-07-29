@@ -1308,6 +1308,10 @@ function NetworkMapPage() {
               anchorCompany={selectedCompany}
               networkCompanies={selectedNetwork.companies}
               networkMatches={selectedNetwork.matches}
+              onSelectCompany={(company) => {
+                setSelectedCompany(company)
+                setSelectedMatch(null)
+              }}
               onClose={() => setSelectedCompany(null)}
             />
           ) : selectedCompany ? (
@@ -1751,11 +1755,13 @@ function NetworkPanel({
   anchorCompany,
   networkCompanies,
   networkMatches,
+  onSelectCompany,
   onClose,
 }: {
   anchorCompany: CompanyDetail
   networkCompanies: CompanyDetail[]
   networkMatches: MatchDetail[]
+  onSelectCompany: (company: CompanyDetail) => void
   onClose: () => void
 }) {
   const allCompanyCarbon = new Map<string, number>()
@@ -1937,8 +1943,20 @@ function NetworkPanel({
               }) => (
               <tr
                 key={company.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`${company.name} 성과 기여도 상세 보기`}
+                onClick={() => onSelectCompany(company)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    onSelectCompany(company)
+                  }
+                }}
                 className={
-                  company.id === anchorCompany.id ? 'bg-lime-50' : 'bg-white'
+                  company.id === anchorCompany.id
+                    ? 'cursor-pointer bg-lime-50 outline-none ring-inset focus:ring-2 focus:ring-lime-400'
+                    : 'cursor-pointer bg-white outline-none transition hover:bg-cyan-50 focus:ring-2 focus:ring-cyan-400'
                 }
               >
                 <td className="px-2.5 py-2.5">
