@@ -73,7 +73,7 @@ export function RegionalNetworkMap({
     regions.forEach((region) => {
       const selected = region.regionCode === selectedRegionCode;
       const unconnectedRatio = region.unconnectedCompanies / Math.max(region.totalCompanies, 1);
-      const markerSize = 86 + (region.totalCompanies / maxCompanies) * 28;
+      const markerSize = 58 + (region.totalCompanies / maxCompanies) * 18;
       const content = document.createElement("button");
       content.type = "button";
       content.setAttribute(
@@ -83,8 +83,8 @@ export function RegionalNetworkMap({
       Object.assign(content.style, {
         width: `${markerSize}px`,
         minHeight: `${markerSize}px`,
-        padding: "10px 8px",
-        borderRadius: "24px",
+        padding: "6px 5px",
+        borderRadius: "16px",
         border: selected
           ? "3px solid #0f172a"
           : unconnectedRatio >= 0.28
@@ -96,20 +96,20 @@ export function RegionalNetworkMap({
             ? "rgba(255,247,237,.96)"
             : "rgba(255,255,255,.96)",
         boxShadow: selected
-          ? "0 0 0 5px rgba(163,230,53,.3), 0 12px 28px rgba(15,23,42,.2)"
-          : "0 8px 22px rgba(15,23,42,.15)",
+          ? "0 0 0 4px rgba(163,230,53,.28), 0 8px 20px rgba(15,23,42,.18)"
+          : "0 5px 14px rgba(15,23,42,.14)",
         color: "#0f172a",
         cursor: "pointer",
         fontFamily: "inherit",
         textAlign: "center",
-        transform: selected ? "scale(1.06)" : "scale(1)",
+        transform: selected ? "scale(1.08)" : "scale(1)",
         transition: "transform .2s ease, box-shadow .2s ease",
       });
       content.innerHTML = `
-        <strong style="display:block;font-size:13px;margin-bottom:5px">${region.regionName.replace(/특별자치도|광역시|특별시|도$/u, "")}</strong>
-        <span style="display:block;font-size:10px;line-height:1.55;color:#475569">기업 <b style="color:#0f172a">${region.totalCompanies}</b></span>
-        <span style="display:block;font-size:10px;line-height:1.55;color:#475569">컨소 <b style="color:#0f172a">${region.consortiumCount}</b></span>
-        <span style="display:block;font-size:10px;line-height:1.55;color:${unconnectedRatio >= 0.28 ? "#c2410c" : "#475569"}">연계 필요 <b>${region.unconnectedCompanies}</b></span>
+        <strong style="display:block;font-size:11px;margin-bottom:3px">${region.regionName.replace(/특별자치도|광역시|특별시|도$/u, "")}</strong>
+        <span style="display:block;font-size:8px;line-height:1.4;color:#475569">기업 <b style="color:#0f172a">${region.totalCompanies}</b></span>
+        <span style="display:block;font-size:8px;line-height:1.4;color:#475569">컨소 <b style="color:#0f172a">${region.consortiumCount}</b></span>
+        <span style="display:block;font-size:8px;line-height:1.4;color:${unconnectedRatio >= 0.28 ? "#c2410c" : "#475569"}">연계 필요 <b>${region.unconnectedCompanies}</b></span>
       `;
       content.addEventListener("click", () => onSelectRegion(region.regionCode));
 
