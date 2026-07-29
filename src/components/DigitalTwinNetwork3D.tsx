@@ -651,6 +651,26 @@ export function DigitalTwinNetwork3D({
               title="수요기업"
               description="재생원료 투입·제품 생산"
             />
+            <div className="border-t border-white/10 px-1 pt-2">
+              <div className="mb-1.5 text-[9px] font-bold tracking-wide text-slate-400">
+                연결 상태
+              </div>
+              <div className="grid gap-1.5">
+                <LinkLegendItem
+                  color="#a78bfa"
+                  label="최종 승인"
+                />
+                <LinkLegendItem
+                  color="#22d3ee"
+                  label="산업공생 진행"
+                />
+                <LinkLegendItem
+                  color="#64748b"
+                  label="응답 대기"
+                  dashed
+                />
+              </div>
+            </div>
             <p className="px-1 pt-0.5 text-[9px] leading-3 text-slate-500">
               모델 크기 = 기업 성과 기여도
             </p>
@@ -771,6 +791,41 @@ function ModelLegendPreview({ model }: { model: Group | null }) {
   }
 
   return <canvas ref={canvasRef} className="h-9 w-12" aria-hidden="true" />
+}
+
+function LinkLegendItem({
+  color,
+  label,
+  dashed = false,
+}: {
+  color: string
+  label: string
+  dashed?: boolean
+}) {
+  return (
+    <div className="flex items-center gap-2 text-[9px] text-slate-300">
+      <svg
+        width="34"
+        height="8"
+        viewBox="0 0 34 8"
+        className="shrink-0 overflow-visible"
+        aria-hidden="true"
+      >
+        <line
+          x1="1"
+          y1="4"
+          x2="33"
+          y2="4"
+          stroke={color}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeDasharray={dashed ? '4 4' : undefined}
+        />
+        {!dashed && <circle cx="17" cy="4" r="2.5" fill={color} />}
+      </svg>
+      <span>{label}</span>
+    </div>
+  )
 }
 
 function createPedestal(color: string, selected: boolean) {
