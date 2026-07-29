@@ -4,13 +4,16 @@ import ForceGraph3D, {
 } from 'react-force-graph-3d'
 import SpriteText from 'three-spritetext'
 import {
+  AmbientLight,
   BufferGeometry,
   CanvasTexture,
   Color,
   CylinderGeometry,
+  DirectionalLight,
   EdgesGeometry,
   FogExp2,
   Group,
+  HemisphereLight,
   LineBasicMaterial,
   LineLoop,
   LineSegments,
@@ -241,22 +244,31 @@ export function DigitalTwinNetwork3D({
         if (selected && 'color' in child.material) {
           child.material.color.lerp(new Color('#bef264'), 0.2)
         }
+        if ('color' in child.material) {
+          child.material.color.offsetHSL(0, 0.08, 0.1)
+        }
+        if ('metalness' in child.material) {
+          child.material.metalness = Math.min(child.material.metalness, 0.62)
+        }
+        if ('roughness' in child.material) {
+          child.material.roughness = Math.max(child.material.roughness, 0.32)
+        }
       })
       model.rotation.set(0.08, 0.42, 0)
       group.add(model)
 
       const label = new SpriteText(node.name)
-      label.color = selected ? '#f7fee7' : '#dbeafe'
-      label.textHeight = selected ? 2.8 : 2.2
-      label.position.y = node.type === 'processor' ? -9 : -7.2
+      label.color = '#ffffff'
+      label.textHeight = selected ? 3.1 : 2.55
+      label.position.y = node.type === 'processor' ? -9.5 : -8
       label.backgroundColor = selected
         ? 'rgba(45, 69, 12, 0.94)'
-        : 'rgba(3, 10, 24, 0.82)'
-      label.padding = 1.8
+        : 'rgba(3, 10, 24, 0.94)'
+      label.padding = 2.1
       label.borderRadius = 4
       group.add(label)
 
-      group.scale.setScalar((0.72 + node.weight * 0.3) * (selected ? 1.08 : 1))
+      group.scale.setScalar((0.9 + node.weight * 0.38) * (selected ? 1.08 : 1))
       return group
     }
 
@@ -421,6 +433,23 @@ export function DigitalTwinNetwork3D({
       },
     )
     scene.fog = new FogExp2('#030712', 0.001)
+    const ambientLight = new AmbientLight('#dbeafe', 2.1)
+    ambientLight.name = 'company-model-ambient'
+    scene.add(ambientLight)
+
+    const hemisphereLight = new HemisphereLight('#dbeafe', '#102030', 2.4)
+    hemisphereLight.name = 'company-model-hemisphere'
+    scene.add(hemisphereLight)
+
+    const keyLight = new DirectionalLight('#ffffff', 3.6)
+    keyLight.name = 'company-model-key'
+    keyLight.position.set(90, 120, 160)
+    scene.add(keyLight)
+
+    const fillLight = new DirectionalLight('#7dd3fc', 2.2)
+    fillLight.name = 'company-model-fill'
+    fillLight.position.set(-120, -40, 80)
+    scene.add(fillLight)
     const renderer = graphRef.current?.renderer()
     renderer?.setClearColor(0x000000, 0)
     renderer?.setPixelRatio(
@@ -429,8 +458,8 @@ export function DigitalTwinNetwork3D({
 
     // 전국의 여러 네트워크가 화면 가장자리로 흩어지지 않도록
     // 노드의 반발력과 연결 거리를 줄이고 중심으로 모으는 힘을 높인다.
-    graphRef.current?.d3Force('charge')?.strength(-13)
-    graphRef.current?.d3Force('link')?.distance(24)
+    graphRef.current?.d3Force('charge')?.strength(-18)
+    graphRef.current?.d3Force('link')?.distance(31)
     graphRef.current?.d3Force('center')?.strength(0.62)
 
     ;[105, 155, 215, 285, 365].forEach((radius, index) => {
