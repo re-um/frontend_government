@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { loadKakaoMap } from "../lib/loadKakaoMap";
 import type { RegionalNetworkSummary } from "../types/regionalNetwork";
 
@@ -13,14 +14,75 @@ const companyTypeMeta = [
   { label: "수요기업", color: "#65a30d", short: "수" },
 ] as const;
 
+const regionalIndustrialAnchors: Record<string, Array<{ latitude: number; longitude: number }>> = {
+  gyeonggi: [
+    { latitude: 37.1995, longitude: 126.8312 },
+    { latitude: 37.3219, longitude: 126.8309 },
+    { latitude: 36.9921, longitude: 127.1129 },
+    { latitude: 37.3801, longitude: 126.8031 },
+    { latitude: 37.272, longitude: 127.435 },
+    { latitude: 37.2411, longitude: 127.1776 },
+  ],
+  chungnam: [
+    { latitude: 36.8151, longitude: 127.1139 },
+    { latitude: 36.7898, longitude: 127.0018 },
+    { latitude: 36.8896, longitude: 126.645 },
+    { latitude: 36.7845, longitude: 126.4503 },
+    { latitude: 36.4465, longitude: 127.119 },
+    { latitude: 36.1872, longitude: 127.0987 },
+  ],
+  seoul: [
+    { latitude: 37.4954, longitude: 126.8874 },
+    { latitude: 37.4569, longitude: 126.8955 },
+    { latitude: 37.5509, longitude: 126.8495 },
+    { latitude: 37.5633, longitude: 127.0369 },
+    { latitude: 37.5264, longitude: 126.8962 },
+  ],
+  incheon: [
+    { latitude: 37.4112, longitude: 126.7315 },
+    { latitude: 37.5455, longitude: 126.6759 },
+    { latitude: 37.507, longitude: 126.7218 },
+    { latitude: 37.3824, longitude: 126.6564 },
+  ],
+  busan: [
+    { latitude: 35.2122, longitude: 128.9806 },
+    { latitude: 35.104, longitude: 128.9747 },
+    { latitude: 35.1526, longitude: 128.991 },
+    { latitude: 35.2446, longitude: 129.2223 },
+  ],
+  gyeongbuk: [
+    { latitude: 36.1195, longitude: 128.3446 },
+    { latitude: 36.019, longitude: 129.3435 },
+    { latitude: 35.8251, longitude: 128.7415 },
+    { latitude: 35.8562, longitude: 129.2247 },
+    { latitude: 36.1398, longitude: 128.1136 },
+  ],
+  jeonbuk: [
+    { latitude: 35.8242, longitude: 127.148 },
+    { latitude: 35.9483, longitude: 126.9576 },
+    { latitude: 35.9676, longitude: 126.7369 },
+    { latitude: 35.9047, longitude: 127.1622 },
+    { latitude: 35.5699, longitude: 126.856 },
+  ],
+  chungbuk: [
+    { latitude: 36.6424, longitude: 127.489 },
+    { latitude: 36.991, longitude: 127.9259 },
+    { latitude: 37.1326, longitude: 128.1909 },
+    { latitude: 36.9403, longitude: 127.6905 },
+    { latitude: 36.8554, longitude: 127.4356 },
+  ],
+};
+
 export function RegionalNetworkMap({
   regions,
   selectedRegionCode,
   onSelectRegion,
+  onBackToRegions,
 }: {
   regions: RegionalNetworkSummary[];
   selectedRegionCode?: string;
   onSelectRegion: (regionCode: string) => void;
+  onBackToRegions: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
@@ -135,6 +197,7 @@ export function RegionalNetworkMap({
     const selectedRegion = regions.find((region) => region.regionCode === selectedRegionCode);
 
     if (selectedRegion) {
+      const companyBounds = new kakao.maps.LatLngBounds();
       createRegionalCompanyPoints(selectedRegion).forEach((company) => {
         const content = document.createElement("button");
         content.type = "button";
@@ -197,9 +260,11 @@ export function RegionalNetworkMap({
           tooltip.style.display = "none";
         });
 
+        const companyPosition = new kakao.maps.LatLng(company.latitude, company.longitude);
+        companyBounds.extend(companyPosition);
         const overlay = new kakao.maps.CustomOverlay({
           map,
-          position: new kakao.maps.LatLng(company.latitude, company.longitude),
+          position: companyPosition,
           content,
           xAnchor: 0.5,
           yAnchor: 0.5,
@@ -208,8 +273,7 @@ export function RegionalNetworkMap({
         overlaysRef.current.push(overlay);
       });
 
-      map.setCenter(new kakao.maps.LatLng(selectedRegion.latitude, selectedRegion.longitude));
-      map.setLevel(9);
+      map.setBounds(companyBounds, 60, 60, 60, 60);
     } else if (regions.length > 1) {
       map.setBounds(bounds, 70, 70, 70, 70);
     } else if (regions.length === 1) {
@@ -230,6 +294,16 @@ export function RegionalNetworkMap({
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-50 p-6 text-center text-sm font-medium text-red-600">
           {errorMessage}
         </div>
+      )}
+      {selectedRegionCode && !isLoading && !errorMessage && (
+        <button
+          type="button"
+          onClick={onBackToRegions}
+          className="absolute left-3 top-3 z-20 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-[11px] font-bold text-slate-700 shadow-md backdrop-blur transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          전국 지역 현황
+        </button>
       )}
       <div className="pointer-events-none absolute bottom-3 left-3 z-10 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-[10px] text-slate-600 shadow-sm">
         {selectedRegionCode
@@ -255,10 +329,15 @@ function createRegionalCompanyPoints(region: RegionalNetworkSummary) {
     "정우",
     "태광",
   ];
+  const anchors = regionalIndustrialAnchors[region.regionCode] ?? [
+    { latitude: region.latitude, longitude: region.longitude },
+  ];
 
   return Array.from({ length: region.totalCompanies }, (_, index) => {
+    const anchor = anchors[index % anchors.length];
+    const clusterIndex = Math.floor(index / anchors.length);
     const angle = index * 2.3999632297;
-    const radius = 0.045 + Math.sqrt((index + 1) / region.totalCompanies) * 0.31;
+    const radius = Math.min(0.0025 + clusterIndex * 0.0012, 0.01);
     const type =
       index < region.supplierCompanies
         ? companyTypeMeta[0]
@@ -272,10 +351,8 @@ function createRegionalCompanyPoints(region: RegionalNetworkSummary) {
       name: `${namePrefixes[index % namePrefixes.length]}${industry} ${String(index + 1).padStart(2, "0")}`,
       type,
       status: index < region.participatingCompanies ? "참여기업" : "연계 필요 기업",
-      latitude: region.latitude + Math.sin(angle) * radius,
-      longitude:
-        region.longitude +
-        (Math.cos(angle) * radius) / Math.max(Math.cos((region.latitude * Math.PI) / 180), 0.6),
+      latitude: anchor.latitude + Math.sin(angle) * radius,
+      longitude: anchor.longitude + Math.cos(angle) * radius,
     };
   });
 }

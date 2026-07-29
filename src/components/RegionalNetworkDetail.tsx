@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Building2, Link2Off, Network, Users, X } from "lucide-react";
+import { Building2, Link2Off, Network, Users, X } from "lucide-react";
 import type { RegionalNetworkSummary } from "../types/regionalNetwork";
 
 type DetailAction = "companies" | "consortiums" | "unconnected";
@@ -22,13 +22,7 @@ type RegionalConsortiumItem = {
   participantCompanyIds: string[];
 };
 
-export function RegionalNetworkDetail({
-  region,
-  onClose,
-}: {
-  region: RegionalNetworkSummary;
-  onClose: () => void;
-}) {
+export function RegionalNetworkDetail({ region }: { region: RegionalNetworkSummary }) {
   const [activeAction, setActiveAction] = useState<DetailAction | null>(null);
   const [expandedCompanyId, setExpandedCompanyId] = useState<string | null>(null);
   const [expandedConsortiumId, setExpandedConsortiumId] = useState<string | null>(null);
@@ -41,15 +35,6 @@ export function RegionalNetworkDetail({
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={onClose}
-        className="mb-4 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-semibold text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        전국 지역 현황으로 돌아가기
-      </button>
-
       <div className="mb-5">
         <div>
           <div className="text-xs font-semibold text-emerald-600">지역 네트워크 상세</div>

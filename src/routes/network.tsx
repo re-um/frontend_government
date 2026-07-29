@@ -1478,6 +1478,7 @@ function NetworkMapPage() {
                 regions={filteredRegionalData}
                 selectedRegionCode={selectedRegionCode}
                 onSelectRegion={setSelectedRegionCode}
+                onBackToRegions={() => setSelectedRegionCode(undefined)}
               />
             </div>
           )}
@@ -1488,7 +1489,6 @@ function NetworkMapPage() {
             selectedRegion ? (
               <RegionalNetworkDetail
                 region={selectedRegion}
-                onClose={() => setSelectedRegionCode(undefined)}
               />
             ) : (
               <RegionalEmptyPanel />
