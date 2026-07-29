@@ -1758,44 +1758,60 @@ function NetworkPanel({
   networkMatches: MatchDetail[]
   onClose: () => void
 }) {
-  const companyMetrics = networkCompanies.map((company) => {
-    const relatedMatches = networkMatches.filter(
-      (match) => match.source === company.id || match.target === company.id,
+  const allCompanyCarbon = new Map<string, number>()
+  matches.forEach((match) => {
+    allCompanyCarbon.set(
+      match.source,
+      (allCompanyCarbon.get(match.source) ?? 0) + match.carbonReduction,
     )
+    allCompanyCarbon.set(
+      match.target,
+      (allCompanyCarbon.get(match.target) ?? 0) + match.carbonReduction,
+    )
+  })
+  const companyMetrics = networkCompanies.map((company) => {
     return {
       company,
-      carbon: relatedMatches.reduce(
-        (sum, match) => sum + match.carbonReduction,
-        0,
-      ),
+      carbon: allCompanyCarbon.get(company.id) ?? 0,
     }
   })
-  const maxAmount = Math.max(
-    ...companyMetrics.map((item) => item.company.monthlyAmount),
-    1,
-  )
-  const maxCarbon = Math.max(...companyMetrics.map((item) => item.carbon), 1)
+  const maxAmount = Math.max(...companies.map((company) => company.monthlyAmount), 1)
+  const maxCarbon = Math.max(...allCompanyCarbon.values(), 1)
   const materialCounts = new Map<string, number>()
-  networkCompanies.forEach((company) => {
+  companies.forEach((company) => {
     materialCounts.set(
       company.material,
       (materialCounts.get(company.material) ?? 0) + 1,
     )
   })
   const weightedCompanies = companyMetrics
-    .map((item) => ({
-      ...item,
-      importance: Math.round(
-        ((item.company.monthlyAmount / maxAmount) * 0.4 +
-          (item.carbon / maxCarbon) * 0.35 +
-          ({ approved: 1, active: 0.75, pending: 0.4 }[
-            item.company.status
-          ] *
-            0.15) +
-          (1 / (materialCounts.get(item.company.material) ?? 1)) * 0.1) *
-          100,
-      ),
-    }))
+    .map((item) => {
+      const amountScore = item.company.monthlyAmount / maxAmount
+      const carbonScore = item.carbon / maxCarbon
+      const statusScore = { approved: 1, active: 0.75, pending: 0.4 }[
+        item.company.status
+      ]
+      const scarcityScore =
+        1 / (materialCounts.get(item.company.material) ?? 1)
+      const reasons = [
+        amountScore < 0.45 ? '월 물량 낮음' : null,
+        carbonScore < 0.45 ? '탄소기여 낮음' : null,
+        statusScore < 0.6 ? '응답 대기' : null,
+        scarcityScore < 0.34 ? '동일 재질 기업 많음' : null,
+      ].filter((reason): reason is string => Boolean(reason))
+      return {
+        ...item,
+        importance: Math.round(
+          (amountScore * 0.4 +
+            carbonScore * 0.35 +
+            statusScore * 0.15 +
+            scarcityScore * 0.1) *
+            100,
+        ),
+        reason:
+          reasons.length > 0 ? reasons.slice(0, 2).join(' · ') : '성과 기여 양호',
+      }
+    })
     .sort((a, b) => b.importance - a.importance)
   const totalAmount = networkMatches.reduce(
     (sum, match) => sum + match.amount,
@@ -1847,15 +1863,20 @@ function NetworkPanel({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {weightedCompanies.map(({ company, importance }) => (
+            {weightedCompanies.map(({ company, importance, reason }) => (
               <tr
                 key={company.id}
                 className={
                   company.id === anchorCompany.id ? 'bg-lime-50' : 'bg-white'
                 }
               >
-                <td className="truncate px-2.5 py-2.5 font-semibold text-slate-900">
-                  {company.name}
+                <td className="px-2.5 py-2.5">
+                  <div className="truncate font-semibold text-slate-900">
+                    {company.name}
+                  </div>
+                  <div className="mt-0.5 truncate text-[9px] font-normal text-slate-400">
+                    {reason}
+                  </div>
                 </td>
                 <td className="px-1 py-2.5 text-slate-500">
                   {companyTypeLabel[company.type].replace('기업', '')}

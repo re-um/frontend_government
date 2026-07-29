@@ -4,7 +4,6 @@ import ForceGraph3D, {
 } from 'react-force-graph-3d'
 import SpriteText from 'three-spritetext'
 import {
-  AdditiveBlending,
   BufferGeometry,
   CanvasTexture,
   Color,
@@ -24,11 +23,9 @@ import {
   SRGBColorSpace,
   TextureLoader,
   TorusGeometry,
-  Vector2,
   Vector3,
 } from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { Maximize2, Pause, Play, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -200,7 +197,6 @@ export function DigitalTwinNetwork3D({
           color,
           transparent: true,
           opacity: selected ? 0.2 : 0.11,
-          blending: AdditiveBlending,
           depthWrite: false,
         }),
       )
@@ -220,7 +216,7 @@ export function DigitalTwinNetwork3D({
           transparent: true,
           opacity: 0.82,
           emissive: new Color(color),
-          emissiveIntensity: selected ? 0.62 : 0.24,
+          emissiveIntensity: 0,
         }),
       )
       group.add(core)
@@ -234,7 +230,7 @@ export function DigitalTwinNetwork3D({
           transparent: true,
           opacity: 0.78,
           emissive: new Color(color),
-          emissiveIntensity: selected ? 0.72 : 0.36,
+          emissiveIntensity: 0,
         }),
       )
       group.add(innerCore)
@@ -246,7 +242,6 @@ export function DigitalTwinNetwork3D({
             color,
             transparent: true,
             opacity: index ? 0.45 : 0.8,
-            blending: AdditiveBlending,
             depthWrite: false,
           }),
         )
@@ -278,7 +273,7 @@ export function DigitalTwinNetwork3D({
           transparent: true,
           opacity: selected ? 0.94 : 0.86,
           emissive: new Color(color),
-          emissiveIntensity: selected ? 0.48 : 0.16,
+          emissiveIntensity: 0,
         }),
       )
       body.rotation.set(0.1, 0.42, 0)
@@ -296,7 +291,7 @@ export function DigitalTwinNetwork3D({
           transparent: true,
           opacity: 0.14,
           emissive: new Color(color),
-          emissiveIntensity: selected ? 0.24 : 0.06,
+          emissiveIntensity: 0,
           depthWrite: false,
         }),
       )
@@ -310,7 +305,6 @@ export function DigitalTwinNetwork3D({
           color,
           transparent: true,
           opacity: selected ? 1 : 0.86,
-          blending: AdditiveBlending,
         }),
       )
       edges.rotation.copy(body.rotation)
@@ -359,17 +353,6 @@ export function DigitalTwinNetwork3D({
       Math.min(window.devicePixelRatio, size.width < 768 ? 1 : 1.5),
     )
 
-    const composer = graphRef.current?.postProcessingComposer()
-    if (composer) {
-      const bloom = new UnrealBloomPass(
-        new Vector2(size.width, size.height),
-        size.width < 768 ? 0.18 : 0.32,
-        0.28,
-        0.86,
-      )
-      composer.addPass(bloom)
-    }
-
     // 전국의 여러 네트워크가 화면 가장자리로 흩어지지 않도록
     // 노드의 반발력과 연결 거리를 줄이고 중심으로 모으는 힘을 높인다.
     graphRef.current?.d3Force('charge')?.strength(-13)
@@ -395,7 +378,6 @@ export function DigitalTwinNetwork3D({
           color: index % 2 ? '#1d4ed8' : '#0891b2',
           transparent: true,
           opacity: 0.12,
-          blending: AdditiveBlending,
         }),
       )
       scene.add(orbit)
@@ -507,10 +489,10 @@ function createPedestal(color: string, selected: boolean) {
       new MeshPhysicalMaterial({
         color: tier.tone,
         metalness: 0.84 - index * 0.08,
-        roughness: 0.2 + index * 0.05,
-        clearcoat: 1,
+        roughness: 0.48 + index * 0.05,
+        clearcoat: 0.12,
         emissive: new Color(color),
-        emissiveIntensity: selected ? 0.16 : 0.035,
+        emissiveIntensity: 0,
       }),
     )
     base.position.y = tier.y
