@@ -108,6 +108,9 @@ export function DigitalTwinNetwork3D({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const graphRef =
     useRef<ForceGraphMethods<TwinNode, TwinLink> | undefined>(undefined)
+  const initialNodePositionsRef = useRef(
+    new Map<string, { x: number; y: number; z: number }>(),
+  )
   const [size, setSize] = useState({ width: 800, height: 680 })
   const [flowing, setFlowing] = useState(true)
   const [panMode, setPanMode] = useState(false)
@@ -189,6 +192,10 @@ export function DigitalTwinNetwork3D({
       }))
     return { nodes, links }
   }, [companies, matches, visibleCompanyIds])
+
+  useEffect(() => {
+    initialNodePositionsRef.current.clear()
+  }, [graphData])
 
   const createPlatform = (node: NodeObject<TwinNode>) => {
     const group = new Group()
@@ -397,6 +404,42 @@ export function DigitalTwinNetwork3D({
     onSelectCompany(String(node.id))
   }
 
+  const captureInitialLayout = () => {
+    if (initialNodePositionsRef.current.size > 0) return
+    graphData.nodes.forEach((node) => {
+      const positionedNode = node as NodeObject<TwinNode>
+      if (
+        Number.isFinite(positionedNode.x) &&
+        Number.isFinite(positionedNode.y)
+      ) {
+        initialNodePositionsRef.current.set(node.id, {
+          x: positionedNode.x ?? 0,
+          y: positionedNode.y ?? 0,
+          z: positionedNode.z ?? 0,
+        })
+      }
+    })
+  }
+
+  const restoreInitialLayout = () => {
+    graphData.nodes.forEach((node) => {
+      const position = initialNodePositionsRef.current.get(node.id)
+      if (!position) return
+      const positionedNode = node as NodeObject<TwinNode>
+      positionedNode.x = position.x
+      positionedNode.y = position.y
+      positionedNode.z = position.z
+      positionedNode.vx = 0
+      positionedNode.vy = 0
+      positionedNode.vz = 0
+      positionedNode.fx = undefined
+      positionedNode.fy = undefined
+      positionedNode.fz = undefined
+    })
+    graphRef.current?.refresh()
+    graphRef.current?.zoomToFit(600, 20)
+  }
+
   return (
     <div
       ref={containerRef}
@@ -452,6 +495,7 @@ export function DigitalTwinNetwork3D({
         onLinkClick={(link) => onSelectMatch(link.id)}
         onBackgroundClick={onClearSelection}
         onEngineTick={initializeScene}
+        onEngineStop={captureInitialLayout}
       />
 
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(2,6,23,0)_0%,rgba(2,6,23,0.06)_55%,rgba(2,6,23,0.22)_100%)]" />
@@ -471,8 +515,8 @@ export function DigitalTwinNetwork3D({
           <Maximize2 className="h-4 w-4" />
         </TwinButton>
         <TwinButton
-          label="배치 재계산"
-          onClick={() => graphRef.current?.d3ReheatSimulation()}
+          label="초기 배치로 복원"
+          onClick={restoreInitialLayout}
         >
           <RotateCcw className="h-4 w-4" />
         </TwinButton>
