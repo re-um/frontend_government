@@ -94,8 +94,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico?v=20260721", type: "image/x-icon" },
-      { rel: "shortcut icon", href: "/favicon.ico?v=20260721", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.ico?v=20260729-2", type: "image/x-icon" },
+      {
+        rel: "shortcut icon",
+        href: "/favicon.ico?v=20260729-2",
+        type: "image/x-icon",
+      },
       { rel: "preconnect", href: "https://cdn.jsdelivr.net", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
