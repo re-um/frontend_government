@@ -1786,6 +1786,10 @@ function NetworkPanel({
   })
   const weightedCompanies = companyMetrics
     .map((item) => {
+      const relatedMatches = networkMatches.filter(
+        (match) =>
+          match.source === item.company.id || match.target === item.company.id,
+      )
       const amountScore = item.company.monthlyAmount / maxAmount
       const carbonScore = item.carbon / maxCarbon
       const statusScore = { approved: 1, active: 0.75, pending: 0.4 }[
@@ -1806,16 +1810,45 @@ function NetworkPanel({
           scarcityScore * 0.1) *
           100,
       )
+      const relatedCompanyIds = relatedMatches.map((match) =>
+        match.source === item.company.id ? match.target : match.source,
+      )
+      const hasProcessorLink =
+        item.company.type === 'processor' ||
+        relatedCompanyIds.some(
+          (companyId) =>
+            companies.find((company) => company.id === companyId)?.type ===
+            'processor',
+        )
+      const connectionGrounds = [
+        relatedMatches.length > 0 ? '재질 적합' : null,
+        relatedMatches.some((match) => match.status === 'approved')
+          ? '승인 관계'
+          : null,
+        relatedMatches.some((match) => match.status === 'active')
+          ? '운영 진행'
+          : null,
+        hasProcessorLink ? '중간처리 연계' : null,
+      ].filter((ground): ground is string => Boolean(ground))
       return {
         ...item,
         importance,
-        level: importance >= 70 ? '높음' : importance >= 50 ? '보통' : '낮음',
+        level:
+          importance >= 70
+            ? '핵심 기여'
+            : importance >= 50
+              ? '일반 기여'
+              : '제한적 기여',
         reason:
           importance < 50
             ? reasons.length > 0
               ? reasons.slice(0, 2).join(' · ')
               : '종합 기여도 부족'
             : null,
+        connectionGrounds:
+          connectionGrounds.length > 0
+            ? connectionGrounds.join(' · ')
+            : '연결 관계 확인 필요',
       }
     })
     .sort((a, b) => b.importance - a.importance)
@@ -1850,7 +1883,7 @@ function NetworkPanel({
 
       <div className="mb-3">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          기업별 가중치
+          기업별 성과 기여도
         </h3>
         <p className="mt-1 text-[11px] leading-4 text-slate-400">
           월 물량 40% · 탄소감축 35% · 운영상태 15% · 재질 희소성 10%
@@ -1861,7 +1894,7 @@ function NetworkPanel({
         <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
           <div className="flex items-center justify-between gap-3">
             <span className="text-[11px] font-semibold text-amber-800">
-              {anchorCompany.name} 중요도 평가
+              {anchorCompany.name} 성과 기여도
             </span>
             <span className="text-sm font-bold text-slate-950">
               {anchorWeight.importance}점
@@ -1869,7 +1902,12 @@ function NetworkPanel({
           </div>
           <p className="mt-1 text-[11px] font-medium leading-4 text-amber-700">
             평가 결과: {anchorWeight.level}
-            {anchorWeight.reason ? ` · 낮은 이유: ${anchorWeight.reason}` : ''}
+            {anchorWeight.reason
+              ? ` · 제한 사유: ${anchorWeight.reason}`
+              : ''}
+          </p>
+          <p className="mt-1 text-[11px] leading-4 text-slate-600">
+            연결 근거: {anchorWeight.connectionGrounds}
           </p>
         </div>
       )}
@@ -1884,13 +1922,19 @@ function NetworkPanel({
                 물량
               </th>
               <th className="w-[20%] px-2.5 py-2 text-right font-semibold">
-                중요도
+                기여도
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {weightedCompanies.map(
-              ({ company, importance, level, reason }) => (
+              ({
+                company,
+                importance,
+                level,
+                reason,
+                connectionGrounds,
+              }) => (
               <tr
                 key={company.id}
                 className={
@@ -1904,15 +1948,18 @@ function NetworkPanel({
                   <div
                     className={[
                       'mt-1 text-[10px] font-medium leading-3.5',
-                      level === '높음'
+                      level === '핵심 기여'
                         ? 'text-emerald-600'
-                        : level === '보통'
+                        : level === '일반 기여'
                           ? 'text-slate-500'
                           : 'text-amber-600',
                     ].join(' ')}
                   >
                     {level}
-                    {reason ? ` · 낮은 이유: ${reason}` : ''}
+                    {reason ? ` · 제한 사유: ${reason}` : ''}
+                  </div>
+                  <div className="mt-1 text-[9px] font-normal leading-3 text-cyan-700">
+                    연결 근거: {connectionGrounds}
                   </div>
                 </td>
                 <td className="px-1 py-2.5 text-slate-500">
@@ -1932,7 +1979,8 @@ function NetworkPanel({
       </div>
 
       <p className="mt-3 text-[11px] leading-4 text-slate-400">
-        중요도가 높은 기업일수록 3D 화면에서 크게 표시됩니다.
+        성과 기여도가 높은 기업일수록 3D 화면에서 크게 표시됩니다. 연결
+        여부는 기여도가 아닌 재질·승인·처리 연계 근거로 판단합니다.
       </p>
     </div>
   )
