@@ -31,7 +31,18 @@ import {
 } from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { Maximize2, Move, Pause, Play, RotateCcw } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronUp,
+  Factory,
+  Maximize2,
+  Move,
+  PackageCheck,
+  Pause,
+  Play,
+  Recycle,
+  RotateCcw,
+} from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 type CompanyType = 'emitter' | 'processor' | 'consumer'
@@ -119,6 +130,7 @@ export function DigitalTwinNetwork3D({
   const [flowing, setFlowing] = useState(true)
   const [panMode, setPanMode] = useState(false)
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null)
+  const [legendOpen, setLegendOpen] = useState(true)
   const [companyModels, setCompanyModels] = useState<
     Record<CompanyType, Group | null>
   >({
@@ -603,6 +615,48 @@ export function DigitalTwinNetwork3D({
 
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(2,6,23,0)_0%,rgba(2,6,23,0.06)_55%,rgba(2,6,23,0.22)_100%)]" />
 
+      <div className="absolute left-4 top-4 z-10 w-[min(19rem,calc(100%-2rem))] overflow-hidden rounded-2xl border border-white/12 bg-slate-950/82 shadow-2xl backdrop-blur-xl">
+        <button
+          type="button"
+          onClick={() => setLegendOpen((value) => !value)}
+          className="flex w-full items-center justify-between px-4 py-3 text-left text-xs font-bold text-white transition hover:bg-white/5"
+          aria-expanded={legendOpen}
+        >
+          기업 유형 범례
+          {legendOpen ? (
+            <ChevronUp className="h-4 w-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          )}
+        </button>
+
+        {legendOpen && (
+          <div className="space-y-2 border-t border-white/10 p-3">
+            <LegendItem
+              icon={<Factory className="h-4 w-4" />}
+              colorClass="border-blue-400/50 bg-blue-500/15 text-blue-300"
+              title="배출기업"
+              description="폐합성수지 발생·집하·압축"
+            />
+            <LegendItem
+              icon={<Recycle className="h-4 w-4" />}
+              colorClass="border-teal-400/50 bg-teal-500/15 text-teal-300"
+              title="중간처리기업"
+              description="파쇄·선별·세척·재생"
+            />
+            <LegendItem
+              icon={<PackageCheck className="h-4 w-4" />}
+              colorClass="border-lime-400/50 bg-lime-500/15 text-lime-300"
+              title="수요기업"
+              description="재생원료 투입·제품 생산"
+            />
+            <p className="px-1 pt-1 text-[10px] leading-4 text-slate-500">
+              모델 크기는 기업의 성과 기여도를 반영합니다.
+            </p>
+          </div>
+        )}
+      </div>
+
       <div className="absolute bottom-4 right-4 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-950/75 p-1 shadow-2xl backdrop-blur-xl">
         <TwinButton
           label={panMode ? '화면 이동 종료' : '화면 이동'}
@@ -635,6 +689,34 @@ export function DigitalTwinNetwork3D({
         {panMode
           ? '드래그 화면 이동 · 휠 확대 · 버튼을 다시 누르면 회전'
           : '드래그 회전 · 휠 확대 · 화면 이동 버튼으로 위치 조정'}
+      </div>
+    </div>
+  )
+}
+
+function LegendItem({
+  icon,
+  colorClass,
+  title,
+  description,
+}: {
+  icon: React.ReactNode
+  colorClass: string
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-white/6 bg-white/[0.035] px-3 py-2">
+      <div
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${colorClass}`}
+      >
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <div className="text-[11px] font-bold text-slate-100">{title}</div>
+        <div className="truncate text-[10px] text-slate-400">
+          {description}
+        </div>
       </div>
     </div>
   )
