@@ -118,6 +118,7 @@ export function DigitalTwinNetwork3D({
   const [size, setSize] = useState({ width: 800, height: 680 })
   const [flowing, setFlowing] = useState(true)
   const [panMode, setPanMode] = useState(false)
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null)
   const [companyModels, setCompanyModels] = useState<
     Record<CompanyType, Group | null>
   >({
@@ -231,6 +232,7 @@ export function DigitalTwinNetwork3D({
   const createPlatform = (node: NodeObject<TwinNode>) => {
     const group = new Group()
     const selected = node.id === selectedCompanyId
+    const hovered = node.id === hoveredNodeId
     const color = selected ? '#bef264' : node.color
     const modelTemplate = companyModels[node.type]
 
@@ -257,16 +259,23 @@ export function DigitalTwinNetwork3D({
       model.rotation.set(0.08, 0.42, 0)
       group.add(model)
 
-      const label = new SpriteText(node.name)
-      label.color = '#ffffff'
-      label.textHeight = selected ? 3.1 : 2.55
-      label.position.y = node.type === 'processor' ? -9.5 : -8
-      label.backgroundColor = selected
-        ? 'rgba(45, 69, 12, 0.94)'
-        : 'rgba(3, 10, 24, 0.94)'
-      label.padding = 2.1
-      label.borderRadius = 4
-      group.add(label)
+      if (selected || hovered || node.type === 'processor') {
+        const label = new SpriteText(node.name)
+        label.color = '#ffffff'
+        label.textHeight = selected ? 2.8 : 2.3
+        label.position.y =
+          node.type === 'emitter'
+            ? -11.2
+            : node.type === 'processor'
+              ? -10.2
+              : -7.4
+        label.backgroundColor = selected
+          ? 'rgba(45, 69, 12, 0.94)'
+          : 'rgba(3, 10, 24, 0.94)'
+        label.padding = 1.8
+        label.borderRadius = 4
+        group.add(label)
+      }
 
       const modelScale =
         node.type === 'consumer' ? 1.4 : node.type === 'processor' ? 0.97 : 1
@@ -552,9 +561,7 @@ export function DigitalTwinNetwork3D({
         backgroundColor="rgba(0, 0, 0, 0)"
         showNavInfo={false}
         nodeThreeObject={createPlatform}
-        nodeLabel={(node) =>
-          `<b>${node.name}</b><br/>${node.material} · ${node.amount}톤/월`
-        }
+        nodeLabel={() => ''}
         linkLabel={(link) => `${link.material} · ${link.amount}톤`}
         linkColor={(link) =>
           selectedMatchId && link.id !== selectedMatchId ? '#1e293b' : link.color
@@ -585,6 +592,9 @@ export function DigitalTwinNetwork3D({
         enableNodeDrag={!panMode}
         enableNavigationControls
         onNodeClick={focusNode}
+        onNodeHover={(node) =>
+          setHoveredNodeId(node ? String(node.id) : null)
+        }
         onLinkClick={(link) => onSelectMatch(link.id)}
         onBackgroundClick={onClearSelection}
         onEngineTick={initializeScene}
