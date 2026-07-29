@@ -27,6 +27,7 @@ import {
   Vector3,
 } from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { Maximize2, Move, Pause, Play, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -114,6 +115,13 @@ export function DigitalTwinNetwork3D({
   const [size, setSize] = useState({ width: 800, height: 680 })
   const [flowing, setFlowing] = useState(true)
   const [panMode, setPanMode] = useState(false)
+  const [companyModels, setCompanyModels] = useState<
+    Record<CompanyType, Group | null>
+  >({
+    emitter: null,
+    processor: null,
+    consumer: null,
+  })
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -127,6 +135,26 @@ export function DigitalTwinNetwork3D({
     const observer = new ResizeObserver(resize)
     observer.observe(container)
     return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    const loader = new GLTFLoader()
+    Promise.all([
+      loader.loadAsync('/models/company-emitter.glb'),
+      loader.loadAsync('/models/company-processor.glb'),
+      loader.loadAsync('/models/company-consumer.glb'),
+    ]).then(([emitter, processor, consumer]) => {
+      if (cancelled) return
+      setCompanyModels({
+        emitter: emitter.scene,
+        processor: processor.scene,
+        consumer: consumer.scene,
+      })
+    })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
@@ -201,6 +229,36 @@ export function DigitalTwinNetwork3D({
     const group = new Group()
     const selected = node.id === selectedCompanyId
     const color = selected ? '#bef264' : node.color
+    const modelTemplate = companyModels[node.type]
+
+    if (modelTemplate) {
+      const model = modelTemplate.clone(true)
+      model.traverse((child) => {
+        if (!(child instanceof Mesh)) return
+        child.castShadow = false
+        child.receiveShadow = false
+        child.material = child.material.clone()
+        if (selected && 'color' in child.material) {
+          child.material.color.lerp(new Color('#bef264'), 0.2)
+        }
+      })
+      model.rotation.set(0.08, 0.42, 0)
+      group.add(model)
+
+      const label = new SpriteText(node.name)
+      label.color = selected ? '#f7fee7' : '#dbeafe'
+      label.textHeight = selected ? 2.8 : 2.2
+      label.position.y = node.type === 'processor' ? -9 : -7.2
+      label.backgroundColor = selected
+        ? 'rgba(45, 69, 12, 0.94)'
+        : 'rgba(3, 10, 24, 0.82)'
+      label.padding = 1.8
+      label.borderRadius = 4
+      group.add(label)
+
+      group.scale.setScalar((0.72 + node.weight * 0.3) * (selected ? 1.08 : 1))
+      return group
+    }
 
     const pedestal = createPedestal(color, selected)
     pedestal.position.y = node.type === 'processor' ? -9.8 : -6.7
