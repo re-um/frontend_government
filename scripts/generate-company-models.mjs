@@ -33,61 +33,68 @@ const addMesh = (group, geometry, surface, position = [0, 0, 0], rotation = [0, 
 
 function emitterModel() {
   const group = new Group()
-  const dark = material('#151b23', 0.76, 0.34)
-  const inset = material('#070b11', 0.5, 0.46)
-  const blue = material('#1769b3', 0.5, 0.3)
-  const steel = material('#7e8d9d', 0.84, 0.24)
-  const bale = material('#6683a0', 0.22, 0.62)
-
-  // 세로형 압축·선별 챔버
-  addMesh(group, new RoundedBoxGeometry(7.2, 10.2, 5.8, 6, 0.55), dark, [-0.65, 0, 0])
-  addMesh(group, new RoundedBoxGeometry(2.1, 6.7, 0.48, 5, 0.28), inset, [-0.65, 0.35, 3])
-  addMesh(group, new RoundedBoxGeometry(1.35, 5.85, 0.55, 4, 0.24), blue, [-0.65, 0.35, 3.25])
-  ;[-3.65, 2.35].forEach((x) => {
-    addMesh(group, new CylinderGeometry(0.48, 0.48, 7.4, 12), steel, [x, 0.25, 1.65])
-    addMesh(group, new CylinderGeometry(0.68, 0.68, 0.6, 12), blue, [x, 3.65, 1.65])
+  const dark = material('#17202b', 0.74, 0.36)
+  const inset = material('#070c13', 0.5, 0.46)
+  const blue = material('#1677c8', 0.48, 0.28)
+  const steel = material('#8998a8', 0.82, 0.25)
+  const glass = material('#58c7ff', 0.3, 0.2)
+  const smoke = new MeshStandardMaterial({
+    color: '#b9d7e8',
+    metalness: 0,
+    roughness: 0.9,
+    transparent: true,
+    opacity: 0.55,
   })
 
-  // 상단 폐합성수지 투입 호퍼
-  addMesh(
-    group,
-    new CylinderGeometry(4.75, 2.85, 3.25, 4),
-    dark,
-    [-0.65, 6.6, 0],
-    [0, Math.PI / 4, 0],
-  )
-  addMesh(
-    group,
-    new CylinderGeometry(4.92, 4.92, 0.35, 4),
-    blue,
-    [-0.65, 8.12, 0],
-    [0, Math.PI / 4, 0],
-  )
-  ;[-2.4, -0.8, 0.8, 2.4].forEach((x) =>
-    addMesh(group, new RoundedBoxGeometry(0.75, 0.75, 0.75, 2, 0.14), bale, [x - 0.65, 7.9, 0.15]),
+  // 한눈에 공장으로 읽히는 넓은 본체
+  addMesh(group, new RoundedBoxGeometry(13.2, 6.2, 6.4, 5, 0.48), dark, [-1, -1.6, 0])
+  addMesh(group, new RoundedBoxGeometry(12.4, 0.7, 6.7, 3, 0.2), steel, [-1, -4.9, 0])
+
+  // 스케치의 톱니형 공장 지붕 실루엣
+  ;[-5.1, -1.7, 1.7].forEach((x) => {
+    addMesh(
+      group,
+      new CylinderGeometry(2.25, 2.25, 5.9, 3),
+      dark,
+      [x, 2.15, 0],
+      [Math.PI / 2, 0, Math.PI / 2],
+    )
+    addMesh(
+      group,
+      new CylinderGeometry(2.35, 2.35, 0.38, 3),
+      blue,
+      [x, 2.15, 3.08],
+      [Math.PI / 2, 0, Math.PI / 2],
+    )
+  })
+
+  // 전면 출입구, 창문과 폐합성수지 배출 표시
+  addMesh(group, new RoundedBoxGeometry(3.3, 3.8, 0.5, 4, 0.22), inset, [-3.8, -1.95, 3.22])
+  addMesh(group, new RoundedBoxGeometry(2.65, 0.55, 0.58, 3, 0.16), blue, [-3.8, -0.75, 3.48])
+  ;[-0.8, 1.1, 3].forEach((x) =>
+    addMesh(group, new RoundedBoxGeometry(1.25, 1.45, 0.45, 3, 0.18), glass, [x, -1.5, 3.3]),
   )
 
-  // 측면 배출 슈트
-  addMesh(
-    group,
-    new RoundedBoxGeometry(5.2, 1.55, 2.35, 4, 0.28),
-    steel,
-    [4.05, -1.25, 0.35],
-    [0, 0, -0.48],
-  )
-  addMesh(
-    group,
-    new RoundedBoxGeometry(4.35, 0.85, 1.55, 3, 0.18),
-    inset,
-    [4.15, -1.35, 0.42],
-    [0, 0, -0.48],
-  )
+  // 오른쪽 높은 굴뚝
+  addMesh(group, new RoundedBoxGeometry(3.25, 11.8, 3.25, 5, 0.42), dark, [6.3, 2.1, 0])
+  addMesh(group, new RoundedBoxGeometry(3.65, 0.65, 3.65, 3, 0.2), steel, [6.3, 8.15, 0])
+  addMesh(group, new RoundedBoxGeometry(3.05, 0.45, 3.05, 3, 0.16), blue, [6.3, 8.55, 0])
+  addMesh(group, new RoundedBoxGeometry(1.05, 6.9, 0.5, 3, 0.18), inset, [6.3, 2.25, 1.75])
+  addMesh(group, new RoundedBoxGeometry(0.55, 6.2, 0.58, 3, 0.16), blue, [6.3, 2.25, 2.02])
 
-  // 압축 블록과 수거 컨테이너
-  addMesh(group, new RoundedBoxGeometry(4.4, 3.1, 4.4, 5, 0.38), dark, [5.1, -5.1, 0])
-  addMesh(group, new RoundedBoxGeometry(3.55, 2.05, 3.5, 4, 0.28), inset, [5.1, -4.65, 0])
-  addMesh(group, new RoundedBoxGeometry(2.65, 1.5, 2.65, 3, 0.18), bale, [5.1, -3.65, 0])
-  addMesh(group, new RoundedBoxGeometry(6.1, 0.9, 4.9, 4, 0.22), steel, [-0.65, -5.45, 0])
+  // 굴뚝에서 부드럽게 굽어 올라가는 세 줄의 연기
+  ;[-0.85, 0, 0.85].forEach((offset, streamIndex) => {
+    for (let index = 0; index < 5; index += 1) {
+      const y = 9.4 + index * 1.25
+      const x = 6.3 + offset + Math.sin(index * 1.1 + streamIndex) * 0.55
+      const radius = 0.52 + index * 0.13
+      addMesh(group, new SphereGeometry(radius, 14, 10), smoke, [x, y, offset * 0.35])
+    }
+  })
+
+  // 공장 바깥 방향으로 나온 압축 폐플라스틱 베일
+  addMesh(group, new RoundedBoxGeometry(3.6, 1.15, 2.1, 4, 0.22), steel, [-7.15, -3.45, 0.35])
+  addMesh(group, new RoundedBoxGeometry(1.55, 1.25, 1.55, 3, 0.18), blue, [-8.15, -2.65, 0.35])
   return group
 }
 
