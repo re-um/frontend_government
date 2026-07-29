@@ -83,39 +83,61 @@ function processorModel() {
 
 function consumerModel() {
   const group = new Group()
-  const frame = material('#17230c', 0.72, 0.34)
-  const lime = material('#82bb22', 0.46, 0.3)
-  const steel = material('#a7b99a', 0.82, 0.26)
-  const intake = material('#263a13', 0.62, 0.38)
+  const body = material('#161b22', 0.74, 0.36)
+  const inset = material('#070b10', 0.46, 0.48)
+  const lime = material('#83b92c', 0.42, 0.32)
+  const steel = material('#87929d', 0.82, 0.24)
+  const product = material('#cbd5c2', 0.26, 0.5)
 
-  addMesh(group, new RoundedBoxGeometry(2.25, 7.4, 2.8, 5, 0.42), frame, [-4.15, -1.35, 0])
-  addMesh(group, new RoundedBoxGeometry(2.25, 7.4, 2.8, 5, 0.42), frame, [4.15, -1.35, 0])
-  addMesh(group, new RoundedBoxGeometry(1.45, 5.9, 1.95, 4, 0.3), lime, [-4.15, -1.35, 0.45])
-  addMesh(group, new RoundedBoxGeometry(1.45, 5.9, 1.95, 4, 0.3), lime, [4.15, -1.35, 0.45])
+  // 중앙 생산설비 본체와 전면 개방형 생산실
+  addMesh(group, new RoundedBoxGeometry(10.2, 6.7, 5.8, 6, 0.7), body, [-0.6, 0, 0])
+  addMesh(group, new RoundedBoxGeometry(7.3, 4.25, 0.55, 5, 0.32), inset, [-0.2, -0.15, 3])
+  addMesh(group, new RoundedBoxGeometry(7.4, 0.75, 0.7, 4, 0.24), lime, [-0.15, -1.25, 3.45])
 
-  addMesh(group, new TorusGeometry(4.15, 1.12, 12, 48, Math.PI), frame, [0, 2.3, 0])
-  addMesh(group, new TorusGeometry(4.15, 0.48, 10, 48, Math.PI), lime, [0, 2.3, 0.42])
-
-  addMesh(
-    group,
-    new CylinderGeometry(2.25, 2.65, 1.15, 16),
-    steel,
-    [0, -0.35, 1.15],
-    [Math.PI / 2, 0, 0],
-  )
-  addMesh(
-    group,
-    new CylinderGeometry(1.58, 1.58, 1.35, 16),
-    intake,
-    [0, -0.35, 1.85],
-    [Math.PI / 2, 0, 0],
-  )
-  addMesh(group, new TorusGeometry(1.65, 0.2, 10, 32), lime, [0, -0.35, 2.58])
-
-  ;[-4.15, 4.15].forEach((x) => {
-    addMesh(group, new CylinderGeometry(1.35, 1.6, 0.55, 8), steel, [x, -5.15, 0])
-    addMesh(group, new CylinderGeometry(0.72, 0.72, 1.2, 12), lime, [x, 3.05, 0])
+  // 노출형 제조 롤러
+  ;[-2.35, -0.8, 0.8, 2.35].forEach((x) => {
+    addMesh(
+      group,
+      new CylinderGeometry(0.42, 0.42, 1.25, 14),
+      steel,
+      [x, 0.55, 3.45],
+      [0, 0, Math.PI / 2],
+    )
+    addMesh(group, new TorusGeometry(0.58, 0.13, 8, 20), lime, [x, 0.55, 3.48])
   })
+
+  // 왼쪽 재생원료 투입구
+  addMesh(
+    group,
+    new CylinderGeometry(2.55, 2.8, 1.65, 20),
+    steel,
+    [-6.15, 0, 0],
+    [0, 0, Math.PI / 2],
+  )
+  addMesh(group, new TorusGeometry(2.25, 0.42, 12, 40), lime, [-7, 0, 0], [0, Math.PI / 2, 0])
+  addMesh(
+    group,
+    new CylinderGeometry(1.75, 1.75, 1.85, 20),
+    inset,
+    [-6.95, 0, 0],
+    [0, 0, Math.PI / 2],
+  )
+
+  // 오른쪽 완제품 출하 도크와 컨베이어
+  addMesh(group, new RoundedBoxGeometry(3.6, 5.1, 4.9, 5, 0.45), body, [6.25, -0.45, 0])
+  addMesh(group, new RoundedBoxGeometry(2.75, 3.65, 0.45, 4, 0.22), inset, [6.25, -0.25, 2.55])
+  addMesh(group, new RoundedBoxGeometry(4.2, 0.6, 3.2, 4, 0.2), steel, [7.4, -2.65, 1.25])
+  addMesh(group, new RoundedBoxGeometry(1.1, 1.8, 1.1, 4, 0.2), product, [5.75, -0.95, 2.85])
+  addMesh(group, new CylinderGeometry(0.55, 0.48, 1.75, 14), product, [6.85, -0.95, 2.85])
+
+  // 상부 냉각 및 상태 모듈
+  ;[-2.2, 0.1, 2.4].forEach((x) => {
+    addMesh(group, new CylinderGeometry(1.05, 1.05, 0.45, 16), steel, [x, 3.55, 0])
+    addMesh(group, new CylinderGeometry(0.72, 0.72, 0.5, 12), inset, [x, 3.82, 0])
+  })
+  ;[-1.05, -0.35, 0.35, 1.05].forEach((x) =>
+    addMesh(group, new BoxGeometry(0.38, 0.38, 0.3), lime, [x + 0.2, 1.85, 3.05]),
+  )
   return group
 }
 
@@ -130,4 +152,4 @@ async function exportModel(name, model) {
 await mkdir(new URL('../public/models', import.meta.url), { recursive: true })
 await exportModel('company-emitter', emitterModel())
 await exportModel('company-processor', processorModel())
-await exportModel('company-consumer-gate', consumerModel())
+await exportModel('company-consumer-factory', consumerModel())

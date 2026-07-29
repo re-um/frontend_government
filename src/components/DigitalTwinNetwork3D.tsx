@@ -146,7 +146,7 @@ export function DigitalTwinNetwork3D({
     Promise.all([
       loader.loadAsync('/models/company-emitter.glb'),
       loader.loadAsync('/models/company-processor.glb'),
-      loader.loadAsync('/models/company-consumer-gate.glb'),
+      loader.loadAsync('/models/company-consumer-factory.glb'),
     ]).then(([emitter, processor, consumer]) => {
       if (cancelled) return
       setCompanyModels({
@@ -268,7 +268,13 @@ export function DigitalTwinNetwork3D({
       label.borderRadius = 4
       group.add(label)
 
-      group.scale.setScalar((0.9 + node.weight * 0.38) * (selected ? 1.08 : 1))
+      const modelScale =
+        node.type === 'consumer' ? 0.64 : node.type === 'processor' ? 0.88 : 0.9
+      group.scale.setScalar(
+        (0.9 + node.weight * 0.38) *
+          modelScale *
+          (selected ? 1.08 : 1),
+      )
       return group
     }
 
