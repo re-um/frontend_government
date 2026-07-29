@@ -1821,6 +1821,9 @@ function NetworkPanel({
     (sum, match) => sum + match.carbonReduction,
     0,
   )
+  const anchorWeight = weightedCompanies.find(
+    (item) => item.company.id === anchorCompany.id,
+  )
 
   return (
     <div>
@@ -1848,6 +1851,22 @@ function NetworkPanel({
         </p>
       </div>
 
+      {anchorWeight && (
+        <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] font-semibold text-amber-800">
+              {anchorCompany.name} 중요도 평가
+            </span>
+            <span className="text-sm font-bold text-slate-950">
+              {anchorWeight.importance}점
+            </span>
+          </div>
+          <p className="mt-1 text-[11px] font-medium leading-4 text-amber-700">
+            평가 사유: {anchorWeight.reason}
+          </p>
+        </div>
+      )}
+
       <div className="max-h-105 overflow-auto rounded-xl border border-slate-200">
         <table className="w-full table-fixed text-left text-[11px]">
           <thead className="sticky top-0 bg-slate-50 text-slate-500">
@@ -1874,8 +1893,17 @@ function NetworkPanel({
                   <div className="truncate font-semibold text-slate-900">
                     {company.name}
                   </div>
-                  <div className="mt-0.5 truncate text-[9px] font-normal text-slate-400">
-                    {reason}
+                  <div
+                    className={[
+                      'mt-1 text-[10px] font-medium leading-3.5',
+                      reason === '성과 기여 양호'
+                        ? 'text-emerald-600'
+                        : 'text-amber-600',
+                    ].join(' ')}
+                  >
+                    {reason === '성과 기여 양호'
+                      ? reason
+                      : `낮은 이유: ${reason}`}
                   </div>
                 </td>
                 <td className="px-1 py-2.5 text-slate-500">

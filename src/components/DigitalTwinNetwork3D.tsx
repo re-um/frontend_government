@@ -17,6 +17,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshPhysicalMaterial,
+  MOUSE,
   SphereGeometry,
   Sprite,
   SpriteMaterial,
@@ -26,7 +27,7 @@ import {
   Vector3,
 } from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
-import { Maximize2, Pause, Play, RotateCcw } from 'lucide-react'
+import { Maximize2, Move, Pause, Play, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 type CompanyType = 'emitter' | 'processor' | 'consumer'
@@ -109,6 +110,7 @@ export function DigitalTwinNetwork3D({
     useRef<ForceGraphMethods<TwinNode, TwinLink> | undefined>(undefined)
   const [size, setSize] = useState({ width: 800, height: 680 })
   const [flowing, setFlowing] = useState(true)
+  const [panMode, setPanMode] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -123,6 +125,13 @@ export function DigitalTwinNetwork3D({
     observer.observe(container)
     return () => observer.disconnect()
   }, [])
+
+  useEffect(() => {
+    const controls = graphRef.current?.controls()
+    if (!controls) return
+    controls.mouseButtons.LEFT = panMode ? MOUSE.PAN : MOUSE.ROTATE
+    controls.update()
+  }, [panMode])
 
   const graphData = useMemo(() => {
     const maxAmount = Math.max(...companies.map((company) => company.monthlyAmount), 1)
@@ -437,7 +446,7 @@ export function DigitalTwinNetwork3D({
         cooldownTicks={75}
         d3AlphaDecay={0.04}
         d3VelocityDecay={0.34}
-        enableNodeDrag
+        enableNodeDrag={!panMode}
         enableNavigationControls
         onNodeClick={focusNode}
         onLinkClick={(link) => onSelectMatch(link.id)}
@@ -448,6 +457,13 @@ export function DigitalTwinNetwork3D({
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(2,6,23,0)_0%,rgba(2,6,23,0.06)_55%,rgba(2,6,23,0.22)_100%)]" />
 
       <div className="absolute bottom-4 right-4 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-950/75 p-1 shadow-2xl backdrop-blur-xl">
+        <TwinButton
+          label={panMode ? '화면 이동 종료' : '화면 이동'}
+          active={panMode}
+          onClick={() => setPanMode((value) => !value)}
+        >
+          <Move className="h-4 w-4" />
+        </TwinButton>
         <TwinButton
           label="전체 보기"
           onClick={() => graphRef.current?.zoomToFit(600, 20)}
@@ -469,7 +485,9 @@ export function DigitalTwinNetwork3D({
       </div>
 
       <div className="pointer-events-none absolute bottom-4 left-4 hidden rounded-xl border border-white/10 bg-slate-950/70 px-3 py-2 text-[11px] text-slate-400 backdrop-blur-xl md:block">
-        드래그 회전 · 휠 확대 · 플랫폼 선택 시 카메라 이동
+        {panMode
+          ? '드래그 화면 이동 · 휠 확대 · 버튼을 다시 누르면 회전'
+          : '드래그 회전 · 휠 확대 · 화면 이동 버튼으로 위치 조정'}
       </div>
     </div>
   )
@@ -585,10 +603,12 @@ function createRoleIcon(type: CompanyType, color: string) {
 function TwinButton({
   label,
   onClick,
+  active = false,
   children,
 }: {
   label: string
   onClick: () => void
+  active?: boolean
   children: React.ReactNode
 }) {
   return (
@@ -596,7 +616,12 @@ function TwinButton({
       type="button"
       title={label}
       onClick={onClick}
-      className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-cyan-300"
+      className={[
+        'rounded-lg p-2 transition',
+        active
+          ? 'bg-cyan-400 text-slate-950'
+          : 'text-slate-400 hover:bg-white/10 hover:text-cyan-300',
+      ].join(' ')}
     >
       {children}
     </button>
