@@ -34,8 +34,9 @@ const addMesh = (group, geometry, surface, position = [0, 0, 0], rotation = [0, 
 
 function emitterModel() {
   const group = new Group()
-  const white = material('#e8edf2', 0.25, 0.38)
-  const whiteEdge = material('#b9c7d3', 0.52, 0.3)
+  const gray = material('#788694', 0.56, 0.34)
+  const grayEdge = material('#465565', 0.66, 0.28)
+  const badgeFace = material('#d8e0e7', 0.3, 0.36)
   const inset = material('#18324a', 0.48, 0.38)
   const blue = material('#1769ad', 0.48, 0.27)
   const glass = material('#3b91c5', 0.34, 0.2)
@@ -48,15 +49,15 @@ function emitterModel() {
   })
 
   // 참고 이미지처럼 밝고 단순한 공장 본체
-  addMesh(group, new RoundedBoxGeometry(13.2, 6.1, 6.5, 5, 0.42), white, [0, -2, 0])
-  addMesh(group, new RoundedBoxGeometry(13.8, 0.65, 7, 4, 0.24), whiteEdge, [0, -5.2, 0])
+  addMesh(group, new RoundedBoxGeometry(13.2, 6.1, 6.5, 5, 0.42), gray, [0, -2, 0])
+  addMesh(group, new RoundedBoxGeometry(13.8, 0.65, 7, 4, 0.24), grayEdge, [0, -5.2, 0])
 
   // 파란색 톱니 지붕
   ;[-4.25, -0.4, 3.45].forEach((x) => {
     addMesh(
       group,
       new CylinderGeometry(2.45, 2.45, 6.25, 3),
-      white,
+      gray,
       [x, 2, 0],
       [Math.PI / 2, 0, Math.PI / 2],
     )
@@ -81,7 +82,7 @@ function emitterModel() {
     { x: -4.8, y: 7.15, height: 8.8 },
     { x: -1.95, y: 6.55, height: 7.6 },
   ].forEach((stack) => {
-    addMesh(group, new CylinderGeometry(1.05, 1.25, stack.height, 20), white, [stack.x, stack.y, -1.4])
+    addMesh(group, new CylinderGeometry(1.05, 1.25, stack.height, 20), gray, [stack.x, stack.y, -1.4])
     addMesh(group, new CylinderGeometry(1.1, 1.1, 1.05, 20), blue, [stack.x, stack.y + 0.8, -1.4])
     addMesh(group, new TorusGeometry(1.08, 0.16, 8, 28), inset, [stack.x, stack.y + stack.height / 2, -1.4], [Math.PI / 2, 0, 0])
   })
@@ -100,17 +101,26 @@ function emitterModel() {
   })
 
   // 전면 원형 재활용 배지
-  addMesh(group, new CylinderGeometry(2.5, 2.5, 0.52, 32), white, [4.65, -2.65, 3.75], [Math.PI / 2, 0, 0])
+  addMesh(group, new CylinderGeometry(2.65, 2.65, 0.52, 32), badgeFace, [4.65, -2.65, 3.75], [Math.PI / 2, 0, 0])
   addMesh(group, new TorusGeometry(2.25, 0.24, 10, 40), blue, [4.65, -2.65, 4.05])
   ;[0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].forEach((angle) => {
-    const x = 4.65 + Math.cos(angle) * 1.05
-    const y = -2.65 + Math.sin(angle) * 1.05
+    const centerX = 4.65 + Math.cos(angle) * 0.92
+    const centerY = -2.65 + Math.sin(angle) * 0.92
+    const tangentX = -Math.sin(angle)
+    const tangentY = Math.cos(angle)
     addMesh(
       group,
-      new ConeGeometry(0.42, 1.15, 3),
+      new RoundedBoxGeometry(0.42, 1.2, 0.22, 2, 0.08),
       blue,
-      [x, y, 4.12],
-      [Math.PI / 2, angle + Math.PI / 2, 0],
+      [centerX, centerY, 4.13],
+      [0, 0, angle],
+    )
+    addMesh(
+      group,
+      new ConeGeometry(0.52, 0.78, 3),
+      blue,
+      [centerX + tangentX * 0.72, centerY + tangentY * 0.72, 4.13],
+      [0, 0, angle],
     )
   })
   return group
