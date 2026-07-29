@@ -1,7 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import {
   BoxGeometry,
+  ConeGeometry,
   CylinderGeometry,
+  DodecahedronGeometry,
   Group,
   Mesh,
   MeshStandardMaterial,
@@ -83,23 +85,42 @@ function processorModel() {
 
 function consumerModel() {
   const group = new Group()
-  const dark = material('#17230a', 0.78, 0.3)
-  const lime = material('#6da514', 0.55, 0.24)
-  const steel = material('#9eb78b', 0.88, 0.2)
-  addMesh(group, new RoundedBoxGeometry(8.4, 8.4, 8.4, 6, 0.7), dark)
-  addMesh(group, new RoundedBoxGeometry(7.55, 7.55, 7.55, 5, 0.55), lime)
-  const corners = [-1, 1]
-  corners.forEach((x) =>
-    corners.forEach((y) =>
-      corners.forEach((z) =>
-        addMesh(group, new BoxGeometry(0.65, 1.8, 0.65), steel, [x * 3.75, y * 3.25, z * 3.75]),
-      ),
-    ),
+  const dark = material('#142307', 0.76, 0.3)
+  const lime = material('#78b51a', 0.48, 0.27)
+  const steel = material('#b1c99d', 0.86, 0.22)
+  const intake = material('#293c13', 0.7, 0.34)
+
+  addMesh(group, new DodecahedronGeometry(5.35, 0), dark)
+  addMesh(group, new DodecahedronGeometry(4.72, 0), lime, [0, 0, 0], [0.18, 0.32, 0.08])
+  addMesh(group, new TorusGeometry(5.55, 0.22, 10, 48), steel, [0, 0, 0], [Math.PI / 2, 0, 0])
+  addMesh(group, new TorusGeometry(5.55, 0.18, 10, 48), steel, [0, 0, 0], [0, Math.PI / 2, 0])
+
+  addMesh(
+    group,
+    new CylinderGeometry(1.65, 2.05, 1.15, 12),
+    steel,
+    [0, 0, 5.05],
+    [Math.PI / 2, 0, 0],
   )
-  ;[-1.7, 0, 1.7].forEach((x) =>
-    addMesh(group, new BoxGeometry(1.05, 1.05, 0.32), dark, [x, 0.4, 4.05]),
+  addMesh(
+    group,
+    new CylinderGeometry(1.18, 1.18, 1.3, 12),
+    intake,
+    [0, 0, 5.7],
+    [Math.PI / 2, 0, 0],
   )
-  addMesh(group, new BoxGeometry(4.8, 0.4, 0.34), steel, [0, -1.55, 4.08])
+
+  for (let i = 0; i < 3; i += 1) {
+    const angle = (i / 3) * Math.PI * 2 + Math.PI / 6
+    const fin = addMesh(
+      group,
+      new ConeGeometry(1.15, 3.4, 3),
+      steel,
+      [Math.cos(angle) * 5.45, Math.sin(angle) * 5.45, -0.5],
+      [0, 0, angle - Math.PI / 2],
+    )
+    fin.scale.z = 0.55
+  }
   return group
 }
 
