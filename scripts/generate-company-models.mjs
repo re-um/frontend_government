@@ -128,93 +128,90 @@ function emitterModel() {
 
 function processorModel() {
   const group = new Group()
-  const dark = material('#151c22', 0.76, 0.34)
-  const inset = material('#071014', 0.52, 0.44)
-  const teal = material('#128b84', 0.48, 0.28)
-  const steel = material('#89989c', 0.84, 0.24)
-  const inputBlue = material('#176bb7', 0.5, 0.3)
-  const outputLime = material('#82b72b', 0.46, 0.3)
+  const gray = material('#778695', 0.55, 0.34)
+  const grayEdge = material('#445363', 0.68, 0.27)
+  const inset = material('#152a3a', 0.5, 0.42)
+  const teal = material('#0f918c', 0.48, 0.28)
+  const tealLight = material('#35c9bf', 0.35, 0.25)
+  const tire = material('#111820', 0.36, 0.56)
+  const waste = material('#a3adb4', 0.18, 0.7)
+  const badgeFace = material('#d7e0e5', 0.28, 0.38)
 
-  // 다단계 원통형 처리 챔버
-  ;[
-    { y: 2.8, height: 4.1, radius: 4.35 },
-    { y: -0.95, height: 3.35, radius: 4.15 },
-    { y: -4.25, height: 3.2, radius: 4.05 },
-  ].forEach((stage) => {
+  // 차량 하부와 청록색 처리 적재함
+  addMesh(group, new RoundedBoxGeometry(13.8, 1.1, 5.6, 4, 0.28), grayEdge, [0, -3.7, 0])
+  addMesh(group, new RoundedBoxGeometry(8.3, 7.3, 5.9, 5, 0.48), teal, [2.1, 0.4, 0])
+  addMesh(group, new RoundedBoxGeometry(7.5, 0.55, 6.15, 3, 0.18), tealLight, [2.1, 4.15, 0])
+
+  // 회색 운전석
+  addMesh(group, new RoundedBoxGeometry(5.2, 5.7, 5.7, 6, 0.65), gray, [-5, -0.45, 0])
+  addMesh(group, new RoundedBoxGeometry(4.25, 1.65, 0.5, 4, 0.2), inset, [-5, 0.65, 2.98])
+  addMesh(group, new RoundedBoxGeometry(1.45, 1.85, 0.42, 3, 0.16), inset, [-2.75, -0.15, 2.85])
+  addMesh(group, new RoundedBoxGeometry(3.2, 0.55, 0.45, 3, 0.16), grayEdge, [-5, -2.35, 2.95])
+  ;[-6.45, -3.55].forEach((x) =>
+    addMesh(group, new RoundedBoxGeometry(0.55, 0.42, 0.35, 2, 0.1), tealLight, [x, -1.8, 3.02]),
+  )
+
+  // 차량 바퀴
+  ;[-4.9, 0.55, 4.5].forEach((x) => {
+    ;[-3.05, 3.05].forEach((z) => {
+      addMesh(group, new CylinderGeometry(1.15, 1.15, 0.65, 20), tire, [x, -3.75, z], [Math.PI / 2, 0, 0])
+      addMesh(group, new CylinderGeometry(0.48, 0.48, 0.72, 16), gray, [x, -3.75, z], [Math.PI / 2, 0, 0])
+    })
+  })
+
+  // 후면 폐합성수지 수거함과 압축 블록
+  addMesh(group, new RoundedBoxGeometry(4.6, 3.2, 4.5, 4, 0.3), teal, [7.3, -2, 0])
+  addMesh(group, new RoundedBoxGeometry(4, 0.45, 4.65, 3, 0.14), tealLight, [7.3, -0.35, 0])
+  ;[-1.25, -0.42, 0.42, 1.25].forEach((xOffset) =>
+    [-0.9, 0, 0.9].forEach((zOffset) =>
+      addMesh(group, new RoundedBoxGeometry(0.65, 0.72, 0.65, 2, 0.12), waste, [7.3 + xOffset, 0.2, zOffset]),
+    ),
+  )
+  ;[6.2, 7.55, 8.9].forEach((x) =>
+    [1.75, 2.65].forEach((y) =>
+      addMesh(group, new RoundedBoxGeometry(1.05, 1.05, 1.05, 2, 0.14), waste, [x, y, -1.8]),
+    ),
+  )
+
+  // 적재함 측면의 선명한 재활용 마크
+  ;[0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].forEach((angle) => {
+    const centerX = 2.1 + Math.cos(angle) * 1.45
+    const centerY = 0.35 + Math.sin(angle) * 1.45
+    const tangentX = -Math.sin(angle)
+    const tangentY = Math.cos(angle)
     addMesh(
       group,
-      new CylinderGeometry(stage.radius, stage.radius, stage.height, 24),
-      dark,
-      [0, stage.y, 0],
+      new RoundedBoxGeometry(0.52, 1.55, 0.25, 2, 0.08),
+      badgeFace,
+      [centerX, centerY, 3.08],
+      [0, 0, angle],
+    )
+    addMesh(
+      group,
+      new ConeGeometry(0.62, 0.9, 3),
+      badgeFace,
+      [centerX + tangentX * 0.9, centerY + tangentY * 0.9, 3.08],
+      [0, 0, angle],
     )
   })
 
-  ;[5.05, 0.95, -2.65, -5.95].forEach((y) =>
-    addMesh(group, new TorusGeometry(4.42, 0.28, 10, 48), steel, [0, y, 0], [Math.PI / 2, 0, 0]),
-  )
-
-  // 상단 파쇄 호퍼와 맞물림 커터
-  addMesh(group, new CylinderGeometry(4.7, 3.7, 2.1, 6), dark, [0, 6.15, 0])
-  addMesh(group, new CylinderGeometry(4.82, 4.82, 0.32, 6), teal, [0, 7.15, 0])
-  ;[-1.35, 1.35].forEach((x) => {
+  // 전면 원형 유형 배지
+  addMesh(group, new CylinderGeometry(2.65, 2.65, 0.5, 32), badgeFace, [6.3, -2.15, 3.25], [Math.PI / 2, 0, 0])
+  addMesh(group, new TorusGeometry(2.25, 0.24, 10, 40), teal, [6.3, -2.15, 3.55])
+  ;[0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].forEach((angle) => {
+    const centerX = 6.3 + Math.cos(angle) * 0.92
+    const centerY = -2.15 + Math.sin(angle) * 0.92
+    const tangentX = -Math.sin(angle)
+    const tangentY = Math.cos(angle)
+    addMesh(group, new RoundedBoxGeometry(0.42, 1.2, 0.22, 2, 0.08), teal, [centerX, centerY, 3.62], [0, 0, angle])
     addMesh(
       group,
-      new CylinderGeometry(0.82, 0.82, 3.2, 12),
-      steel,
-      [x, 5.75, 2.7],
-      [0, 0, Math.PI / 2],
-    )
-    ;[-1.1, 0, 1.1].forEach((offset) =>
-      addMesh(group, new TorusGeometry(1.02, 0.18, 8, 18), teal, [x + offset, 5.75, 2.7]),
+      new ConeGeometry(0.52, 0.78, 3),
+      teal,
+      [centerX + tangentX * 0.72, centerY + tangentY * 0.72, 3.62],
+      [0, 0, angle],
     )
   })
-
-  // 세척·선별 및 펠릿 상태 확인창
-  addMesh(group, new RoundedBoxGeometry(1.8, 3.05, 0.45, 4, 0.24), inset, [0, 2.9, 4.18])
-  addMesh(group, new RoundedBoxGeometry(1.18, 2.4, 0.52, 4, 0.2), teal, [0, 2.9, 4.38])
-  addMesh(group, new RoundedBoxGeometry(3.1, 1.45, 0.45, 4, 0.22), inset, [0, -4.25, 3.88])
-  ;[-0.9, -0.3, 0.3, 0.9].forEach((x) =>
-    addMesh(group, new SphereGeometry(0.22, 10, 8), outputLime, [x, -4.25, 4.18]),
-  )
-
-  // 건조·여과 밴드
-  ;[-1.55, -0.75, 0.05, 0.85, 1.65].forEach((x) =>
-    addMesh(group, new BoxGeometry(0.32, 2.15, 0.34), steel, [x, -0.95, 4.02]),
-  )
-
-  // 좌측 폐합성수지 유입 포트 / 우측 재생원료 배출 포트
-  ;[3.25, 0, -3.25].forEach((y) => {
-    addMesh(
-      group,
-      new CylinderGeometry(0.95, 1.18, 2.2, 14),
-      steel,
-      [-4.85, y, 0],
-      [0, 0, Math.PI / 2],
-    )
-    addMesh(
-      group,
-      new CylinderGeometry(0.72, 0.72, 0.55, 14),
-      inputBlue,
-      [-5.95, y, 0],
-      [0, 0, Math.PI / 2],
-    )
-    addMesh(
-      group,
-      new CylinderGeometry(0.95, 1.18, 2.2, 14),
-      steel,
-      [4.85, y, 0],
-      [0, 0, Math.PI / 2],
-    )
-    addMesh(
-      group,
-      new CylinderGeometry(0.72, 0.72, 0.55, 14),
-      outputLime,
-      [5.95, y, 0],
-      [0, 0, Math.PI / 2],
-    )
-  })
-
-  addMesh(group, new CylinderGeometry(4.55, 4.85, 0.65, 20), steel, [0, -6.3, 0])
   return group
 }
 
