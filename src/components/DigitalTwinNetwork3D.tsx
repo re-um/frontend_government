@@ -18,7 +18,6 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshPhysicalMaterial,
-  RingGeometry,
   SphereGeometry,
   Sprite,
   SpriteMaterial,
@@ -315,26 +314,6 @@ export function DigitalTwinNetwork3D({
       roleIcon.position.z = 5.1
       roleIcon.scale.set(5.6, 5.6, 1)
       group.add(roleIcon)
-    }
-
-    if (selected) {
-      ;[12.5, 15].forEach((radius, index) => {
-        const pulse = new Mesh(
-          new RingGeometry(radius, radius + 0.18, 72),
-          new MeshBasicMaterial({
-            color,
-            transparent: true,
-            opacity: index ? 0.22 : 0.48,
-            blending: AdditiveBlending,
-            depthWrite: false,
-            side: 2,
-          }),
-        )
-        pulse.rotation.x = Math.PI / 2
-        pulse.position.y = node.type === 'processor' ? -10 : -7
-        group.add(pulse)
-      })
-
     }
 
     const label = new SpriteText(node.name)

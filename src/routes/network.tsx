@@ -1829,7 +1829,7 @@ function NetworkPanel({
           기업별 가중치
         </h3>
         <p className="mt-1 text-[11px] leading-4 text-slate-400">
-          연결 수 35% · 월 물량 30% · 탄소감축 20% · 승인 연결 15%
+          직접 연결 관계 35% · 월 물량 30% · 탄소감축 20% · 승인 연결 15%
         </p>
       </div>
 
