@@ -146,7 +146,7 @@ export function DigitalTwinNetwork3D({
     Promise.all([
       loader.loadAsync('/models/company-emitter.glb'),
       loader.loadAsync('/models/company-processor.glb'),
-      loader.loadAsync('/models/company-consumer.glb'),
+      loader.loadAsync('/models/company-consumer-gate.glb'),
     ]).then(([emitter, processor, consumer]) => {
       if (cancelled) return
       setCompanyModels({

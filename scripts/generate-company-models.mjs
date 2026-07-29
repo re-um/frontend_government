@@ -1,9 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import {
   BoxGeometry,
-  ConeGeometry,
   CylinderGeometry,
-  DodecahedronGeometry,
   Group,
   Mesh,
   MeshStandardMaterial,
@@ -85,42 +83,39 @@ function processorModel() {
 
 function consumerModel() {
   const group = new Group()
-  const dark = material('#142307', 0.76, 0.3)
-  const lime = material('#78b51a', 0.48, 0.27)
-  const steel = material('#b1c99d', 0.86, 0.22)
-  const intake = material('#293c13', 0.7, 0.34)
+  const frame = material('#17230c', 0.72, 0.34)
+  const lime = material('#82bb22', 0.46, 0.3)
+  const steel = material('#a7b99a', 0.82, 0.26)
+  const intake = material('#263a13', 0.62, 0.38)
 
-  addMesh(group, new DodecahedronGeometry(5.35, 0), dark)
-  addMesh(group, new DodecahedronGeometry(4.72, 0), lime, [0, 0, 0], [0.18, 0.32, 0.08])
-  addMesh(group, new TorusGeometry(5.55, 0.22, 10, 48), steel, [0, 0, 0], [Math.PI / 2, 0, 0])
-  addMesh(group, new TorusGeometry(5.55, 0.18, 10, 48), steel, [0, 0, 0], [0, Math.PI / 2, 0])
+  addMesh(group, new RoundedBoxGeometry(2.25, 7.4, 2.8, 5, 0.42), frame, [-4.15, -1.35, 0])
+  addMesh(group, new RoundedBoxGeometry(2.25, 7.4, 2.8, 5, 0.42), frame, [4.15, -1.35, 0])
+  addMesh(group, new RoundedBoxGeometry(1.45, 5.9, 1.95, 4, 0.3), lime, [-4.15, -1.35, 0.45])
+  addMesh(group, new RoundedBoxGeometry(1.45, 5.9, 1.95, 4, 0.3), lime, [4.15, -1.35, 0.45])
+
+  addMesh(group, new TorusGeometry(4.15, 1.12, 12, 48, Math.PI), frame, [0, 2.3, 0])
+  addMesh(group, new TorusGeometry(4.15, 0.48, 10, 48, Math.PI), lime, [0, 2.3, 0.42])
 
   addMesh(
     group,
-    new CylinderGeometry(1.65, 2.05, 1.15, 12),
+    new CylinderGeometry(2.25, 2.65, 1.15, 16),
     steel,
-    [0, 0, 5.05],
+    [0, -0.35, 1.15],
     [Math.PI / 2, 0, 0],
   )
   addMesh(
     group,
-    new CylinderGeometry(1.18, 1.18, 1.3, 12),
+    new CylinderGeometry(1.58, 1.58, 1.35, 16),
     intake,
-    [0, 0, 5.7],
+    [0, -0.35, 1.85],
     [Math.PI / 2, 0, 0],
   )
+  addMesh(group, new TorusGeometry(1.65, 0.2, 10, 32), lime, [0, -0.35, 2.58])
 
-  for (let i = 0; i < 3; i += 1) {
-    const angle = (i / 3) * Math.PI * 2 + Math.PI / 6
-    const fin = addMesh(
-      group,
-      new ConeGeometry(1.15, 3.4, 3),
-      steel,
-      [Math.cos(angle) * 5.45, Math.sin(angle) * 5.45, -0.5],
-      [0, 0, angle - Math.PI / 2],
-    )
-    fin.scale.z = 0.55
-  }
+  ;[-4.15, 4.15].forEach((x) => {
+    addMesh(group, new CylinderGeometry(1.35, 1.6, 0.55, 8), steel, [x, -5.15, 0])
+    addMesh(group, new CylinderGeometry(0.72, 0.72, 1.2, 12), lime, [x, 3.05, 0])
+  })
   return group
 }
 
@@ -135,4 +130,4 @@ async function exportModel(name, model) {
 await mkdir(new URL('../public/models', import.meta.url), { recursive: true })
 await exportModel('company-emitter', emitterModel())
 await exportModel('company-processor', processorModel())
-await exportModel('company-consumer', consumerModel())
+await exportModel('company-consumer-gate', consumerModel())
