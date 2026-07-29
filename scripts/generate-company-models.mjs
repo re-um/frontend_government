@@ -195,61 +195,71 @@ function processorModel() {
 
 function consumerModel() {
   const group = new Group()
-  const body = material('#161b22', 0.74, 0.36)
-  const inset = material('#070b10', 0.46, 0.48)
-  const lime = material('#83b92c', 0.42, 0.32)
-  const steel = material('#87929d', 0.82, 0.24)
-  const product = material('#cbd5c2', 0.26, 0.5)
+  const gray = material('#7b8895', 0.56, 0.34)
+  const grayEdge = material('#465463', 0.68, 0.28)
+  const inset = material('#142a3a', 0.5, 0.42)
+  const lime = material('#7daa24', 0.44, 0.3)
+  const limeLight = material('#a3e635', 0.32, 0.24)
+  const glass = material('#4387a7', 0.34, 0.22)
+  const badgeFace = material('#d8e0e5', 0.28, 0.38)
 
-  // 중앙 생산설비 본체와 전면 개방형 생산실
-  addMesh(group, new RoundedBoxGeometry(10.2, 6.7, 5.8, 6, 0.7), body, [-0.6, 0, 0])
-  addMesh(group, new RoundedBoxGeometry(7.3, 4.25, 0.55, 5, 0.32), inset, [-0.2, -0.15, 3])
-  addMesh(group, new RoundedBoxGeometry(7.4, 0.75, 0.7, 4, 0.24), lime, [-0.15, -1.25, 3.45])
+  // 회색 생산공장 본체와 옥상 테두리
+  addMesh(group, new RoundedBoxGeometry(12.5, 8.1, 7.2, 5, 0.48), gray, [-0.8, -0.7, 0])
+  addMesh(group, new RoundedBoxGeometry(13.1, 0.65, 7.7, 4, 0.2), grayEdge, [-0.8, -4.95, 0])
+  ;[-5.8, 4.2].forEach((x) =>
+    addMesh(group, new RoundedBoxGeometry(0.55, 0.75, 7.6, 3, 0.16), grayEdge, [x, 3.55, 0]),
+  )
+  ;[-3.6, 0.3, 4.2].forEach((x) =>
+    addMesh(group, new RoundedBoxGeometry(2.8, 0.72, 0.48, 3, 0.16), glass, [x, 0.65, 3.72]),
+  )
+  addMesh(group, new RoundedBoxGeometry(3.4, 3.3, 0.5, 4, 0.22), inset, [-0.8, -2.65, 3.72])
 
-  // 노출형 제조 롤러
-  ;[-2.35, -0.8, 0.8, 2.35].forEach((x) => {
-    addMesh(
-      group,
-      new CylinderGeometry(0.42, 0.42, 1.25, 14),
-      steel,
-      [x, 0.55, 3.45],
-      [0, 0, Math.PI / 2],
+  // 옥상 원료 저장탱크 2개와 연두색 안전 난간
+  ;[
+    { x: -3.25, height: 5.1 },
+    { x: 1.2, height: 4.55 },
+  ].forEach((tank) => {
+    addMesh(group, new CylinderGeometry(1.65, 1.65, tank.height, 24), gray, [tank.x, 6.1, -0.55])
+    ;[-1.3, 0, 1.3].forEach((offset) =>
+      addMesh(group, new TorusGeometry(1.66, 0.12, 8, 28), grayEdge, [tank.x, 6.1 + offset, -0.55], [Math.PI / 2, 0, 0]),
     )
-    addMesh(group, new TorusGeometry(0.58, 0.13, 8, 20), lime, [x, 0.55, 3.48])
+    addMesh(group, new TorusGeometry(1.86, 0.15, 8, 32), lime, [tank.x, 8.72, -0.55], [Math.PI / 2, 0, 0])
+    ;[-1.55, -0.78, 0, 0.78, 1.55].forEach((offset) => {
+      const angle = offset
+      addMesh(
+        group,
+        new CylinderGeometry(0.09, 0.09, 0.85, 8),
+        limeLight,
+        [tank.x + Math.cos(angle) * 1.82, 9.1, -0.55 + Math.sin(angle) * 1.82],
+      )
+    })
+    // 탱크 측면 사다리
+    ;[-0.38, 0.38].forEach((offset) =>
+      addMesh(group, new CylinderGeometry(0.09, 0.09, 5.15, 8), lime, [tank.x + 1.78 + offset, 6.05, -0.55]),
+    )
+    ;[-1.7, -0.85, 0, 0.85, 1.7].forEach((offset) =>
+      addMesh(group, new RoundedBoxGeometry(0.92, 0.12, 0.16, 2, 0.04), lime, [tank.x + 1.78, 6.05 + offset, -0.55]),
+    )
   })
 
-  // 왼쪽 재생원료 투입구
-  addMesh(
-    group,
-    new CylinderGeometry(2.55, 2.8, 1.65, 20),
-    steel,
-    [-6.15, 0, 0],
-    [0, 0, Math.PI / 2],
-  )
-  addMesh(group, new TorusGeometry(2.25, 0.42, 12, 40), lime, [-7, 0, 0], [0, Math.PI / 2, 0])
-  addMesh(
-    group,
-    new CylinderGeometry(1.75, 1.75, 1.85, 20),
-    inset,
-    [-6.95, 0, 0],
-    [0, 0, Math.PI / 2],
-  )
-
-  // 오른쪽 완제품 출하 도크와 컨베이어
-  addMesh(group, new RoundedBoxGeometry(3.6, 5.1, 4.9, 5, 0.45), body, [6.25, -0.45, 0])
-  addMesh(group, new RoundedBoxGeometry(2.75, 3.65, 0.45, 4, 0.22), inset, [6.25, -0.25, 2.55])
-  addMesh(group, new RoundedBoxGeometry(4.2, 0.6, 3.2, 4, 0.2), steel, [7.4, -2.65, 1.25])
-  addMesh(group, new RoundedBoxGeometry(1.1, 1.8, 1.1, 4, 0.2), product, [5.75, -0.95, 2.85])
-  addMesh(group, new CylinderGeometry(0.55, 0.48, 1.75, 14), product, [6.85, -0.95, 2.85])
-
-  // 상부 냉각 및 상태 모듈
-  ;[-2.2, 0.1, 2.4].forEach((x) => {
-    addMesh(group, new CylinderGeometry(1.05, 1.05, 0.45, 16), steel, [x, 3.55, 0])
-    addMesh(group, new CylinderGeometry(0.72, 0.72, 0.5, 12), inset, [x, 3.82, 0])
+  // 오른쪽에 적재된 완제품 박스
+  ;[
+    [5.2, -3.9, 0.9],
+    [7, -3.9, 0.9],
+    [8.8, -3.9, 0.9],
+    [6.1, -2.1, 0.9],
+    [7.9, -2.1, 0.9],
+    [7, -0.3, 0.9],
+  ].forEach(([x, y, z]) => {
+    addMesh(group, new RoundedBoxGeometry(1.65, 1.65, 1.65, 3, 0.12), lime, [x, y, z])
+    addMesh(group, new RoundedBoxGeometry(0.12, 1.68, 1.68, 2, 0.03), limeLight, [x, y, z])
+    addMesh(group, new RoundedBoxGeometry(1.68, 0.12, 1.68, 2, 0.03), limeLight, [x, y, z])
   })
-  ;[-1.05, -0.35, 0.35, 1.05].forEach((x) =>
-    addMesh(group, new BoxGeometry(0.38, 0.38, 0.3), lime, [x + 0.2, 1.85, 3.05]),
-  )
+
+  // 전면 원형 재활용 배지
+  addMesh(group, new CylinderGeometry(2.85, 2.85, 0.52, 32), badgeFace, [-5.15, -2.5, 3.7], [Math.PI / 2, 0, 0])
+  addMesh(group, new TorusGeometry(2.45, 0.26, 10, 40), lime, [-5.15, -2.5, 4.02])
+  addRecycleMark(group, [-5.15, -2.5, 4.1], 1.85, lime)
   return group
 }
 
