@@ -9,6 +9,8 @@ type RegionalCompanyItem = {
   industry: string;
   type: "배출기업" | "중간처리기업" | "수요기업";
   status: "참여기업" | "연계 필요";
+  material: string;
+  monthlyAmount: number;
 };
 
 type RegionalConsortiumItem = {
@@ -17,6 +19,7 @@ type RegionalConsortiumItem = {
   industry: string;
   companyCount: number;
   status: "운영 중" | "구성 중";
+  participantCompanyIds: string[];
 };
 
 export function RegionalNetworkDetail({
@@ -27,6 +30,8 @@ export function RegionalNetworkDetail({
   onClose: () => void;
 }) {
   const [activeAction, setActiveAction] = useState<DetailAction | null>(null);
+  const [expandedCompanyId, setExpandedCompanyId] = useState<string | null>(null);
+  const [expandedConsortiumId, setExpandedConsortiumId] = useState<string | null>(null);
   const companies = buildRegionalCompanies(region);
   const consortiums = buildRegionalConsortiums(region);
   const visibleCompanies =
@@ -91,21 +96,33 @@ export function RegionalNetworkDetail({
       <div className="grid gap-2">
         <ActionButton
           active={activeAction === "companies"}
-          onClick={() => setActiveAction("companies")}
+          onClick={() => {
+            setActiveAction("companies");
+            setExpandedCompanyId(null);
+            setExpandedConsortiumId(null);
+          }}
           icon={<Building2 className="h-4 w-4" />}
         >
           지역 기업 보기
         </ActionButton>
         <ActionButton
           active={activeAction === "consortiums"}
-          onClick={() => setActiveAction("consortiums")}
+          onClick={() => {
+            setActiveAction("consortiums");
+            setExpandedCompanyId(null);
+            setExpandedConsortiumId(null);
+          }}
           icon={<Network className="h-4 w-4" />}
         >
           컨소시엄 보기
         </ActionButton>
         <ActionButton
           active={activeAction === "unconnected"}
-          onClick={() => setActiveAction("unconnected")}
+          onClick={() => {
+            setActiveAction("unconnected");
+            setExpandedCompanyId(null);
+            setExpandedConsortiumId(null);
+          }}
           icon={<Link2Off className="h-4 w-4" />}
         >
           연계 필요 기업 보기
@@ -143,10 +160,30 @@ export function RegionalNetworkDetail({
           <div className="max-h-72 divide-y divide-slate-200 overflow-y-auto">
             {activeAction === "consortiums"
               ? consortiums.map((consortium) => (
-                  <ConsortiumListItem key={consortium.id} consortium={consortium} />
+                  <ConsortiumListItem
+                    key={consortium.id}
+                    consortium={consortium}
+                    companies={companies}
+                    expanded={expandedConsortiumId === consortium.id}
+                    onToggle={() =>
+                      setExpandedConsortiumId((current) =>
+                        current === consortium.id ? null : consortium.id,
+                      )
+                    }
+                  />
                 ))
               : visibleCompanies.map((company) => (
-                  <CompanyListItem key={company.id} company={company} />
+                  <CompanyListItem
+                    key={company.id}
+                    company={company}
+                    regionName={region.regionName}
+                    expanded={expandedCompanyId === company.id}
+                    onToggle={() =>
+                      setExpandedCompanyId((current) =>
+                        current === company.id ? null : company.id,
+                      )
+                    }
+                  />
                 ))}
             {((activeAction === "consortiums" && consortiums.length === 0) ||
               (activeAction !== "consortiums" && visibleCompanies.length === 0)) && (
@@ -161,10 +198,25 @@ export function RegionalNetworkDetail({
   );
 }
 
-function CompanyListItem({ company }: { company: RegionalCompanyItem }) {
+function CompanyListItem({
+  company,
+  regionName,
+  expanded,
+  onToggle,
+}: {
+  company: RegionalCompanyItem;
+  regionName: string;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
   return (
-    <div className="bg-white px-3 py-2.5">
-      <div className="flex items-start justify-between gap-2">
+    <div className="bg-white">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-start justify-between gap-2 px-3 py-2.5 text-left hover:bg-slate-50"
+        aria-expanded={expanded}
+      >
         <div className="min-w-0">
           <div className="truncate text-xs font-semibold text-slate-900">{company.name}</div>
           <div className="mt-1 flex flex-wrap gap-1">
@@ -181,15 +233,44 @@ function CompanyListItem({ company }: { company: RegionalCompanyItem }) {
         >
           {company.status}
         </span>
-      </div>
+      </button>
+      {expanded && (
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 border-t border-slate-100 bg-slate-50 px-3 py-3 text-[10px]">
+          <MiniDetail label="지역" value={regionName} />
+          <MiniDetail label="산업 분야" value={company.industry} />
+          <MiniDetail label="기업 유형" value={company.type} />
+          <MiniDetail label="취급 자원" value={company.material} />
+          <MiniDetail label="월 발생·수요량" value={`${company.monthlyAmount}톤`} />
+          <MiniDetail label="네트워크 상태" value={company.status} />
+        </div>
+      )}
     </div>
   );
 }
 
-function ConsortiumListItem({ consortium }: { consortium: RegionalConsortiumItem }) {
+function ConsortiumListItem({
+  consortium,
+  companies,
+  expanded,
+  onToggle,
+}: {
+  consortium: RegionalConsortiumItem;
+  companies: RegionalCompanyItem[];
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const participants = consortium.participantCompanyIds
+    .map((companyId) => companies.find((company) => company.id === companyId))
+    .filter((company): company is RegionalCompanyItem => Boolean(company));
+
   return (
-    <div className="bg-white px-3 py-2.5">
-      <div className="flex items-start justify-between gap-2">
+    <div className="bg-white">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-start justify-between gap-2 px-3 py-2.5 text-left hover:bg-slate-50"
+        aria-expanded={expanded}
+      >
         <div className="min-w-0">
           <div className="truncate text-xs font-semibold text-slate-900">{consortium.name}</div>
           <div className="mt-1 flex items-center gap-2 text-[10px] text-slate-500">
@@ -209,7 +290,43 @@ function ConsortiumListItem({ consortium }: { consortium: RegionalConsortiumItem
         >
           {consortium.status}
         </span>
-      </div>
+      </button>
+      {expanded && (
+        <div className="border-t border-slate-100 bg-slate-50 px-3 py-3">
+          <div className="mb-2 text-[10px] font-bold text-slate-700">
+            참여기업 {participants.length}개
+          </div>
+          <div className="grid gap-1.5">
+            {participants.map((company) => (
+              <div
+                key={company.id}
+                className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-2.5 py-2"
+              >
+                <div className="min-w-0">
+                  <div className="truncate text-[10px] font-semibold text-slate-800">
+                    {company.name}
+                  </div>
+                  <div className="mt-0.5 text-[9px] text-slate-500">
+                    {company.industry} · {company.type}
+                  </div>
+                </div>
+                <span className="ml-2 shrink-0 text-[9px] font-medium text-emerald-600">
+                  참여 중
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MiniDetail({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-slate-400">{label}</div>
+      <div className="mt-0.5 font-semibold text-slate-700">{value}</div>
     </div>
   );
 }
@@ -263,6 +380,11 @@ function buildRegionalCompanies(region: RegionalNetworkSummary): RegionalCompany
       industry,
       type,
       status: index < region.participatingCompanies ? "참여기업" : "연계 필요",
+      material:
+        industry === "플라스틱"
+          ? ["폐PP", "폐PE", "폐PET", "재생 PP"][index % 4]
+          : `${industry} 순환자원`,
+      monthlyAmount: 18 + ((index * 11 + region.totalCompanies) % 73),
     };
   });
 }
@@ -272,12 +394,23 @@ function buildRegionalConsortiums(region: RegionalNetworkSummary): RegionalConso
 
   return Array.from({ length: region.consortiumCount }, (_, index) => {
     const industry = activeIndustries[index % Math.max(activeIndustries.length, 1)]?.name ?? "기타";
+    const companyCount = Math.min(
+      region.participatingCompanies,
+      4 + ((index * 3 + region.totalCompanies) % 6),
+    );
+    const participantCompanyIds = Array.from(
+      { length: companyCount },
+      (_, participantIndex) =>
+        `${region.regionCode}-company-${((index * 5 + participantIndex) % Math.max(region.participatingCompanies, 1)) + 1}`,
+    );
+
     return {
       id: `${region.regionCode}-consortium-${index + 1}`,
       name: `${region.regionName} ${industry} 순환 컨소시엄 ${index + 1}`,
       industry,
-      companyCount: 4 + ((index * 3 + region.totalCompanies) % 6),
+      companyCount,
       status: index < Math.ceil(region.consortiumCount * 0.75) ? "운영 중" : "구성 중",
+      participantCompanyIds,
     };
   });
 }

@@ -73,7 +73,7 @@ export function RegionalNetworkMap({
     regions.forEach((region) => {
       const selected = region.regionCode === selectedRegionCode;
       const unconnectedRatio = region.unconnectedCompanies / Math.max(region.totalCompanies, 1);
-      const markerSize = 58 + (region.totalCompanies / maxCompanies) * 18;
+      const markerSize = 52 + (region.totalCompanies / maxCompanies) * 14;
       const content = document.createElement("button");
       content.type = "button";
       content.setAttribute(
@@ -83,8 +83,8 @@ export function RegionalNetworkMap({
       Object.assign(content.style, {
         width: `${markerSize}px`,
         minHeight: `${markerSize}px`,
-        padding: "6px 5px",
-        borderRadius: "16px",
+        padding: "5px 4px",
+        borderRadius: "14px",
         border: selected
           ? "3px solid #0f172a"
           : unconnectedRatio >= 0.28
@@ -106,10 +106,9 @@ export function RegionalNetworkMap({
         transition: "transform .2s ease, box-shadow .2s ease",
       });
       content.innerHTML = `
-        <strong style="display:block;font-size:11px;margin-bottom:3px">${region.regionName.replace(/특별자치도|광역시|특별시|도$/u, "")}</strong>
-        <span style="display:block;font-size:8px;line-height:1.4;color:#475569">기업 <b style="color:#0f172a">${region.totalCompanies}</b></span>
-        <span style="display:block;font-size:8px;line-height:1.4;color:#475569">컨소 <b style="color:#0f172a">${region.consortiumCount}</b></span>
-        <span style="display:block;font-size:8px;line-height:1.4;color:${unconnectedRatio >= 0.28 ? "#c2410c" : "#475569"}">연계 필요 <b>${region.unconnectedCompanies}</b></span>
+        <strong style="display:block;font-size:9px;line-height:1.15;margin-bottom:2px;white-space:nowrap">${region.regionName}</strong>
+        <span style="display:block;font-size:7px;line-height:1.35;color:#475569">기업 <b style="color:#0f172a">${region.totalCompanies}</b> · 컨소 <b style="color:#0f172a">${region.consortiumCount}</b></span>
+        <span style="display:block;font-size:7px;line-height:1.35;color:${unconnectedRatio >= 0.28 ? "#c2410c" : "#475569"}">연계 필요 <b>${region.unconnectedCompanies}</b></span>
       `;
       content.addEventListener("click", () => onSelectRegion(region.regionCode));
 

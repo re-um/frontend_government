@@ -147,7 +147,7 @@ export const regionalNetworkData: RegionalNetworkSummary[] = [
   },
   {
     regionCode: "jeonbuk",
-    regionName: "전북특별자치도",
+    regionName: "전라북도",
     latitude: 35.7175,
     longitude: 127.153,
     totalCompanies: 31,
