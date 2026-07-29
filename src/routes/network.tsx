@@ -11,6 +11,7 @@ import {
   Factory,
   Filter,
   Map as MapIcon,
+  MapPinned,
   Network,
   RotateCcw,
   Search,
@@ -24,6 +25,15 @@ import {
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { KakaoNetworkMap } from '../components/KakaoNetworkMap'
 import { IndustrialOverview } from '../components/IndustrialOverview'
+import { RegionalNetworkDetail } from '../components/RegionalNetworkDetail'
+import { RegionalNetworkMap } from '../components/RegionalNetworkMap'
+import {
+  filterRegionalNetworkData,
+  regionalNetworkData,
+} from '../data/regionalNetworkData'
+import type {
+  RegionalNetworkFilters,
+} from '../types/regionalNetwork'
 
 const DigitalTwinNetwork3D = lazy(() =>
   import('../components/DigitalTwinNetwork3D').then((module) => ({
@@ -37,7 +47,7 @@ export const Route = createFileRoute('/network')({
 
 type CompanyType = 'emitter' | 'processor' | 'consumer'
 type MatchStatus = 'approved' | 'active' | 'pending'
-type ViewMode = 'graph' | 'overview' | 'twin3d' | 'map'
+type ViewMode = 'graph' | 'overview' | 'twin3d' | 'map' | 'regional'
 
 interface CompanyDetail {
   id: string
@@ -683,6 +693,16 @@ function NetworkMapPage() {
   const [selectedCompany, setSelectedCompany] =
     useState<CompanyDetail | null>(null)
   const [selectedMatch, setSelectedMatch] = useState<MatchDetail | null>(null)
+  const [regionalFilters, setRegionalFilters] =
+    useState<RegionalNetworkFilters>({
+      regionCode: 'all',
+      industry: 'all',
+      companyType: 'all',
+      status: 'all',
+    })
+  const [selectedRegionCode, setSelectedRegionCode] = useState<
+    string | undefined
+  >()
   // 사용자가 3D 버튼을 누르기 전에 무거운 Three.js 청크를 유휴 시간에
   // 미리 받아 두어 첫 진입 대기 시간을 줄인다.
   useEffect(() => {
@@ -701,6 +721,40 @@ function NetworkMapPage() {
         ? getCompanyNetwork(selectedCompany.id)
         : null,
     [selectedCompany, viewMode],
+  )
+
+  const filteredRegionalData = useMemo(
+    () => filterRegionalNetworkData(regionalNetworkData, regionalFilters),
+    [regionalFilters],
+  )
+
+  const regionalTotals = useMemo(
+    () =>
+      filteredRegionalData.reduce(
+        (total, region) => ({
+          totalCompanies: total.totalCompanies + region.totalCompanies,
+          participatingCompanies:
+            total.participatingCompanies + region.participatingCompanies,
+          consortiumCount: total.consortiumCount + region.consortiumCount,
+          unconnectedCompanies:
+            total.unconnectedCompanies + region.unconnectedCompanies,
+        }),
+        {
+          totalCompanies: 0,
+          participatingCompanies: 0,
+          consortiumCount: 0,
+          unconnectedCompanies: 0,
+        },
+      ),
+    [filteredRegionalData],
+  )
+
+  const selectedRegion = useMemo(
+    () =>
+      filteredRegionalData.find(
+        (region) => region.regionCode === selectedRegionCode,
+      ) ?? null,
+    [filteredRegionalData, selectedRegionCode],
   )
 
   const filteredCompanyIds = useMemo(() => {
@@ -1051,7 +1105,14 @@ function NetworkMapPage() {
         </div>
       </header>
 
-      <section className="grid min-h-180 grid-cols-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[240px_minmax(0,1fr)_320px]">
+      <section
+        className={`grid min-h-180 grid-cols-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${
+          viewMode === 'regional'
+            ? 'xl:grid-cols-[minmax(0,1fr)_320px]'
+            : 'xl:grid-cols-[240px_minmax(0,1fr)_320px]'
+        }`}
+      >
+        {viewMode !== 'regional' && (
         <aside className="border-b border-slate-200 bg-slate-50/80 p-4 xl:border-b-0 xl:border-r">
           <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-2 font-semibold text-slate-900">
@@ -1157,15 +1218,36 @@ function NetworkMapPage() {
             </div>
           </FilterSection>
         </aside>
+        )}
 
         <main className="relative min-h-155 overflow-hidden bg-[radial-gradient(circle_at_center,#f8fafc_0,#ffffff_70%)]">
-          <div className="absolute left-4 top-4 z-20 flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-2rem)] flex-wrap rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
             <ViewModeButton
               active={viewMode === 'graph'}
               onClick={() => setViewMode('graph')}
             >
               <Share2 className="h-4 w-4" />
-              그래프형
+              연결망 그래프
+            </ViewModeButton>
+
+            <ViewModeButton
+              active={viewMode === 'map'}
+              onClick={() => setViewMode('map')}
+            >
+              <MapIcon className="h-4 w-4" />
+              기업 위치 지도
+            </ViewModeButton>
+
+            <ViewModeButton
+              active={viewMode === 'regional'}
+              onClick={() => {
+                setViewMode('regional')
+                setSelectedCompany(null)
+                setSelectedMatch(null)
+              }}
+            >
+              <MapPinned className="h-4 w-4" />
+              지역별 네트워크 현황
             </ViewModeButton>
 
             <ViewModeButton
@@ -1174,14 +1256,6 @@ function NetworkMapPage() {
             >
               <Network className="h-4 w-4" />
               3D 네트워크
-            </ViewModeButton>
-
-            <ViewModeButton
-              active={viewMode === 'map'}
-              onClick={() => setViewMode('map')}
-            >
-              <MapIcon className="h-4 w-4" />
-              지도형
             </ViewModeButton>
           </div>
 
@@ -1300,10 +1374,126 @@ function NetworkMapPage() {
               }}
             />
           )}
+
+          {viewMode === 'regional' && (
+            <div className="min-h-180 bg-slate-50 px-4 pb-5 pt-24 sm:pt-18">
+              <div className="mb-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+                <RegionalSummaryCard
+                  label="전체 등록 기업"
+                  value={`${regionalTotals.totalCompanies}개`}
+                  tone="slate"
+                />
+                <RegionalSummaryCard
+                  label="산업공생 참여기업"
+                  value={`${regionalTotals.participatingCompanies}개`}
+                  tone="emerald"
+                />
+                <RegionalSummaryCard
+                  label="운영 컨소시엄"
+                  value={`${regionalTotals.consortiumCount}개`}
+                  tone="violet"
+                />
+                <RegionalSummaryCard
+                  label="연계 필요 기업"
+                  value={`${regionalTotals.unconnectedCompanies}개`}
+                  tone="orange"
+                />
+              </div>
+
+              <div className="mb-4 grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm lg:grid-cols-4">
+                <RegionalFilterSelect
+                  label="지역"
+                  value={regionalFilters.regionCode}
+                  onChange={(value) => {
+                    setRegionalFilters((current) => ({
+                      ...current,
+                      regionCode: value,
+                    }))
+                    setSelectedRegionCode(
+                      value === 'all' ? undefined : value,
+                    )
+                  }}
+                  options={[
+                    { value: 'all', label: '전체 지역' },
+                    ...regionalNetworkData.map((region) => ({
+                      value: region.regionCode,
+                      label: region.regionName,
+                    })),
+                  ]}
+                />
+                <RegionalFilterSelect
+                  label="산업"
+                  value={regionalFilters.industry}
+                  onChange={(value) =>
+                    setRegionalFilters((current) => ({
+                      ...current,
+                      industry: value as RegionalNetworkFilters['industry'],
+                    }))
+                  }
+                  options={[
+                    { value: 'all', label: '전체 산업' },
+                    { value: '플라스틱', label: '플라스틱' },
+                    { value: '금속', label: '금속' },
+                    { value: '화학', label: '화학' },
+                    { value: '섬유', label: '섬유' },
+                    { value: '기타', label: '기타' },
+                  ]}
+                />
+                <RegionalFilterSelect
+                  label="기업 유형"
+                  value={regionalFilters.companyType}
+                  onChange={(value) =>
+                    setRegionalFilters((current) => ({
+                      ...current,
+                      companyType:
+                        value as RegionalNetworkFilters['companyType'],
+                    }))
+                  }
+                  options={[
+                    { value: 'all', label: '전체 기업 유형' },
+                    { value: 'supplier', label: '배출기업' },
+                    { value: 'processor', label: '중간처리기업' },
+                    { value: 'consumer', label: '수요기업' },
+                  ]}
+                />
+                <RegionalFilterSelect
+                  label="상태"
+                  value={regionalFilters.status}
+                  onChange={(value) =>
+                    setRegionalFilters((current) => ({
+                      ...current,
+                      status: value as RegionalNetworkFilters['status'],
+                    }))
+                  }
+                  options={[
+                    { value: 'all', label: '전체 상태' },
+                    { value: 'participating', label: '참여기업' },
+                    { value: 'unconnected', label: '연계 필요 기업' },
+                    { value: 'consortium', label: '컨소시엄 참여기업' },
+                  ]}
+                />
+              </div>
+
+              <RegionalNetworkMap
+                regions={filteredRegionalData}
+                selectedRegionCode={selectedRegionCode}
+                onSelectRegion={setSelectedRegionCode}
+              />
+            </div>
+          )}
         </main>
 
         <aside className="border-t border-slate-200 bg-white p-5 xl:border-l xl:border-t-0">
-          {selectedNetwork && selectedCompany ? (
+          {viewMode === 'regional' ? (
+            selectedRegion ? (
+              <RegionalNetworkDetail
+                region={selectedRegion}
+                onClose={() => setSelectedRegionCode(undefined)}
+              />
+            ) : (
+              <RegionalEmptyPanel />
+            )
+          ) : selectedNetwork && selectedCompany ? (
             <NetworkPanel
               anchorCompany={selectedCompany}
               networkCompanies={selectedNetwork.companies}
@@ -1344,6 +1534,78 @@ function SummaryCard({
     <div className="min-w-24 rounded-xl border border-slate-200 bg-white px-4 py-2 shadow-sm">
       <div className="text-xs text-slate-500">{label}</div>
       <div className="mt-0.5 text-lg font-bold text-slate-900">{value}</div>
+    </div>
+  )
+}
+
+function RegionalSummaryCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: string
+  tone: 'slate' | 'emerald' | 'violet' | 'orange'
+}) {
+  const toneClass = {
+    slate: 'border-slate-200 bg-white text-slate-950',
+    emerald: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    violet: 'border-violet-200 bg-violet-50 text-violet-800',
+    orange: 'border-orange-200 bg-orange-50 text-orange-800',
+  }[tone]
+
+  return (
+    <div className={`rounded-xl border p-3 shadow-sm ${toneClass}`}>
+      <div className="text-[11px] font-medium opacity-70">{label}</div>
+      <div className="mt-1 text-xl font-bold">{value}</div>
+    </div>
+  )
+}
+
+function RegionalFilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: string
+  options: Array<{ value: string; label: string }>
+  onChange: (value: string) => void
+}) {
+  return (
+    <label className="min-w-0">
+      <span className="mb-1 block text-[10px] font-semibold text-slate-500">
+        {label}
+      </span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-xs font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function RegionalEmptyPanel() {
+  return (
+    <div className="flex min-h-96 flex-col items-center justify-center text-center">
+      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+        <MapPinned className="h-6 w-6" />
+      </div>
+      <h2 className="text-sm font-semibold text-slate-900">
+        지역을 선택해 주세요
+      </h2>
+      <p className="mt-2 max-w-56 text-xs leading-5 text-slate-500">
+        지도 위 지역 집계 마커를 누르면 참여기업, 컨소시엄 및 산업별
+        현황을 확인할 수 있습니다.
+      </p>
     </div>
   )
 }
