@@ -269,7 +269,7 @@ export function DigitalTwinNetwork3D({
       group.add(label)
 
       const modelScale =
-        node.type === 'consumer' ? 0.7 : node.type === 'processor' ? 0.97 : 1
+        node.type === 'consumer' ? 1.4 : node.type === 'processor' ? 0.97 : 1
       group.scale.setScalar(
         (0.9 + node.weight * 0.38) *
           modelScale *
