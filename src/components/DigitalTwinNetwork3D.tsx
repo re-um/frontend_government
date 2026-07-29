@@ -5,6 +5,7 @@ import ForceGraph3D, {
 import SpriteText from 'three-spritetext'
 import {
   AmbientLight,
+  Box3,
   BufferGeometry,
   CanvasTexture,
   Color,
@@ -21,6 +22,8 @@ import {
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MOUSE,
+  PerspectiveCamera,
+  Scene,
   SphereGeometry,
   Sprite,
   SpriteMaterial,
@@ -28,19 +31,17 @@ import {
   TextureLoader,
   TorusGeometry,
   Vector3,
+  WebGLRenderer,
 } from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {
   ChevronDown,
   ChevronUp,
-  Factory,
   Maximize2,
   Move,
-  PackageCheck,
   Pause,
   Play,
-  Recycle,
   RotateCcw,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -615,11 +616,11 @@ export function DigitalTwinNetwork3D({
 
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(2,6,23,0)_0%,rgba(2,6,23,0.06)_55%,rgba(2,6,23,0.22)_100%)]" />
 
-      <div className="absolute left-4 top-4 z-10 w-[min(19rem,calc(100%-2rem))] overflow-hidden rounded-2xl border border-white/12 bg-slate-950/82 shadow-2xl backdrop-blur-xl">
+      <div className="absolute left-3 top-3 z-10 w-[min(15rem,calc(100%-1.5rem))] overflow-hidden rounded-xl border border-white/12 bg-slate-950/78 shadow-xl backdrop-blur-xl">
         <button
           type="button"
           onClick={() => setLegendOpen((value) => !value)}
-          className="flex w-full items-center justify-between px-4 py-3 text-left text-xs font-bold text-white transition hover:bg-white/5"
+          className="flex w-full items-center justify-between px-3 py-2.5 text-left text-[11px] font-bold text-white transition hover:bg-white/5"
           aria-expanded={legendOpen}
         >
           기업 유형 범례
@@ -631,27 +632,27 @@ export function DigitalTwinNetwork3D({
         </button>
 
         {legendOpen && (
-          <div className="space-y-2 border-t border-white/10 p-3">
+          <div className="space-y-1.5 border-t border-white/10 p-2">
             <LegendItem
-              icon={<Factory className="h-4 w-4" />}
-              colorClass="border-blue-400/50 bg-blue-500/15 text-blue-300"
+              model={companyModels.emitter}
+              colorClass="border-blue-400/40 bg-blue-500/10"
               title="배출기업"
               description="폐합성수지 발생·집하·압축"
             />
             <LegendItem
-              icon={<Recycle className="h-4 w-4" />}
-              colorClass="border-teal-400/50 bg-teal-500/15 text-teal-300"
+              model={companyModels.processor}
+              colorClass="border-teal-400/40 bg-teal-500/10"
               title="중간처리기업"
               description="파쇄·선별·세척·재생"
             />
             <LegendItem
-              icon={<PackageCheck className="h-4 w-4" />}
-              colorClass="border-lime-400/50 bg-lime-500/15 text-lime-300"
+              model={companyModels.consumer}
+              colorClass="border-lime-400/40 bg-lime-500/10"
               title="수요기업"
               description="재생원료 투입·제품 생산"
             />
-            <p className="px-1 pt-1 text-[10px] leading-4 text-slate-500">
-              모델 크기는 기업의 성과 기여도를 반영합니다.
+            <p className="px-1 pt-0.5 text-[9px] leading-3 text-slate-500">
+              모델 크기 = 기업 성과 기여도
             </p>
           </div>
         )}
@@ -695,31 +696,81 @@ export function DigitalTwinNetwork3D({
 }
 
 function LegendItem({
-  icon,
+  model,
   colorClass,
   title,
   description,
 }: {
-  icon: React.ReactNode
+  model: Group | null
   colorClass: string
   title: string
   description: string
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/6 bg-white/[0.035] px-3 py-2">
+    <div className="flex items-center gap-2 rounded-lg border border-white/6 bg-white/[0.035] px-2 py-1.5">
       <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${colorClass}`}
+        className={`flex h-9 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border ${colorClass}`}
       >
-        {icon}
+        <ModelLegendPreview model={model} />
       </div>
       <div className="min-w-0">
-        <div className="text-[11px] font-bold text-slate-100">{title}</div>
-        <div className="truncate text-[10px] text-slate-400">
+        <div className="text-[10px] font-bold text-slate-100">{title}</div>
+        <div className="truncate text-[9px] text-slate-400">
           {description}
         </div>
       </div>
     </div>
   )
+}
+
+function ModelLegendPreview({ model }: { model: Group | null }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+
+  useEffect(() => {
+    if (!canvasRef.current || !model) return
+
+    const renderer = new WebGLRenderer({
+      canvas: canvasRef.current,
+      alpha: true,
+      antialias: true,
+    })
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setSize(48, 36, false)
+    renderer.outputColorSpace = SRGBColorSpace
+
+    const scene = new Scene()
+    const camera = new PerspectiveCamera(28, 48 / 36, 0.01, 100)
+    const previewModel = model.clone(true)
+    scene.add(previewModel)
+    scene.add(new AmbientLight('#ffffff', 2.2))
+    const keyLight = new DirectionalLight('#dbeafe', 3.4)
+    keyLight.position.set(4, 5, 6)
+    scene.add(keyLight)
+    const fillLight = new DirectionalLight('#a7f3d0', 1.8)
+    fillLight.position.set(-4, 1, 3)
+    scene.add(fillLight)
+
+    const bounds = new Box3().setFromObject(previewModel)
+    const center = bounds.getCenter(new Vector3())
+    const dimensions = bounds.getSize(new Vector3())
+    previewModel.position.sub(center)
+    const largestDimension = Math.max(dimensions.x, dimensions.y, dimensions.z)
+    camera.position.set(
+      largestDimension * 1.4,
+      largestDimension * 0.85,
+      largestDimension * 2.6,
+    )
+    camera.lookAt(0, 0, 0)
+    renderer.render(scene, camera)
+
+    return () => renderer.dispose()
+  }, [model])
+
+  if (!model) {
+    return <div className="h-4 w-9 animate-pulse rounded bg-white/10" />
+  }
+
+  return <canvas ref={canvasRef} className="h-9 w-12" aria-hidden="true" />
 }
 
 function createPedestal(color: string, selected: boolean) {
