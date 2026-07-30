@@ -1109,7 +1109,9 @@ function NetworkMapPage() {
         className={`grid min-h-180 grid-cols-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${
           viewMode === 'regional'
             ? 'xl:grid-cols-[minmax(0,1fr)_320px]'
-            : 'xl:grid-cols-[240px_minmax(0,1fr)_320px]'
+            : viewMode === 'twin3d'
+              ? 'xl:grid-cols-[240px_minmax(0,1fr)_minmax(0,1fr)]'
+              : 'xl:grid-cols-[240px_minmax(0,1fr)_320px]'
         }`}
       >
         {viewMode !== 'regional' && (
