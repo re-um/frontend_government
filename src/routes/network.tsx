@@ -2138,10 +2138,12 @@ function NetworkPanel({
     <div>
       <PanelHeader title="네트워크 분석" onClose={onClose} />
 
-      <div className="mb-4 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-blue-50 p-4">
-        <p className="text-xs font-semibold text-cyan-700">선택 기준 기업</p>
-        <p className="mt-1 font-bold text-slate-950">{anchorCompany.name}</p>
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+      <div className="mb-5 rounded-xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-blue-50 p-5">
+        <p className="text-sm font-semibold text-cyan-700">선택 기준 기업</p>
+        <p className="mt-1 text-lg font-bold text-slate-950">
+          {anchorCompany.name}
+        </p>
+        <div className="mt-4 grid grid-cols-3 gap-3 text-center">
           <NetworkMetric label="기업" value={`${networkCompanies.length}개`} />
           <NetworkMetric label="이동량" value={`${totalAmount}t`} />
           <NetworkMetric
@@ -2152,46 +2154,46 @@ function NetworkPanel({
       </div>
 
       <div className="mb-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
           기업별 성과 기여도
         </h3>
-        <p className="mt-1 text-[11px] leading-4 text-slate-400">
+        <p className="mt-1.5 text-[13px] leading-5 text-slate-500">
           월 물량 40% · 탄소감축 35% · 운영상태 15% · 재질 희소성 10%
         </p>
       </div>
 
       {anchorWeight && (
-        <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[11px] font-semibold text-amber-800">
+            <span className="text-[13px] font-semibold text-amber-800">
               {anchorCompany.name} 성과 기여도
             </span>
-            <span className="text-sm font-bold text-slate-950">
+            <span className="text-lg font-bold text-slate-950">
               {anchorWeight.importance}점
             </span>
           </div>
-          <p className="mt-1 text-[11px] font-medium leading-4 text-amber-700">
+          <p className="mt-1.5 text-[13px] font-medium leading-5 text-amber-700">
             평가 결과: {anchorWeight.level}
             {anchorWeight.reason
               ? ` · 제한 사유: ${anchorWeight.reason}`
               : ''}
           </p>
-          <p className="mt-1 text-[11px] leading-4 text-slate-600">
+          <p className="mt-1 text-[13px] leading-5 text-slate-700">
             연결 근거: {anchorWeight.connectionGrounds}
           </p>
         </div>
       )}
 
       <div className="max-h-105 overflow-auto rounded-xl border border-slate-200">
-        <table className="w-full table-fixed text-left text-[11px]">
+        <table className="w-full table-fixed text-left text-[13px]">
           <thead className="sticky top-0 bg-slate-50 text-slate-500">
             <tr>
-              <th className="w-[42%] px-2.5 py-2 font-semibold">기업</th>
-              <th className="w-[19%] px-1 py-2 font-semibold">유형</th>
-              <th className="w-[19%] px-1 py-2 text-right font-semibold">
+              <th className="w-[42%] px-3 py-2.5 font-semibold">기업</th>
+              <th className="w-[19%] px-1.5 py-2.5 font-semibold">유형</th>
+              <th className="w-[19%] px-1.5 py-2.5 text-right font-semibold">
                 물량
               </th>
-              <th className="w-[20%] px-2.5 py-2 text-right font-semibold">
+              <th className="w-[20%] px-3 py-2.5 text-right font-semibold">
                 기여도
               </th>
             </tr>
@@ -2223,13 +2225,13 @@ function NetworkPanel({
                     : 'cursor-pointer bg-white outline-none transition hover:bg-cyan-50 focus:ring-2 focus:ring-cyan-400'
                 }
               >
-                <td className="px-2.5 py-2.5">
+                <td className="px-3 py-3">
                   <div className="truncate font-semibold text-slate-900">
                     {company.name}
                   </div>
                   <div
                     className={[
-                      'mt-1 text-[10px] font-medium leading-3.5',
+                      'mt-1 text-[12px] font-medium leading-4',
                       level === '핵심 기여'
                         ? 'text-emerald-600'
                         : level === '일반 기여'
@@ -2240,17 +2242,17 @@ function NetworkPanel({
                     {level}
                     {reason ? ` · 제한 사유: ${reason}` : ''}
                   </div>
-                  <div className="mt-1 text-[9px] font-normal leading-3 text-cyan-700">
+                  <div className="mt-1 text-[11px] font-normal leading-4 text-cyan-700">
                     연결 근거: {connectionGrounds}
                   </div>
                 </td>
-                <td className="px-1 py-2.5 text-slate-500">
+                <td className="px-1.5 py-3 text-slate-500">
                   {companyTypeLabel[company.type].replace('기업', '')}
                 </td>
-                <td className="px-1 py-2.5 text-right text-slate-600">
+                <td className="px-1.5 py-3 text-right text-slate-600">
                   {company.monthlyAmount}t
                 </td>
-                <td className="px-2.5 py-2.5 text-right">
+                <td className="px-3 py-3 text-right">
                   <span className="font-bold text-cyan-700">{importance}</span>
                 </td>
               </tr>
@@ -2260,7 +2262,7 @@ function NetworkPanel({
         </table>
       </div>
 
-      <p className="mt-3 text-[11px] leading-4 text-slate-400">
+      <p className="mt-4 text-[13px] leading-5 text-slate-500">
         성과 기여도가 높은 기업일수록 3D 화면에서 크게 표시됩니다. 연결
         여부는 기여도가 아닌 재질·승인·처리 연계 근거로 판단합니다.
       </p>
@@ -2270,9 +2272,9 @@ function NetworkPanel({
 
 function NetworkMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-white/80 px-1 py-2 shadow-sm">
-      <div className="text-[10px] text-slate-400">{label}</div>
-      <div className="mt-0.5 text-xs font-bold text-slate-900">{value}</div>
+    <div className="rounded-lg bg-white/80 px-2 py-3 shadow-sm">
+      <div className="text-xs text-slate-500">{label}</div>
+      <div className="mt-1 text-base font-bold text-slate-900">{value}</div>
     </div>
   )
 }
