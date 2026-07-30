@@ -1517,7 +1517,7 @@ function NetworkMapPage() {
               onClose={() => setSelectedMatch(null)}
             />
           ) : (
-            <EmptyPanel />
+            <EmptyPanel compact={viewMode === 'map'} />
           )}
         </aside>
       </section>
@@ -2452,14 +2452,18 @@ function DetailRow({
   )
 }
 
-function EmptyPanel() {
+function EmptyPanel({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex min-h-125 flex-col items-center justify-center text-center">
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
         <Network className="h-6 w-6 text-slate-400" />
       </div>
       <h2 className="text-xl font-bold text-slate-900">기업 또는 연결 선택</h2>
-      <p className="mt-3 max-w-none break-keep text-base leading-7 text-slate-500 xl:whitespace-nowrap">
+      <p
+        className={`mt-3 break-keep text-base leading-7 text-slate-500 ${
+          compact ? 'max-w-64' : 'max-w-none xl:whitespace-nowrap'
+        }`}
+      >
         네트워크에서 기업 노드나 연결선을 선택하면 상세정보가 표시됩니다.
       </p>
     </div>
