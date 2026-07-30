@@ -334,10 +334,19 @@ function createRegionalCompanyPoints(region: RegionalNetworkSummary) {
   ];
 
   return Array.from({ length: region.totalCompanies }, (_, index) => {
-    const anchor = anchors[index % anchors.length];
-    const clusterIndex = Math.floor(index / anchors.length);
-    const angle = index * 2.3999632297;
-    const radius = Math.min(0.0025 + clusterIndex * 0.0012, 0.01);
+    const clusterRoll = seededRandom(index + region.totalCompanies * 3.17);
+    const anchorIndex =
+      clusterRoll < 0.46
+        ? 0
+        : clusterRoll < 0.72
+          ? Math.min(1, anchors.length - 1)
+          : Math.floor(seededRandom(index * 5.31 + region.latitude) * anchors.length);
+    const anchor = anchors[anchorIndex];
+    const isDenseCluster = anchorIndex === 0;
+    const isMediumCluster = anchorIndex === 1;
+    const maxRadius = isDenseCluster ? 0.006 : isMediumCluster ? 0.012 : 0.019;
+    const angle = seededRandom(index * 8.73 + region.longitude) * Math.PI * 2;
+    const radius = Math.sqrt(seededRandom(index * 13.19 + region.totalCompanies)) * maxRadius;
     const type =
       index < region.supplierCompanies
         ? companyTypeMeta[0]
@@ -355,4 +364,9 @@ function createRegionalCompanyPoints(region: RegionalNetworkSummary) {
       longitude: anchor.longitude + Math.cos(angle) * radius,
     };
   });
+}
+
+function seededRandom(seed: number) {
+  const value = Math.sin(seed * 12.9898) * 43758.5453;
+  return value - Math.floor(value);
 }
