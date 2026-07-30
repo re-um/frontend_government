@@ -486,9 +486,9 @@ export function DigitalTwinNetwork3D({
 
     // 전국의 여러 네트워크가 화면 가장자리로 흩어지지 않도록
     // 노드의 반발력과 연결 거리를 줄이고 중심으로 모으는 힘을 높인다.
-    graphRef.current?.d3Force('charge')?.strength(-18)
-    graphRef.current?.d3Force('link')?.distance(31)
-    graphRef.current?.d3Force('center')?.strength(0.62)
+    graphRef.current?.d3Force('charge')?.strength(-15)
+    graphRef.current?.d3Force('link')?.distance(27)
+    graphRef.current?.d3Force('center')?.strength(0.7)
 
     ;[105, 155, 215, 285, 365].forEach((radius, index) => {
       const points: Vector3[] = []
