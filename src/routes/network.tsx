@@ -1601,12 +1601,11 @@ function RegionalEmptyPanel() {
       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
         <MapPinned className="h-6 w-6" />
       </div>
-      <h2 className="text-sm font-semibold text-slate-900">
+      <h2 className="text-xl font-bold text-slate-900">
         지역을 선택해 주세요
       </h2>
-      <p className="mt-2 max-w-56 text-xs leading-5 text-slate-500">
-        지도 위 지역 집계 마커를 누르면 참여기업, 컨소시엄 및 산업별
-        현황을 확인할 수 있습니다.
+      <p className="mt-3 max-w-none break-keep text-base leading-7 text-slate-500 xl:whitespace-nowrap">
+        지도 위 지역 집계 마커를 누르면 참여기업, 컨소시엄 및 산업별 현황을 확인할 수 있습니다.
       </p>
     </div>
   )
