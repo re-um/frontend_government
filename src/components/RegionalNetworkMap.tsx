@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { loadKakaoMap } from "../lib/loadKakaoMap";
+import { getRegionalMockCompanyName } from "../data/regionalNetworkData";
 import type { RegionalNetworkSummary } from "../types/regionalNetwork";
 
 type MapOverlay = {
@@ -9,9 +10,9 @@ type MapOverlay = {
 };
 
 const companyTypeMeta = [
-  { label: "배출기업", color: "#2563eb", short: "배" },
-  { label: "중간처리기업", color: "#0d9488", short: "중" },
-  { label: "수요기업", color: "#65a30d", short: "수" },
+  { key: "supplier", label: "배출기업", color: "#2563eb", short: "배" },
+  { key: "processor", label: "중간처리기업", color: "#0d9488", short: "중" },
+  { key: "consumer", label: "수요기업", color: "#65a30d", short: "수" },
 ] as const;
 
 const regionalIndustrialAnchors: Record<string, Array<{ latitude: number; longitude: number }>> = {
@@ -315,20 +316,6 @@ export function RegionalNetworkMap({
 }
 
 function createRegionalCompanyPoints(region: RegionalNetworkSummary) {
-  const namePrefixes = [
-    "한빛",
-    "그린",
-    "미래",
-    "에코",
-    "새론",
-    "청명",
-    "대성",
-    "동아",
-    "세진",
-    "우림",
-    "정우",
-    "태광",
-  ];
   const anchors = regionalIndustrialAnchors[region.regionCode] ?? [
     { latitude: region.latitude, longitude: region.longitude },
   ];
@@ -357,7 +344,7 @@ function createRegionalCompanyPoints(region: RegionalNetworkSummary) {
       region.industries[index % Math.max(region.industries.length, 1)]?.name ?? "기타";
 
     return {
-      name: `${namePrefixes[index % namePrefixes.length]}${industry} ${String(index + 1).padStart(2, "0")}`,
+      name: getRegionalMockCompanyName(region.regionCode, index, industry, type.key),
       type,
       status: index < region.participatingCompanies ? "참여기업" : "연계 필요 기업",
       latitude: anchor.latitude + Math.sin(angle) * radius,

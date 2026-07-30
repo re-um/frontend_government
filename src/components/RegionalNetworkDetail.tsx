@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Building2, Link2Off, Network, Users, X } from "lucide-react";
+import { getRegionalMockCompanyName } from "../data/regionalNetworkData";
 import type { RegionalNetworkSummary } from "../types/regionalNetwork";
 
 type DetailAction = "companies" | "consortiums" | "unconnected";
@@ -326,43 +327,24 @@ function SmallBadge({ children }: { children: React.ReactNode }) {
 }
 
 function buildRegionalCompanies(region: RegionalNetworkSummary): RegionalCompanyItem[] {
-  const prefixes = [
-    "한빛",
-    "그린",
-    "미래",
-    "에코",
-    "새론",
-    "청명",
-    "대성",
-    "동아",
-    "세진",
-    "우림",
-    "정우",
-    "태광",
-  ];
-  const industrySuffix: Record<string, string> = {
-    플라스틱: "폴리머",
-    금속: "메탈",
-    화학: "케미칼",
-    섬유: "텍스타일",
-    기타: "산업",
-  };
   const industryPool = region.industries.flatMap((industry) =>
     Array.from({ length: industry.companyCount }, () => industry.name),
   );
 
   return Array.from({ length: region.totalCompanies }, (_, index) => {
     const industry = industryPool[index % Math.max(industryPool.length, 1)] ?? "기타";
-    const type =
+    const typeCode =
       index < region.supplierCompanies
-        ? "배출기업"
+        ? "supplier"
         : index < region.supplierCompanies + region.processorCompanies
-          ? "중간처리기업"
-          : "수요기업";
+          ? "processor"
+          : "consumer";
+    const type =
+      typeCode === "supplier" ? "배출기업" : typeCode === "processor" ? "중간처리기업" : "수요기업";
 
     return {
       id: `${region.regionCode}-company-${index + 1}`,
-      name: `${prefixes[index % prefixes.length]}${industrySuffix[industry]} ${String(index + 1).padStart(2, "0")}`,
+      name: getRegionalMockCompanyName(region.regionCode, index, industry, typeCode),
       industry,
       type,
       status: index < region.participatingCompanies ? "참여기업" : "연계 필요",

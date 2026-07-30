@@ -1,8 +1,73 @@
 import type {
   RegionalIndustryName,
+  RegionalCompanyType,
   RegionalNetworkFilters,
   RegionalNetworkSummary,
 } from "../types/regionalNetwork";
+
+const companyNameStems = [
+  "세림",
+  "대영",
+  "우진",
+  "한결",
+  "동명",
+  "신화",
+  "태성",
+  "청우",
+  "미래",
+  "정산",
+  "에코원",
+  "그린테크",
+  "다온",
+  "성진",
+  "한성",
+  "유림",
+  "동우",
+  "제일",
+  "새한",
+  "하이텍",
+];
+
+const companySuffixes: Record<RegionalCompanyType, Record<RegionalIndustryName, string[]>> = {
+  supplier: {
+    플라스틱: ["패키징", "폴리머", "플라텍", "합성수지"],
+    금속: ["정공", "금속", "스틸", "메탈"],
+    화학: ["케미칼", "화학", "정밀화학", "코팅"],
+    섬유: ["텍스타일", "섬유", "화이버", "원사"],
+    기타: ["산업", "제조", "테크", "엔지니어링"],
+  },
+  processor: {
+    플라스틱: ["리사이클링", "자원순환", "에코리소스", "재생원료"],
+    금속: ["자원", "리메탈", "순환자원", "리커버리"],
+    화학: ["에코케미", "환경자원", "리제너레이션", "그린케미"],
+    섬유: ["리텍스", "섬유자원", "에코화이버", "순환소재"],
+    기타: ["환경", "리소스", "자원개발", "순환산업"],
+  },
+  consumer: {
+    플라스틱: ["첨단소재", "컴파운드", "산업소재", "프로덕츠"],
+    금속: ["모빌리티", "부품", "정밀소재", "테크"],
+    화학: ["신소재", "바이오소재", "솔루션", "머티리얼즈"],
+    섬유: ["패브릭", "어패럴", "소재", "텍스"],
+    기타: ["건재", "산업", "테크놀로지", "솔루션"],
+  },
+};
+
+export function getRegionalMockCompanyName(
+  regionCode: string,
+  index: number,
+  industry: RegionalIndustryName,
+  companyType: RegionalCompanyType,
+) {
+  const regionOffset = [...regionCode].reduce(
+    (total, character) => total + character.charCodeAt(0),
+    0,
+  );
+  const stem = companyNameStems[(index * 7 + regionOffset) % companyNameStems.length];
+  const suffixes = companySuffixes[companyType][industry];
+  const suffix = suffixes[(index * 3 + regionOffset) % suffixes.length];
+  const modifier = ["", "테크", "산업"][Math.floor(index / 20)] ?? "솔루션";
+  return `${stem}${suffix}${modifier}`;
+}
 
 const industries = (values: Array<[RegionalIndustryName, number, number, number]>) =>
   values.map(([name, companyCount, consortiumCount, unconnectedCount]) => ({
