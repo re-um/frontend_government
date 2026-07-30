@@ -2188,12 +2188,12 @@ function NetworkPanel({
         <table className="w-full table-fixed text-left text-[15px]">
           <thead className="sticky top-0 bg-slate-50 text-slate-500">
             <tr>
-              <th className="w-[42%] px-3 py-2.5 font-semibold">기업</th>
-              <th className="w-[19%] px-1.5 py-2.5 font-semibold">유형</th>
-              <th className="w-[19%] px-1.5 py-2.5 text-right font-semibold">
+              <th className="w-[55%] px-3 py-2.5 font-semibold">기업</th>
+              <th className="w-[12%] px-1 py-2.5 font-semibold">유형</th>
+              <th className="w-[15%] px-1 py-2.5 text-right font-semibold">
                 물량
               </th>
-              <th className="w-[20%] px-3 py-2.5 text-right font-semibold">
+              <th className="w-[18%] px-3 py-2.5 text-right font-semibold">
                 기여도
               </th>
             </tr>
@@ -2246,10 +2246,10 @@ function NetworkPanel({
                     연결 근거: {connectionGrounds}
                   </div>
                 </td>
-                <td className="px-1.5 py-3 text-slate-500">
+                <td className="px-1 py-3 text-slate-500">
                   {companyTypeLabel[company.type].replace('기업', '')}
                 </td>
-                <td className="px-1.5 py-3 text-right text-slate-600">
+                <td className="px-1 py-3 text-right text-slate-600">
                   {company.monthlyAmount}t
                 </td>
                 <td className="px-3 py-3 text-right">
