@@ -321,22 +321,14 @@ function createRegionalCompanyPoints(region: RegionalNetworkSummary) {
   ];
 
   return Array.from({ length: region.totalCompanies }, (_, index) => {
-    const clusterRoll = seededRandom(index + region.totalCompanies * 3.17);
-    const anchorIndex =
-      clusterRoll < 0.46
-        ? 0
-        : clusterRoll < 0.72
-          ? Math.min(1, anchors.length - 1)
-          : Math.floor(seededRandom(index * 5.31 + region.latitude) * anchors.length);
+    const anchorIndex = index % anchors.length;
     const anchor = anchors[anchorIndex];
-    const isDenseCluster = anchorIndex === 0;
-    const isMediumCluster = anchorIndex === 1;
-    // 산업거점 중심에서 약 150~450m 이내로만 분산한다.
-    // 해안·호수·산지가 가까운 지역에서도 마커가 비현실적인 위치로
-    // 넘어가지 않도록 전국에 동일한 안전 반경을 적용한다.
-    const maxRadius = isDenseCluster ? 0.0015 : isMediumCluster ? 0.0028 : 0.0045;
+    const ring = Math.floor(index / anchors.length);
     const angle = seededRandom(index * 8.73 + region.longitude) * Math.PI * 2;
-    const radius = Math.sqrt(seededRandom(index * 13.19 + region.totalCompanies)) * maxRadius;
+    const radius = Math.min(
+      0.0055 + ring * 0.004 + seededRandom(index * 13.19 + region.totalCompanies) * 0.0025,
+      0.018,
+    );
     const type =
       index < region.supplierCompanies
         ? companyTypeMeta[0]
