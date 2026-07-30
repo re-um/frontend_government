@@ -331,7 +331,10 @@ function createRegionalCompanyPoints(region: RegionalNetworkSummary) {
     const anchor = anchors[anchorIndex];
     const isDenseCluster = anchorIndex === 0;
     const isMediumCluster = anchorIndex === 1;
-    const maxRadius = isDenseCluster ? 0.006 : isMediumCluster ? 0.012 : 0.019;
+    // 산업거점 중심에서 약 150~450m 이내로만 분산한다.
+    // 해안·호수·산지가 가까운 지역에서도 마커가 비현실적인 위치로
+    // 넘어가지 않도록 전국에 동일한 안전 반경을 적용한다.
+    const maxRadius = isDenseCluster ? 0.0015 : isMediumCluster ? 0.0028 : 0.0045;
     const angle = seededRandom(index * 8.73 + region.longitude) * Math.PI * 2;
     const radius = Math.sqrt(seededRandom(index * 13.19 + region.totalCompanies)) * maxRadius;
     const type =
