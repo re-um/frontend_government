@@ -52,34 +52,14 @@ const navItems = [
 
 function ReumLogo({ size = 32 }: { size?: number }) {
   return (
-    <svg
+    <img
+      src="/favicon.ico?v=20260729-2"
+      alt=""
       width={size}
       height={size}
-      viewBox="0 0 40 40"
-      fill="none"
       aria-hidden
-    >
-      <rect width="40" height="40" rx="10" fill="#14181D" />
-      {/* Circular loop */}
-      <path
-        d="M12 20a8 8 0 1 1 4.5 7.2"
-        stroke="#A3E635"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Arrow head */}
-      <path
-        d="M14.6 26.9l2.6 1.5-1.5 2.6"
-        stroke="#A3E635"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      {/* AI node dot */}
-      <circle cx="27" cy="14" r="2.6" fill="#22D3EE" />
-    </svg>
+      className="shrink-0 object-contain"
+    />
   );
 }
 
