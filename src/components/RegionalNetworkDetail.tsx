@@ -38,8 +38,8 @@ export function RegionalNetworkDetail({ region }: { region: RegionalNetworkSumma
     <div>
       <div className="mb-5">
         <div>
-          <div className="text-xs font-semibold text-emerald-600">지역 네트워크 상세</div>
-          <h2 className="mt-1 text-lg font-bold text-slate-950">
+          <div className="text-sm font-semibold text-emerald-600">지역 네트워크 상세</div>
+          <h2 className="mt-1 text-2xl font-bold text-slate-950">
             {region.regionName} 산업 네트워크
           </h2>
         </div>
@@ -54,9 +54,9 @@ export function RegionalNetworkDetail({ region }: { region: RegionalNetworkSumma
         <DetailRow label="완료 거래" value={`${region.completedTransactions}건`} />
       </div>
 
-      <h3 className="mb-2 text-xs font-semibold text-slate-600">산업 분야별 현황</h3>
+      <h3 className="mb-2 text-base font-semibold text-slate-600">산업 분야별 현황</h3>
       <div className="mb-5 overflow-x-auto rounded-xl border border-slate-200">
-        <table className="w-full min-w-68 text-left text-[11px]">
+        <table className="w-full min-w-68 text-left text-sm">
           <thead className="bg-slate-50 text-slate-500">
             <tr>
               <th className="px-3 py-2 font-semibold">산업 분야</th>
@@ -120,14 +120,14 @@ export function RegionalNetworkDetail({ region }: { region: RegionalNetworkSumma
         <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
           <div className="flex items-center justify-between border-b border-slate-200 bg-white px-3 py-2.5">
             <div>
-              <div className="text-xs font-bold text-slate-900">
+              <div className="text-base font-bold text-slate-900">
                 {activeAction === "companies"
                   ? "지역 기업 목록"
                   : activeAction === "consortiums"
                     ? "운영 컨소시엄 목록"
                     : "연계 필요 기업 목록"}
               </div>
-              <div className="mt-0.5 text-[10px] text-slate-500">
+              <div className="mt-1 text-sm text-slate-500">
                 {region.regionName} ·{" "}
                 {activeAction === "consortiums"
                   ? `${consortiums.length}개`
@@ -174,7 +174,7 @@ export function RegionalNetworkDetail({ region }: { region: RegionalNetworkSumma
                 ))}
             {((activeAction === "consortiums" && consortiums.length === 0) ||
               (activeAction !== "consortiums" && visibleCompanies.length === 0)) && (
-              <div className="px-3 py-8 text-center text-xs text-slate-500">
+              <div className="px-3 py-8 text-sm text-slate-500">
                 현재 필터 조건에 해당하는 항목이 없습니다.
               </div>
             )}
@@ -205,14 +205,14 @@ function CompanyListItem({
         aria-expanded={expanded}
       >
         <div className="min-w-0">
-          <div className="truncate text-xs font-semibold text-slate-900">{company.name}</div>
+          <div className="truncate text-base font-semibold text-slate-900">{company.name}</div>
           <div className="mt-1 flex flex-wrap gap-1">
             <SmallBadge>{company.industry}</SmallBadge>
             <SmallBadge>{company.type}</SmallBadge>
           </div>
         </div>
         <span
-          className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-bold ${
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${
             company.status === "연계 필요"
               ? "bg-orange-100 text-orange-700"
               : "bg-emerald-100 text-emerald-700"
@@ -222,7 +222,7 @@ function CompanyListItem({
         </span>
       </button>
       {expanded && (
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 border-t border-slate-100 bg-slate-50 px-3 py-3 text-[10px]">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-3 border-t border-slate-100 bg-slate-50 px-3 py-3 text-sm">
           <MiniDetail label="지역" value={regionName} />
           <MiniDetail label="산업 분야" value={company.industry} />
           <MiniDetail label="기업 유형" value={company.type} />
@@ -259,8 +259,8 @@ function ConsortiumListItem({
         aria-expanded={expanded}
       >
         <div className="min-w-0">
-          <div className="truncate text-xs font-semibold text-slate-900">{consortium.name}</div>
-          <div className="mt-1 flex items-center gap-2 text-[10px] text-slate-500">
+          <div className="truncate text-base font-semibold text-slate-900">{consortium.name}</div>
+          <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
             <span>{consortium.industry}</span>
             <span className="flex items-center gap-1">
               <Users className="h-3 w-3" />
@@ -269,7 +269,7 @@ function ConsortiumListItem({
           </div>
         </div>
         <span
-          className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-bold ${
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${
             consortium.status === "운영 중"
               ? "bg-violet-100 text-violet-700"
               : "bg-slate-100 text-slate-600"
@@ -280,7 +280,7 @@ function ConsortiumListItem({
       </button>
       {expanded && (
         <div className="border-t border-slate-100 bg-slate-50 px-3 py-3">
-          <div className="mb-2 text-[10px] font-bold text-slate-700">
+          <div className="mb-2 text-sm font-bold text-slate-700">
             참여기업 {participants.length}개
           </div>
           <div className="grid gap-1.5">
@@ -290,16 +290,14 @@ function ConsortiumListItem({
                 className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-2.5 py-2"
               >
                 <div className="min-w-0">
-                  <div className="truncate text-[10px] font-semibold text-slate-800">
+                  <div className="truncate text-sm font-semibold text-slate-800">
                     {company.name}
                   </div>
-                  <div className="mt-0.5 text-[9px] text-slate-500">
+                  <div className="mt-0.5 text-xs text-slate-500">
                     {company.industry} · {company.type}
                   </div>
                 </div>
-                <span className="ml-2 shrink-0 text-[9px] font-medium text-emerald-600">
-                  참여 중
-                </span>
+                <span className="ml-2 shrink-0 text-xs font-medium text-emerald-600">참여 중</span>
               </div>
             ))}
           </div>
@@ -320,7 +318,7 @@ function MiniDetail({ label, value }: { label: string; value: string }) {
 
 function SmallBadge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium text-slate-600">
+    <span className="rounded bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">
       {children}
     </span>
   );
@@ -394,8 +392,8 @@ function DetailRow({
 }) {
   return (
     <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2.5 last:border-0">
-      <span className="text-xs text-slate-500">{label}</span>
-      <strong className={accent ? "text-sm text-orange-600" : "text-sm text-slate-900"}>
+      <span className="text-base text-slate-500">{label}</span>
+      <strong className={accent ? "text-lg text-orange-600" : "text-lg text-slate-900"}>
         {value}
       </strong>
     </div>
@@ -417,7 +415,7 @@ function ActionButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold transition ${
+      className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition ${
         active
           ? "border-emerald-500 bg-emerald-50 text-emerald-800"
           : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
