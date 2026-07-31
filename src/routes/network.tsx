@@ -2043,6 +2043,7 @@ function NetworkPanel({
   const [expandedConnectionId, setExpandedConnectionId] = useState<
     string | null
   >(null)
+  const [showPendingActions, setShowPendingActions] = useState(false)
   const allCompanyCarbon = new Map<string, number>()
   matches.forEach((match) => {
     allCompanyCarbon.set(
@@ -2206,17 +2207,67 @@ function NetworkPanel({
         </div>
 
         {connectionStatusCounts.pending > 0 && (
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <div>
-              <p className="text-sm font-bold text-amber-900">조치 필요</p>
-              <p className="mt-0.5 break-keep text-sm leading-5 text-amber-700">
-                응답 대기 연결 {connectionStatusCounts.pending}건의 기업 응답을
-                확인해 주세요.
-              </p>
-            </div>
-            <span className="shrink-0 rounded-full bg-amber-200 px-3 py-1 text-sm font-bold text-amber-900">
-              {connectionStatusCounts.pending}건
-            </span>
+          <div className="mt-3 overflow-hidden rounded-xl border border-amber-200 bg-amber-50">
+            <button
+              type="button"
+              aria-expanded={showPendingActions}
+              onClick={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                setShowPendingActions((current) => !current)
+              }}
+              className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-400"
+            >
+              <div>
+                <p className="text-sm font-bold text-amber-900">조치 필요</p>
+                <p className="mt-0.5 break-keep text-sm leading-5 text-amber-700">
+                  응답 대기 연결 {connectionStatusCounts.pending}건의 기업 응답을
+                  확인해 주세요.
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="rounded-full bg-amber-200 px-3 py-1 text-sm font-bold text-amber-900">
+                  {connectionStatusCounts.pending}건
+                </span>
+                <ChevronDown
+                  className={`h-4 w-4 text-amber-700 transition-transform ${
+                    showPendingActions ? 'rotate-180' : ''
+                  }`}
+                />
+              </div>
+            </button>
+
+            {showPendingActions && (
+              <div className="divide-y divide-amber-200 border-t border-amber-200 bg-white">
+                {networkMatches
+                  .filter((match) => match.status === 'pending')
+                  .map((match) => {
+                    const sourceCompany = networkCompanyById.get(match.source)
+                    const targetCompany = networkCompanyById.get(match.target)
+
+                    return (
+                      <div
+                        key={match.id}
+                        className="flex items-start justify-between gap-3 px-4 py-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="break-keep text-sm font-bold leading-5 text-slate-900">
+                            {sourceCompany?.name ?? match.source}
+                            <span className="mx-1.5 text-slate-400">→</span>
+                            {targetCompany?.name ?? match.target}
+                          </p>
+                          <p className="mt-1 break-keep text-xs leading-5 text-slate-500">
+                            {match.material} · {match.amount}t/월
+                          </p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-800">
+                          응답 확인 필요
+                        </span>
+                      </div>
+                    )
+                  })}
+              </div>
+            )}
           </div>
         )}
 
