@@ -8,6 +8,7 @@ import cytoscape, {
 } from 'cytoscape'
 import {
   Building2,
+  ChevronDown,
   Factory,
   Filter,
   Map as MapIcon,
@@ -2039,6 +2040,9 @@ function NetworkPanel({
   onSelectCompany: (company: CompanyDetail) => void
   onClose: () => void
 }) {
+  const [expandedConnectionId, setExpandedConnectionId] = useState<
+    string | null
+  >(null)
   const allCompanyCarbon = new Map<string, number>()
   matches.forEach((match) => {
     allCompanyCarbon.set(
@@ -2224,26 +2228,89 @@ function NetworkPanel({
             {networkMatches.map((match) => {
               const sourceCompany = networkCompanyById.get(match.source)
               const targetCompany = networkCompanyById.get(match.target)
+              const expanded = expandedConnectionId === match.id
 
               return (
                 <div
                   key={match.id}
-                  className="w-full px-4 py-3.5 text-left"
+                  className="bg-white"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="break-keep text-[15px] font-bold leading-6 text-slate-900">
-                        {sourceCompany?.name ?? match.source}
-                        <span className="mx-1.5 text-slate-400">→</span>
-                        {targetCompany?.name ?? match.target}
-                      </p>
-                      <p className="mt-1 break-keep text-sm leading-5 text-slate-500">
-                        {match.material} · {match.amount}t/월 · 탄소감축{' '}
-                        {match.carbonReduction.toFixed(1)}t
-                      </p>
+                  <button
+                    type="button"
+                    aria-expanded={expanded}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      setExpandedConnectionId((current) =>
+                        current === match.id ? null : match.id,
+                      )
+                    }}
+                    className={`relative z-10 block w-full cursor-pointer px-4 py-3.5 text-left transition hover:bg-cyan-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-400 ${
+                      expanded ? 'bg-cyan-50' : ''
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="break-keep text-[15px] font-bold leading-6 text-slate-900">
+                          {sourceCompany?.name ?? match.source}
+                          <span className="mx-1.5 text-slate-400">→</span>
+                          {targetCompany?.name ?? match.target}
+                        </p>
+                        <p className="mt-1 break-keep text-sm leading-5 text-slate-500">
+                          {match.material} · {match.amount}t/월 · 탄소감축{' '}
+                          {match.carbonReduction.toFixed(1)}t
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <ConnectionStatusBadge status={match.status} />
+                        <span className="flex items-center gap-1 text-xs font-semibold text-cyan-700">
+                          {expanded ? '상세 닫기' : '상세 보기'}
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform ${
+                              expanded ? 'rotate-180' : ''
+                            }`}
+                          />
+                        </span>
+                      </div>
                     </div>
-                    <ConnectionStatusBadge status={match.status} />
-                  </div>
+                  </button>
+
+                  {expanded && (
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-cyan-100 bg-cyan-50/60 px-4 py-4">
+                      <ConnectionMiniDetail
+                        label="출발 기업"
+                        value={sourceCompany?.name ?? match.source}
+                      />
+                      <ConnectionMiniDetail
+                        label="도착 기업"
+                        value={targetCompany?.name ?? match.target}
+                      />
+                      <ConnectionMiniDetail
+                        label="이동 재질"
+                        value={match.material}
+                      />
+                      <ConnectionMiniDetail
+                        label="월 이동량"
+                        value={`${match.amount}t`}
+                      />
+                      <ConnectionMiniDetail
+                        label="매칭 적합도"
+                        value={`${match.score}점`}
+                      />
+                      <ConnectionMiniDetail
+                        label="예상 ROI"
+                        value={`${match.roi}%`}
+                      />
+                      <ConnectionMiniDetail
+                        label="탄소감축"
+                        value={`${match.carbonReduction.toFixed(1)}t`}
+                      />
+                      <ConnectionMiniDetail
+                        label="진행 상태"
+                        value={statusLabel[match.status]}
+                      />
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -2424,6 +2491,23 @@ function ConnectionStatusBadge({ status }: { status: MatchStatus }) {
     >
       {statusLabel[status]}
     </span>
+  )
+}
+
+function ConnectionMiniDetail({
+  label,
+  value,
+}: {
+  label: string
+  value: string
+}) {
+  return (
+    <div className="min-w-0">
+      <div className="text-xs font-medium text-slate-500">{label}</div>
+      <div className="mt-1 break-keep text-sm font-bold text-slate-900">
+        {value}
+      </div>
+    </div>
   )
 }
 
