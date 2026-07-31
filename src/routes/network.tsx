@@ -2132,6 +2132,15 @@ function NetworkPanel({
   const anchorWeight = weightedCompanies.find(
     (item) => item.company.id === anchorCompany.id,
   )
+  const networkCompanyById = new Map(
+    networkCompanies.map((company) => [company.id, company]),
+  )
+  const connectionStatusCounts = {
+    approved: networkMatches.filter((match) => match.status === 'approved')
+      .length,
+    active: networkMatches.filter((match) => match.status === 'active').length,
+    pending: networkMatches.filter((match) => match.status === 'pending').length,
+  }
 
   return (
     <div>
@@ -2151,6 +2160,92 @@ function NetworkPanel({
           />
         </div>
       </div>
+
+      <section className="mb-5">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">연결 상태</h3>
+            <p className="mt-1 text-sm text-slate-500">
+              3D 연결선과 동일한 상태 기준입니다.
+            </p>
+          </div>
+          <span className="shrink-0 text-sm font-semibold text-slate-500">
+            총 {networkMatches.length}건
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <ConnectionStatusCard
+            status="approved"
+            count={connectionStatusCounts.approved}
+          />
+          <ConnectionStatusCard
+            status="active"
+            count={connectionStatusCounts.active}
+          />
+          <ConnectionStatusCard
+            status="pending"
+            count={connectionStatusCounts.pending}
+          />
+        </div>
+
+        {connectionStatusCounts.pending > 0 && (
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <div>
+              <p className="text-sm font-bold text-amber-900">조치 필요</p>
+              <p className="mt-0.5 break-keep text-sm leading-5 text-amber-700">
+                응답 대기 연결 {connectionStatusCounts.pending}건의 기업 응답을
+                확인해 주세요.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-amber-200 px-3 py-1 text-sm font-bold text-amber-900">
+              {connectionStatusCounts.pending}건
+            </span>
+          </div>
+        )}
+
+        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+          <div className="border-b border-slate-200 bg-slate-50 px-4 py-3 text-base font-bold text-slate-800">
+            연결 상세
+          </div>
+          <div className="max-h-72 divide-y divide-slate-100 overflow-y-auto">
+            {networkMatches.map((match) => {
+              const sourceCompany = networkCompanyById.get(match.source)
+              const targetCompany = networkCompanyById.get(match.target)
+              const companyToSelect =
+                targetCompany?.id === anchorCompany.id
+                  ? sourceCompany
+                  : targetCompany ?? sourceCompany
+
+              return (
+                <button
+                  key={match.id}
+                  type="button"
+                  onClick={() =>
+                    companyToSelect && onSelectCompany(companyToSelect)
+                  }
+                  className="block w-full px-4 py-3.5 text-left transition hover:bg-cyan-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-400"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="break-keep text-[15px] font-bold leading-6 text-slate-900">
+                        {sourceCompany?.name ?? match.source}
+                        <span className="mx-1.5 text-slate-400">→</span>
+                        {targetCompany?.name ?? match.target}
+                      </p>
+                      <p className="mt-1 break-keep text-sm leading-5 text-slate-500">
+                        {match.material} · {match.amount}t/월 · 탄소감축{' '}
+                        {match.carbonReduction.toFixed(1)}t
+                      </p>
+                    </div>
+                    <ConnectionStatusBadge status={match.status} />
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </section>
 
       <div className="mb-3">
         <h3 className="text-base font-semibold uppercase tracking-wide text-slate-600">
@@ -2275,6 +2370,56 @@ function NetworkMetric({ label, value }: { label: string; value: string }) {
       <div className="text-sm text-slate-500">{label}</div>
       <div className="mt-1 text-xl font-bold text-slate-900">{value}</div>
     </div>
+  )
+}
+
+const connectionStatusStyle: Record<
+  MatchStatus,
+  { line: string; card: string; badge: string }
+> = {
+  approved: {
+    line: 'bg-violet-500',
+    card: 'border-violet-200 bg-violet-50 text-violet-800',
+    badge: 'bg-violet-100 text-violet-800',
+  },
+  active: {
+    line: 'bg-cyan-400',
+    card: 'border-cyan-200 bg-cyan-50 text-cyan-800',
+    badge: 'bg-cyan-100 text-cyan-800',
+  },
+  pending: {
+    line:
+      'bg-[repeating-linear-gradient(90deg,#94a3b8_0_6px,transparent_6px_10px)]',
+    card: 'border-slate-200 bg-slate-50 text-slate-700',
+    badge: 'bg-slate-200 text-slate-700',
+  },
+}
+
+function ConnectionStatusCard({
+  status,
+  count,
+}: {
+  status: MatchStatus
+  count: number
+}) {
+  const style = connectionStatusStyle[status]
+
+  return (
+    <div className={`rounded-xl border px-3 py-3 ${style.card}`}>
+      <div className={`mb-2 h-1 w-9 rounded-full ${style.line}`} />
+      <div className="break-keep text-xs font-semibold">{statusLabel[status]}</div>
+      <div className="mt-1 text-xl font-bold">{count}건</div>
+    </div>
+  )
+}
+
+function ConnectionStatusBadge({ status }: { status: MatchStatus }) {
+  return (
+    <span
+      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${connectionStatusStyle[status].badge}`}
+    >
+      {statusLabel[status]}
+    </span>
   )
 }
 
