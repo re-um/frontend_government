@@ -1,8 +1,5 @@
-import ForceGraph3D, {
-  type ForceGraphMethods,
-  type NodeObject,
-} from 'react-force-graph-3d'
-import SpriteText from 'three-spritetext'
+import ForceGraph3D, { type ForceGraphMethods, type NodeObject } from "react-force-graph-3d";
+import SpriteText from "three-spritetext";
 import {
   AmbientLight,
   Box3,
@@ -32,57 +29,49 @@ import {
   TorusGeometry,
   Vector3,
   WebGLRenderer,
-} from 'three'
-import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import {
-  ChevronDown,
-  ChevronUp,
-  Maximize2,
-  Move,
-  Pause,
-  Play,
-  RotateCcw,
-} from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+} from "three";
+import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { ChevronDown, ChevronUp, Maximize2, Move, Pause, Play, RotateCcw } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-type CompanyType = 'emitter' | 'processor' | 'consumer'
-type MatchStatus = 'approved' | 'active' | 'pending'
+type CompanyType = "emitter" | "processor" | "consumer";
+type MatchStatus = "approved" | "active" | "pending";
 
 interface TwinNode {
-  id: string
-  name: string
-  type: CompanyType
-  material: string
-  amount: number
-  color: string
-  weight: number
+  id: string;
+  name: string;
+  type: CompanyType;
+  material: string;
+  amount: number;
+  color: string;
+  weight: number;
 }
 
 interface TwinLink {
-  id: string
-  source: string
-  target: string
-  material: string
-  amount: number
-  status: MatchStatus
-  color: string
-  score: number
-  carbonReduction: number
-  weight: number
+  id: string;
+  source: string;
+  target: string;
+  material: string;
+  amount: number;
+  status: MatchStatus;
+  color: string;
+  score: number;
+  carbonReduction: number;
+  weight: number;
 }
 
 const nodeColors: Record<CompanyType, string> = {
-  emitter: '#38bdf8',
-  processor: '#2dd4bf',
-  consumer: '#a3e635',
-}
+  emitter: "#38bdf8",
+  processor: "#2dd4bf",
+  consumer: "#a3e635",
+};
 
 const linkColors: Record<MatchStatus, string> = {
-  approved: '#a78bfa',
-  active: '#22d3ee',
-  pending: '#64748b',
-}
+  approved: "#a78bfa",
+  active: "#22d3ee",
+  pending: "#64748b",
+};
 
 export function DigitalTwinNetwork3D({
   companies,
@@ -95,118 +84,107 @@ export function DigitalTwinNetwork3D({
   onClearSelection,
 }: {
   companies: Array<{
-    id: string
-    name: string
-    type: CompanyType
-    material: string
-    monthlyAmount: number
-    connections: number
-    approvedMatches: number
-    status: MatchStatus
-  }>
+    id: string;
+    name: string;
+    type: CompanyType;
+    material: string;
+    monthlyAmount: number;
+    connections: number;
+    approvedMatches: number;
+    status: MatchStatus;
+  }>;
   matches: Array<{
-    id: string
-    source: string
-    target: string
-    material: string
-    amount: number
-    status: MatchStatus
-    score: number
-    carbonReduction: number
-  }>
-  visibleCompanyIds: Set<string>
-  selectedCompanyId?: string
-  selectedMatchId?: string
-  onSelectCompany: (id: string) => void
-  onSelectMatch: (id: string) => void
-  onClearSelection: () => void
+    id: string;
+    source: string;
+    target: string;
+    material: string;
+    amount: number;
+    status: MatchStatus;
+    score: number;
+    carbonReduction: number;
+  }>;
+  visibleCompanyIds: Set<string>;
+  selectedCompanyId?: string;
+  selectedMatchId?: string;
+  onSelectCompany: (id: string) => void;
+  onSelectMatch: (id: string) => void;
+  onClearSelection: () => void;
 }) {
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const graphRef =
-    useRef<ForceGraphMethods<TwinNode, TwinLink> | undefined>(undefined)
-  const initialNodePositionsRef = useRef(
-    new Map<string, { x: number; y: number; z: number }>(),
-  )
-  const [size, setSize] = useState({ width: 800, height: 680 })
-  const [flowing, setFlowing] = useState(true)
-  const [panMode, setPanMode] = useState(false)
-  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null)
-  const [legendOpen, setLegendOpen] = useState(true)
-  const [companyModels, setCompanyModels] = useState<
-    Record<CompanyType, Group | null>
-  >({
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const graphRef = useRef<ForceGraphMethods<TwinNode, TwinLink> | undefined>(undefined);
+  const initialNodePositionsRef = useRef(new Map<string, { x: number; y: number; z: number }>());
+  const [size, setSize] = useState({ width: 800, height: 680 });
+  const [flowing, setFlowing] = useState(true);
+  const [panMode, setPanMode] = useState(false);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [legendOpen, setLegendOpen] = useState(true);
+  const [companyModels, setCompanyModels] = useState<Record<CompanyType, Group | null>>({
     emitter: null,
     processor: null,
     consumer: null,
-  })
+  });
 
   useEffect(() => {
-    if (!containerRef.current) return
-    const container = containerRef.current
+    if (!containerRef.current) return;
+    const container = containerRef.current;
     const resize = () =>
       setSize({
         width: Math.max(container.clientWidth, 320),
         height: Math.max(container.clientHeight, 540),
-      })
-    resize()
-    const observer = new ResizeObserver(resize)
-    observer.observe(container)
-    return () => observer.disconnect()
-  }, [])
+      });
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
-    let cancelled = false
-    const loader = new GLTFLoader()
+    let cancelled = false;
+    const loader = new GLTFLoader();
     Promise.all([
-      loader.loadAsync('/models/company-emitter-collector.glb'),
-      loader.loadAsync('/models/company-processor-reactor.glb'),
-      loader.loadAsync('/models/company-consumer-factory.glb'),
+      loader.loadAsync("/models/company-emitter-collector.glb"),
+      loader.loadAsync("/models/company-processor-reactor.glb"),
+      loader.loadAsync("/models/company-consumer-factory.glb"),
     ]).then(([emitter, processor, consumer]) => {
-      if (cancelled) return
+      if (cancelled) return;
       setCompanyModels({
         emitter: emitter.scene,
         processor: processor.scene,
         consumer: consumer.scene,
-      })
-    })
+      });
+    });
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
-    const controls = graphRef.current?.controls()
-    if (!controls) return
-    controls.mouseButtons.LEFT = panMode ? MOUSE.PAN : MOUSE.ROTATE
-    controls.update()
-  }, [panMode])
+    const controls = graphRef.current?.controls();
+    if (!controls) return;
+    controls.mouseButtons.LEFT = panMode ? MOUSE.PAN : MOUSE.ROTATE;
+    controls.update();
+  }, [panMode]);
 
   const graphData = useMemo(() => {
-    const maxAmount = Math.max(...companies.map((company) => company.monthlyAmount), 1)
-    const companyCarbon = new Map<string, number>()
+    const maxAmount = Math.max(...companies.map((company) => company.monthlyAmount), 1);
+    const companyCarbon = new Map<string, number>();
     matches.forEach((match) => {
       companyCarbon.set(
         match.source,
         (companyCarbon.get(match.source) ?? 0) + match.carbonReduction,
-      )
+      );
       companyCarbon.set(
         match.target,
         (companyCarbon.get(match.target) ?? 0) + match.carbonReduction,
-      )
-    })
-    const maxCompanyCarbon = Math.max(...companyCarbon.values(), 1)
-    const materialCounts = new Map<string, number>()
+      );
+    });
+    const maxCompanyCarbon = Math.max(...companyCarbon.values(), 1);
+    const materialCounts = new Map<string, number>();
     companies.forEach((company) => {
-      materialCounts.set(
-        company.material,
-        (materialCounts.get(company.material) ?? 0) + 1,
-      )
-    })
-    const maxLinkAmount = Math.max(...matches.map((match) => match.amount), 1)
-    const maxLinkCarbon = Math.max(
-      ...matches.map((match) => match.carbonReduction),
-      1,
-    )
+      materialCounts.set(company.material, (materialCounts.get(company.material) ?? 0) + 1);
+    });
+    const maxLinkAmount = Math.max(...matches.map((match) => match.amount), 1);
+    const maxLinkCarbon = Math.max(...matches.map((match) => match.carbonReduction), 1);
 
     const nodes: TwinNode[] = companies
       .filter((company) => visibleCompanyIds.has(company.id))
@@ -220,10 +198,10 @@ export function DigitalTwinNetwork3D({
         weight:
           (company.monthlyAmount / maxAmount) * 0.4 +
           ((companyCarbon.get(company.id) ?? 0) / maxCompanyCarbon) * 0.35 +
-          ({ approved: 1, active: 0.75, pending: 0.4 }[company.status] * 0.15) +
+          { approved: 1, active: 0.75, pending: 0.4 }[company.status] * 0.15 +
           (1 / (materialCounts.get(company.material) ?? 1)) * 0.1,
-      }))
-    const ids = new Set(nodes.map((node) => node.id))
+      }));
+    const ids = new Set(nodes.map((node) => node.id));
     const links: TwinLink[] = matches
       .filter((match) => ids.has(match.source) && ids.has(match.target))
       .map((match) => ({
@@ -233,78 +211,67 @@ export function DigitalTwinNetwork3D({
           (match.amount / maxLinkAmount) * 0.4 +
           (match.score / 100) * 0.25 +
           (match.carbonReduction / maxLinkCarbon) * 0.2 +
-          ({ approved: 1, active: 0.72, pending: 0.4 }[match.status] * 0.15),
-      }))
-    return { nodes, links }
-  }, [companies, matches, visibleCompanyIds])
+          { approved: 1, active: 0.72, pending: 0.4 }[match.status] * 0.15,
+      }));
+    return { nodes, links };
+  }, [companies, matches, visibleCompanyIds]);
 
   useEffect(() => {
-    initialNodePositionsRef.current.clear()
-  }, [graphData])
+    initialNodePositionsRef.current.clear();
+  }, [graphData]);
 
   const createPlatform = (node: NodeObject<TwinNode>) => {
-    const group = new Group()
-    const selected = node.id === selectedCompanyId
-    const hovered = node.id === hoveredNodeId
-    const color = selected ? '#bef264' : node.color
-    const modelTemplate = companyModels[node.type]
+    const group = new Group();
+    const selected = node.id === selectedCompanyId;
+    const hovered = node.id === hoveredNodeId;
+    const color = selected ? "#bef264" : node.color;
+    const modelTemplate = companyModels[node.type];
 
     if (modelTemplate) {
-      const model = modelTemplate.clone(true)
+      const model = modelTemplate.clone(true);
       model.traverse((child) => {
-        if (!(child instanceof Mesh)) return
-        child.castShadow = false
-        child.receiveShadow = false
-        child.material = child.material.clone()
-        if (selected && 'color' in child.material) {
-          child.material.color.lerp(new Color('#bef264'), 0.2)
+        if (!(child instanceof Mesh)) return;
+        child.castShadow = false;
+        child.receiveShadow = false;
+        child.material = child.material.clone();
+        if (selected && "color" in child.material) {
+          child.material.color.lerp(new Color("#bef264"), 0.2);
         }
-        if ('color' in child.material) {
-          child.material.color.offsetHSL(0, 0.08, 0.1)
+        if ("color" in child.material) {
+          child.material.color.offsetHSL(0, 0.08, 0.1);
         }
-        if ('metalness' in child.material) {
-          child.material.metalness = Math.min(child.material.metalness, 0.62)
+        if ("metalness" in child.material) {
+          child.material.metalness = Math.min(child.material.metalness, 0.62);
         }
-        if ('roughness' in child.material) {
-          child.material.roughness = Math.max(child.material.roughness, 0.32)
+        if ("roughness" in child.material) {
+          child.material.roughness = Math.max(child.material.roughness, 0.32);
         }
-      })
-      model.rotation.set(0.08, 0.42, 0)
-      group.add(model)
+      });
+      model.rotation.set(0.08, 0.42, 0);
+      group.add(model);
 
-      if (selected || hovered || node.type === 'processor') {
-        const label = new SpriteText(node.name)
-        label.color = '#ffffff'
-        label.textHeight = selected ? 2.8 : 2.3
+      if (selected || hovered || node.type === "processor") {
+        const label = new SpriteText(node.name);
+        label.color = "#ffffff";
+        label.textHeight = selected ? 2.8 : 2.3;
         label.position.y =
-          node.type === 'emitter'
-            ? -11.2
-            : node.type === 'processor'
-              ? -10.2
-              : -7.4
-        label.backgroundColor = selected
-          ? 'rgba(45, 69, 12, 0.94)'
-          : 'rgba(3, 10, 24, 0.94)'
-        label.padding = 1.8
-        label.borderRadius = 4
-        group.add(label)
+          node.type === "emitter" ? -11.2 : node.type === "processor" ? -10.2 : -7.4;
+        label.backgroundColor = selected ? "rgba(45, 69, 12, 0.94)" : "rgba(3, 10, 24, 0.94)";
+        label.padding = 1.8;
+        label.borderRadius = 4;
+        group.add(label);
       }
 
-      const modelScale =
-        node.type === 'consumer' ? 1.2 : node.type === 'processor' ? 0.97 : 1
-      group.scale.setScalar(
-        (0.9 + node.weight * 0.38) *
-          modelScale *
-          (selected ? 1.08 : 1),
-      )
-      return group
+      const modelScale = node.type === "consumer" ? 1.2 : node.type === "processor" ? 0.97 : 1;
+      group.scale.setScalar((0.9 + node.weight * 0.38) * modelScale * (selected ? 1.08 : 1));
+      return group;
     }
 
-    const pedestal = createPedestal(color, selected)
-    pedestal.position.y = node.type === 'processor' ? -9.8 : -6.7
-    group.add(pedestal)
+    const pedestal = createPedestal(color, selected);
+    pedestal.position.y = node.type === "processor" ? -9.8 : -6.7;
+    group.add(pedestal);
 
-    if (node.type === 'processor') {
+    if (node.type === "processor") {
       const glow = new Mesh(
         new SphereGeometry(selected ? 13.5 : 12, 24, 24),
         new MeshBasicMaterial({
@@ -313,8 +280,8 @@ export function DigitalTwinNetwork3D({
           opacity: selected ? 0.2 : 0.11,
           depthWrite: false,
         }),
-      )
-      group.add(glow)
+      );
+      group.add(glow);
 
       const core = new Mesh(
         new SphereGeometry(8.2, 28, 28),
@@ -332,13 +299,13 @@ export function DigitalTwinNetwork3D({
           emissive: new Color(color),
           emissiveIntensity: 0,
         }),
-      )
-      group.add(core)
+      );
+      group.add(core);
 
       const innerCore = new Mesh(
         new SphereGeometry(4.8, 20, 20),
         new MeshPhysicalMaterial({
-          color: '#d5fff7',
+          color: "#d5fff7",
           roughness: 0.2,
           metalness: 0.12,
           transparent: true,
@@ -346,10 +313,10 @@ export function DigitalTwinNetwork3D({
           emissive: new Color(color),
           emissiveIntensity: 0,
         }),
-      )
-      group.add(innerCore)
+      );
+      group.add(innerCore);
 
-      ;[11, 13.5].forEach((radius, index) => {
+      [11, 13.5].forEach((radius, index) => {
         const orbit = new Mesh(
           new TorusGeometry(radius, index ? 0.1 : 0.16, 8, 40),
           new MeshBasicMaterial({
@@ -358,40 +325,40 @@ export function DigitalTwinNetwork3D({
             opacity: index ? 0.45 : 0.8,
             depthWrite: false,
           }),
-        )
-        orbit.rotation.x = index ? Math.PI * 0.62 : Math.PI * 0.42
-        orbit.rotation.y = index ? Math.PI * 0.2 : -Math.PI * 0.12
-        group.add(orbit)
-      })
+        );
+        orbit.rotation.x = index ? Math.PI * 0.62 : Math.PI * 0.42;
+        orbit.rotation.y = index ? Math.PI * 0.2 : -Math.PI * 0.12;
+        group.add(orbit);
+      });
 
-      const symbol = new SpriteText('♻')
-      symbol.color = '#ffffff'
-      symbol.textHeight = 7
-      symbol.position.z = 8
-      group.add(symbol)
+      const symbol = new SpriteText("♻");
+      symbol.color = "#ffffff";
+      symbol.textHeight = 7;
+      symbol.position.z = 8;
+      group.add(symbol);
     } else {
       const bodyGeometry =
-        node.type === 'emitter'
+        node.type === "emitter"
           ? new CylinderGeometry(5.4, 5.4, 8.4, 6, 1, false)
-          : new RoundedBoxGeometry(8.4, 8.4, 8.4, 5, 1.25)
+          : new RoundedBoxGeometry(8.4, 8.4, 8.4, 5, 1.25);
       const body = new Mesh(
         bodyGeometry,
         new MeshPhysicalMaterial({
-          color: node.type === 'emitter' ? '#071a36' : '#10230d',
+          color: node.type === "emitter" ? "#071a36" : "#10230d",
           metalness: 0.34,
           roughness: 0.16,
           clearcoat: 1,
           clearcoatRoughness: 0.1,
-          transmission: node.type === 'consumer' ? 0.48 : 0.24,
+          transmission: node.type === "consumer" ? 0.48 : 0.24,
           thickness: 1.8,
           transparent: true,
           opacity: selected ? 0.94 : 0.86,
           emissive: new Color(color),
           emissiveIntensity: 0,
         }),
-      )
-      body.rotation.set(0.1, 0.42, 0)
-      group.add(body)
+      );
+      body.rotation.set(0.1, 0.42, 0);
+      group.add(body);
 
       const glassShell = new Mesh(
         bodyGeometry.clone(),
@@ -408,10 +375,10 @@ export function DigitalTwinNetwork3D({
           emissiveIntensity: 0,
           depthWrite: false,
         }),
-      )
-      glassShell.scale.setScalar(1.14)
-      glassShell.rotation.copy(body.rotation)
-      group.add(glassShell)
+      );
+      glassShell.scale.setScalar(1.14);
+      glassShell.rotation.copy(body.rotation);
+      group.add(glassShell);
 
       const edges = new LineSegments(
         new EdgesGeometry(bodyGeometry),
@@ -420,145 +387,134 @@ export function DigitalTwinNetwork3D({
           transparent: true,
           opacity: selected ? 1 : 0.86,
         }),
-      )
-      edges.rotation.copy(body.rotation)
-      group.add(edges)
+      );
+      edges.rotation.copy(body.rotation);
+      group.add(edges);
 
-      const roleIcon = createRoleIcon(node.type, color)
-      roleIcon.position.z = 5.1
-      roleIcon.scale.set(5.6, 5.6, 1)
-      group.add(roleIcon)
+      const roleIcon = createRoleIcon(node.type, color);
+      roleIcon.position.z = 5.1;
+      roleIcon.scale.set(5.6, 5.6, 1);
+      group.add(roleIcon);
     }
 
-    const label = new SpriteText(node.name)
-    label.color = selected ? '#ecfccb' : '#e2e8f0'
-    label.textHeight = selected ? 3.5 : node.type === 'processor' ? 3.2 : 2.7
-    label.position.y = node.type === 'processor' ? -14 : -8.5
-    label.backgroundColor = selected
-      ? 'rgba(54, 83, 20, 0.92)'
-      : 'rgba(3, 10, 24, 0.78)'
-    label.padding = 2.2
-    label.borderRadius = 5
-    group.add(label)
+    const label = new SpriteText(node.name);
+    label.color = selected ? "#ecfccb" : "#e2e8f0";
+    label.textHeight = selected ? 3.5 : node.type === "processor" ? 3.2 : 2.7;
+    label.position.y = node.type === "processor" ? -14 : -8.5;
+    label.backgroundColor = selected ? "rgba(54, 83, 20, 0.92)" : "rgba(3, 10, 24, 0.78)";
+    label.padding = 2.2;
+    label.borderRadius = 5;
+    group.add(label);
 
-    group.scale.setScalar(0.82 + node.weight * 0.42)
-    return group
-  }
+    group.scale.setScalar(0.82 + node.weight * 0.42);
+    return group;
+  };
 
   const initializeScene = () => {
-    const scene = graphRef.current?.scene()
-    if (!scene || scene.userData.twinInitialized) return
-    scene.userData.twinInitialized = true
+    const scene = graphRef.current?.scene();
+    if (!scene || scene.userData.twinInitialized) return;
+    scene.userData.twinInitialized = true;
     new TextureLoader().load(
-      '/assets/ai-space-network-bg.png',
+      "/assets/ai-space-network-bg.png",
       (texture) => {
-        texture.colorSpace = SRGBColorSpace
-        scene.background = texture
+        texture.colorSpace = SRGBColorSpace;
+        scene.background = texture;
       },
       undefined,
       () => {
-        scene.background = new Color('#020611')
+        scene.background = new Color("#020611");
       },
-    )
-    scene.fog = new FogExp2('#030712', 0.001)
-    const ambientLight = new AmbientLight('#dbeafe', 2.1)
-    ambientLight.name = 'company-model-ambient'
-    scene.add(ambientLight)
+    );
+    scene.fog = new FogExp2("#030712", 0.001);
+    const ambientLight = new AmbientLight("#dbeafe", 2.1);
+    ambientLight.name = "company-model-ambient";
+    scene.add(ambientLight);
 
-    const hemisphereLight = new HemisphereLight('#dbeafe', '#102030', 2.4)
-    hemisphereLight.name = 'company-model-hemisphere'
-    scene.add(hemisphereLight)
+    const hemisphereLight = new HemisphereLight("#dbeafe", "#102030", 2.4);
+    hemisphereLight.name = "company-model-hemisphere";
+    scene.add(hemisphereLight);
 
-    const keyLight = new DirectionalLight('#ffffff', 3.6)
-    keyLight.name = 'company-model-key'
-    keyLight.position.set(90, 120, 160)
-    scene.add(keyLight)
+    const keyLight = new DirectionalLight("#ffffff", 3.6);
+    keyLight.name = "company-model-key";
+    keyLight.position.set(90, 120, 160);
+    scene.add(keyLight);
 
-    const fillLight = new DirectionalLight('#7dd3fc', 2.2)
-    fillLight.name = 'company-model-fill'
-    fillLight.position.set(-120, -40, 80)
-    scene.add(fillLight)
-    const renderer = graphRef.current?.renderer()
-    renderer?.setClearColor(0x000000, 0)
-    renderer?.setPixelRatio(
-      Math.min(window.devicePixelRatio, size.width < 768 ? 1 : 1.5),
-    )
+    const fillLight = new DirectionalLight("#7dd3fc", 2.2);
+    fillLight.name = "company-model-fill";
+    fillLight.position.set(-120, -40, 80);
+    scene.add(fillLight);
+    const renderer = graphRef.current?.renderer();
+    renderer?.setClearColor(0x000000, 0);
+    renderer?.setPixelRatio(Math.min(window.devicePixelRatio, size.width < 768 ? 1 : 1.5));
 
     // 전국의 여러 네트워크가 화면 가장자리로 흩어지지 않도록
     // 노드의 반발력과 연결 거리를 줄이고 중심으로 모으는 힘을 높인다.
-    graphRef.current?.d3Force('charge')?.strength(-15)
-    graphRef.current?.d3Force('link')?.distance(27)
-    graphRef.current?.d3Force('center')?.strength(0.7)
+    graphRef.current?.d3Force("charge")?.strength(-15);
+    graphRef.current?.d3Force("link")?.distance(27);
+    graphRef.current?.d3Force("center")?.strength(0.7);
 
-    ;[105, 155, 215, 285, 365].forEach((radius, index) => {
-      const points: Vector3[] = []
+    [105, 155, 215, 285, 365].forEach((radius, index) => {
+      const points: Vector3[] = [];
       for (let step = 0; step < 64; step += 1) {
-        const angle = (step / 64) * Math.PI * 2
+        const angle = (step / 64) * Math.PI * 2;
         points.push(
-          new Vector3(
-            Math.cos(angle) * radius,
-            Math.sin(angle) * radius * 0.62,
-            -150 - index * 5,
-          ),
-        )
+          new Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius * 0.62, -150 - index * 5),
+        );
       }
-      const geometry = new BufferGeometry().setFromPoints(points)
+      const geometry = new BufferGeometry().setFromPoints(points);
       const orbit = new LineLoop(
         geometry,
         new LineBasicMaterial({
-          color: index % 2 ? '#1d4ed8' : '#0891b2',
+          color: index % 2 ? "#1d4ed8" : "#0891b2",
           transparent: true,
           opacity: 0.12,
         }),
-      )
-      scene.add(orbit)
-    })
-  }
+      );
+      scene.add(orbit);
+    });
+  };
 
   const focusNode = (node: NodeObject<TwinNode>) => {
-    onSelectCompany(String(node.id))
-  }
+    onSelectCompany(String(node.id));
+  };
 
   const captureInitialLayout = () => {
-    if (initialNodePositionsRef.current.size > 0) return
+    if (initialNodePositionsRef.current.size > 0) return;
     graphData.nodes.forEach((node) => {
-      const positionedNode = node as NodeObject<TwinNode>
-      if (
-        Number.isFinite(positionedNode.x) &&
-        Number.isFinite(positionedNode.y)
-      ) {
+      const positionedNode = node as NodeObject<TwinNode>;
+      if (Number.isFinite(positionedNode.x) && Number.isFinite(positionedNode.y)) {
         initialNodePositionsRef.current.set(node.id, {
           x: positionedNode.x ?? 0,
           y: positionedNode.y ?? 0,
           z: positionedNode.z ?? 0,
-        })
+        });
       }
-    })
-  }
+    });
+  };
 
   const restoreInitialLayout = () => {
     graphData.nodes.forEach((node) => {
-      const position = initialNodePositionsRef.current.get(node.id)
-      if (!position) return
-      const positionedNode = node as NodeObject<TwinNode>
-      positionedNode.x = position.x
-      positionedNode.y = position.y
-      positionedNode.z = position.z
-      positionedNode.vx = 0
-      positionedNode.vy = 0
-      positionedNode.vz = 0
-      positionedNode.fx = undefined
-      positionedNode.fy = undefined
-      positionedNode.fz = undefined
-    })
-    graphRef.current?.refresh()
-    graphRef.current?.zoomToFit(600, 20)
-  }
+      const position = initialNodePositionsRef.current.get(node.id);
+      if (!position) return;
+      const positionedNode = node as NodeObject<TwinNode>;
+      positionedNode.x = position.x;
+      positionedNode.y = position.y;
+      positionedNode.z = position.z;
+      positionedNode.vx = 0;
+      positionedNode.vy = 0;
+      positionedNode.vz = 0;
+      positionedNode.fx = undefined;
+      positionedNode.fy = undefined;
+      positionedNode.fz = undefined;
+    });
+    graphRef.current?.refresh();
+    graphRef.current?.zoomToFit(600, 20);
+  };
 
   return (
     <div
       ref={containerRef}
-      className="relative h-full min-h-140 overflow-hidden bg-[#020611] sm:min-h-180"
+      className="relative h-full min-h-140 overflow-hidden bg-[#020611] sm:min-h-180 xl:min-h-0"
     >
       <ForceGraph3D<TwinNode, TwinLink>
         ref={graphRef}
@@ -569,19 +525,17 @@ export function DigitalTwinNetwork3D({
         rendererConfig={{
           alpha: true,
           antialias: true,
-          powerPreference: 'high-performance',
+          powerPreference: "high-performance",
         }}
         backgroundColor="rgba(0, 0, 0, 0)"
         showNavInfo={false}
         nodeThreeObject={createPlatform}
-        nodeLabel={() => ''}
+        nodeLabel={() => ""}
         linkLabel={(link) => `${link.material} · ${link.amount}톤`}
         linkColor={(link) =>
-          selectedMatchId && link.id !== selectedMatchId ? '#1e293b' : link.color
+          selectedMatchId && link.id !== selectedMatchId ? "#1e293b" : link.color
         }
-        linkWidth={(link) =>
-          link.id === selectedMatchId ? 3.2 : 0.55 + link.weight * 2.15
-        }
+        linkWidth={(link) => (link.id === selectedMatchId ? 3.2 : 0.55 + link.weight * 2.15)}
         linkOpacity={0.76}
         linkCurvature={0.18}
         linkDirectionalArrowLength={3}
@@ -591,13 +545,11 @@ export function DigitalTwinNetwork3D({
             ? 0
             : link.id === selectedMatchId
               ? 7
-              : link.status === 'pending'
+              : link.status === "pending"
                 ? 0
                 : Math.max(2, Math.round(link.weight * 5))
         }
-        linkDirectionalParticleWidth={(link) =>
-          link.id === selectedMatchId ? 3.2 : 1.65
-        }
+        linkDirectionalParticleWidth={(link) => (link.id === selectedMatchId ? 3.2 : 1.65)}
         linkDirectionalParticleSpeed={(link) => 0.0025 + link.weight * 0.005}
         cooldownTicks={75}
         d3AlphaDecay={0.04}
@@ -605,9 +557,7 @@ export function DigitalTwinNetwork3D({
         enableNodeDrag={!panMode}
         enableNavigationControls
         onNodeClick={focusNode}
-        onNodeHover={(node) =>
-          setHoveredNodeId(node ? String(node.id) : null)
-        }
+        onNodeHover={(node) => setHoveredNodeId(node ? String(node.id) : null)}
         onLinkClick={(link) => onSelectMatch(link.id)}
         onBackgroundClick={onClearSelection}
         onEngineTick={initializeScene}
@@ -656,19 +606,9 @@ export function DigitalTwinNetwork3D({
                 연결 상태
               </div>
               <div className="grid gap-1.5">
-                <LinkLegendItem
-                  color="#a78bfa"
-                  label="최종 승인"
-                />
-                <LinkLegendItem
-                  color="#22d3ee"
-                  label="산업공생 진행"
-                />
-                <LinkLegendItem
-                  color="#64748b"
-                  label="응답 대기"
-                  dashed
-                />
+                <LinkLegendItem color="#a78bfa" label="최종 승인" />
+                <LinkLegendItem color="#22d3ee" label="산업공생 진행" />
+                <LinkLegendItem color="#64748b" label="응답 대기" dashed />
               </div>
             </div>
             <p className="px-1 pt-0.5 text-[9px] leading-3 text-slate-500">
@@ -680,26 +620,20 @@ export function DigitalTwinNetwork3D({
 
       <div className="absolute bottom-4 right-4 z-10 flex gap-1 rounded-xl border border-white/10 bg-slate-950/75 p-1 shadow-2xl backdrop-blur-xl">
         <TwinButton
-          label={panMode ? '화면 이동 종료' : '화면 이동'}
+          label={panMode ? "화면 이동 종료" : "화면 이동"}
           active={panMode}
           onClick={() => setPanMode((value) => !value)}
         >
           <Move className="h-4 w-4" />
         </TwinButton>
-        <TwinButton
-          label="전체 보기"
-          onClick={() => graphRef.current?.zoomToFit(600, 20)}
-        >
+        <TwinButton label="전체 보기" onClick={() => graphRef.current?.zoomToFit(600, 20)}>
           <Maximize2 className="h-4 w-4" />
         </TwinButton>
-        <TwinButton
-          label="초기 배치로 복원"
-          onClick={restoreInitialLayout}
-        >
+        <TwinButton label="초기 배치로 복원" onClick={restoreInitialLayout}>
           <RotateCcw className="h-4 w-4" />
         </TwinButton>
         <TwinButton
-          label={flowing ? '흐름 정지' : '흐름 재생'}
+          label={flowing ? "흐름 정지" : "흐름 재생"}
           onClick={() => setFlowing((value) => !value)}
         >
           {flowing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -708,11 +642,11 @@ export function DigitalTwinNetwork3D({
 
       <div className="pointer-events-none absolute bottom-4 left-4 hidden rounded-xl border border-white/10 bg-slate-950/70 px-3 py-2 text-[11px] text-slate-400 backdrop-blur-xl md:block">
         {panMode
-          ? '드래그 화면 이동 · 휠 확대 · 버튼을 다시 누르면 회전'
-          : '드래그 회전 · 휠 확대 · 화면 이동 버튼으로 위치 조정'}
+          ? "드래그 화면 이동 · 휠 확대 · 버튼을 다시 누르면 회전"
+          : "드래그 회전 · 휠 확대 · 화면 이동 버튼으로 위치 조정"}
       </div>
     </div>
-  )
+  );
 }
 
 function LegendItem({
@@ -721,10 +655,10 @@ function LegendItem({
   title,
   description,
 }: {
-  model: Group | null
-  colorClass: string
-  title: string
-  description: string
+  model: Group | null;
+  colorClass: string;
+  title: string;
+  description: string;
 }) {
   return (
     <div className="flex items-center gap-2 rounded-lg border border-white/6 bg-white/[0.035] px-2 py-1.5">
@@ -735,62 +669,56 @@ function LegendItem({
       </div>
       <div className="min-w-0">
         <div className="text-[10px] font-bold text-slate-100">{title}</div>
-        <div className="truncate text-[9px] text-slate-400">
-          {description}
-        </div>
+        <div className="truncate text-[9px] text-slate-400">{description}</div>
       </div>
     </div>
-  )
+  );
 }
 
 function ModelLegendPreview({ model }: { model: Group | null }) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    if (!canvasRef.current || !model) return
+    if (!canvasRef.current || !model) return;
 
     const renderer = new WebGLRenderer({
       canvas: canvasRef.current,
       alpha: true,
       antialias: true,
-    })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.setSize(48, 36, false)
-    renderer.outputColorSpace = SRGBColorSpace
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(48, 36, false);
+    renderer.outputColorSpace = SRGBColorSpace;
 
-    const scene = new Scene()
-    const camera = new PerspectiveCamera(28, 48 / 36, 0.01, 100)
-    const previewModel = model.clone(true)
-    scene.add(previewModel)
-    scene.add(new AmbientLight('#ffffff', 2.2))
-    const keyLight = new DirectionalLight('#dbeafe', 3.4)
-    keyLight.position.set(4, 5, 6)
-    scene.add(keyLight)
-    const fillLight = new DirectionalLight('#a7f3d0', 1.8)
-    fillLight.position.set(-4, 1, 3)
-    scene.add(fillLight)
+    const scene = new Scene();
+    const camera = new PerspectiveCamera(28, 48 / 36, 0.01, 100);
+    const previewModel = model.clone(true);
+    scene.add(previewModel);
+    scene.add(new AmbientLight("#ffffff", 2.2));
+    const keyLight = new DirectionalLight("#dbeafe", 3.4);
+    keyLight.position.set(4, 5, 6);
+    scene.add(keyLight);
+    const fillLight = new DirectionalLight("#a7f3d0", 1.8);
+    fillLight.position.set(-4, 1, 3);
+    scene.add(fillLight);
 
-    const bounds = new Box3().setFromObject(previewModel)
-    const center = bounds.getCenter(new Vector3())
-    const dimensions = bounds.getSize(new Vector3())
-    previewModel.position.sub(center)
-    const largestDimension = Math.max(dimensions.x, dimensions.y, dimensions.z)
-    camera.position.set(
-      largestDimension * 1.4,
-      largestDimension * 0.85,
-      largestDimension * 2.6,
-    )
-    camera.lookAt(0, 0, 0)
-    renderer.render(scene, camera)
+    const bounds = new Box3().setFromObject(previewModel);
+    const center = bounds.getCenter(new Vector3());
+    const dimensions = bounds.getSize(new Vector3());
+    previewModel.position.sub(center);
+    const largestDimension = Math.max(dimensions.x, dimensions.y, dimensions.z);
+    camera.position.set(largestDimension * 1.4, largestDimension * 0.85, largestDimension * 2.6);
+    camera.lookAt(0, 0, 0);
+    renderer.render(scene, camera);
 
-    return () => renderer.dispose()
-  }, [model])
+    return () => renderer.dispose();
+  }, [model]);
 
   if (!model) {
-    return <div className="h-4 w-9 animate-pulse rounded bg-white/10" />
+    return <div className="h-4 w-9 animate-pulse rounded bg-white/10" />;
   }
 
-  return <canvas ref={canvasRef} className="h-9 w-12" aria-hidden="true" />
+  return <canvas ref={canvasRef} className="h-9 w-12" aria-hidden="true" />;
 }
 
 function LinkLegendItem({
@@ -798,9 +726,9 @@ function LinkLegendItem({
   label,
   dashed = false,
 }: {
-  color: string
-  label: string
-  dashed?: boolean
+  color: string;
+  label: string;
+  dashed?: boolean;
 }) {
   return (
     <div className="flex items-center gap-2 text-[9px] text-slate-300">
@@ -819,22 +747,22 @@ function LinkLegendItem({
           stroke={color}
           strokeWidth="2.5"
           strokeLinecap="round"
-          strokeDasharray={dashed ? '4 4' : undefined}
+          strokeDasharray={dashed ? "4 4" : undefined}
         />
         {!dashed && <circle cx="17" cy="4" r="2.5" fill={color} />}
       </svg>
       <span>{label}</span>
     </div>
-  )
+  );
 }
 
 function createPedestal(color: string, selected: boolean) {
-  const group = new Group()
+  const group = new Group();
   const tiers = [
-    { top: 7.6, bottom: 8.8, height: 1.1, y: -0.45, tone: '#050b15' },
-    { top: 6.8, bottom: 7.6, height: 0.75, y: 0.45, tone: '#0a1727' },
-    { top: 5.9, bottom: 6.5, height: 0.45, y: 1.05, tone: '#10243a' },
-  ]
+    { top: 7.6, bottom: 8.8, height: 1.1, y: -0.45, tone: "#050b15" },
+    { top: 6.8, bottom: 7.6, height: 0.75, y: 0.45, tone: "#0a1727" },
+    { top: 5.9, bottom: 6.5, height: 0.45, y: 1.05, tone: "#10243a" },
+  ];
 
   tiers.forEach((tier, index) => {
     const base = new Mesh(
@@ -847,10 +775,10 @@ function createPedestal(color: string, selected: boolean) {
         emissive: new Color(color),
         emissiveIntensity: 0,
       }),
-    )
-    base.position.y = tier.y
-    group.add(base)
-  })
+    );
+    base.position.y = tier.y;
+    group.add(base);
+  });
 
   const topDisc = new Mesh(
     new CylinderGeometry(5.4, 5.4, 0.12, 48),
@@ -860,79 +788,79 @@ function createPedestal(color: string, selected: boolean) {
       opacity: selected ? 0.22 : 0.09,
       depthWrite: false,
     }),
-  )
-  topDisc.position.y = 1.32
-  group.add(topDisc)
-  return group
+  );
+  topDisc.position.y = 1.32;
+  group.add(topDisc);
+  return group;
 }
 
 function createRoleIcon(type: CompanyType, color: string) {
-  const canvas = document.createElement('canvas')
-  canvas.width = 160
-  canvas.height = 160
-  const context = canvas.getContext('2d')
+  const canvas = document.createElement("canvas");
+  canvas.width = 160;
+  canvas.height = 160;
+  const context = canvas.getContext("2d");
 
   if (context) {
-    context.clearRect(0, 0, 160, 160)
-    context.strokeStyle = color
-    context.fillStyle = color
-    context.lineWidth = 8
-    context.lineCap = 'round'
-    context.lineJoin = 'round'
-    context.shadowColor = color
-    context.shadowBlur = 18
+    context.clearRect(0, 0, 160, 160);
+    context.strokeStyle = color;
+    context.fillStyle = color;
+    context.lineWidth = 8;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.shadowColor = color;
+    context.shadowBlur = 18;
 
-    if (type === 'emitter') {
-      context.beginPath()
-      context.moveTo(30, 120)
-      context.lineTo(30, 70)
-      context.lineTo(63, 88)
-      context.lineTo(63, 65)
-      context.lineTo(96, 84)
-      context.lineTo(96, 42)
-      context.lineTo(121, 42)
-      context.lineTo(121, 120)
-      context.closePath()
-      context.stroke()
-      context.fillRect(48, 101, 15, 19)
-      context.fillRect(78, 101, 15, 19)
+    if (type === "emitter") {
+      context.beginPath();
+      context.moveTo(30, 120);
+      context.lineTo(30, 70);
+      context.lineTo(63, 88);
+      context.lineTo(63, 65);
+      context.lineTo(96, 84);
+      context.lineTo(96, 42);
+      context.lineTo(121, 42);
+      context.lineTo(121, 120);
+      context.closePath();
+      context.stroke();
+      context.fillRect(48, 101, 15, 19);
+      context.fillRect(78, 101, 15, 19);
     } else {
-      context.beginPath()
-      context.moveTo(80, 25)
-      context.lineTo(127, 51)
-      context.lineTo(127, 105)
-      context.lineTo(80, 133)
-      context.lineTo(33, 105)
-      context.lineTo(33, 51)
-      context.closePath()
-      context.stroke()
-      context.beginPath()
-      context.moveTo(33, 51)
-      context.lineTo(80, 78)
-      context.lineTo(127, 51)
-      context.moveTo(80, 78)
-      context.lineTo(80, 133)
-      context.stroke()
-      context.beginPath()
-      context.arc(80, 78, 18, -0.8, 3.7)
-      context.stroke()
-      context.beginPath()
-      context.moveTo(61, 65)
-      context.lineTo(59, 86)
-      context.lineTo(77, 78)
-      context.fill()
+      context.beginPath();
+      context.moveTo(80, 25);
+      context.lineTo(127, 51);
+      context.lineTo(127, 105);
+      context.lineTo(80, 133);
+      context.lineTo(33, 105);
+      context.lineTo(33, 51);
+      context.closePath();
+      context.stroke();
+      context.beginPath();
+      context.moveTo(33, 51);
+      context.lineTo(80, 78);
+      context.lineTo(127, 51);
+      context.moveTo(80, 78);
+      context.lineTo(80, 133);
+      context.stroke();
+      context.beginPath();
+      context.arc(80, 78, 18, -0.8, 3.7);
+      context.stroke();
+      context.beginPath();
+      context.moveTo(61, 65);
+      context.lineTo(59, 86);
+      context.lineTo(77, 78);
+      context.fill();
     }
   }
 
-  const texture = new CanvasTexture(canvas)
-  texture.needsUpdate = true
+  const texture = new CanvasTexture(canvas);
+  texture.needsUpdate = true;
   return new Sprite(
     new SpriteMaterial({
       map: texture,
       transparent: true,
       depthTest: false,
     }),
-  )
+  );
 }
 
 function TwinButton({
@@ -941,10 +869,10 @@ function TwinButton({
   active = false,
   children,
 }: {
-  label: string
-  onClick: () => void
-  active?: boolean
-  children: React.ReactNode
+  label: string;
+  onClick: () => void;
+  active?: boolean;
+  children: React.ReactNode;
 }) {
   return (
     <button
@@ -952,13 +880,13 @@ function TwinButton({
       title={label}
       onClick={onClick}
       className={[
-        'rounded-lg p-2 transition',
+        "rounded-lg p-2 transition",
         active
-          ? 'bg-cyan-400 text-slate-950'
-          : 'text-slate-400 hover:bg-white/10 hover:text-cyan-300',
-      ].join(' ')}
+          ? "bg-cyan-400 text-slate-950"
+          : "text-slate-400 hover:bg-white/10 hover:text-cyan-300",
+      ].join(" ")}
     >
       {children}
     </button>
-  )
+  );
 }

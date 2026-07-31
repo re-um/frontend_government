@@ -1110,12 +1110,16 @@ function NetworkMapPage() {
           viewMode === 'regional'
             ? 'xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'
             : viewMode === 'twin3d'
-              ? 'xl:grid-cols-[240px_minmax(0,1fr)_minmax(0,1fr)]'
+              ? 'xl:h-[calc(100vh-140px)] xl:min-h-180 xl:max-h-215 xl:grid-cols-[240px_minmax(0,1fr)_minmax(0,1fr)]'
               : 'xl:grid-cols-[240px_minmax(0,1fr)_320px]'
         }`}
       >
         {viewMode !== 'regional' && (
-        <aside className="border-b border-slate-200 bg-slate-50/80 p-4 xl:border-b-0 xl:border-r">
+        <aside
+          className={`border-b border-slate-200 bg-slate-50/80 p-4 xl:border-b-0 xl:border-r ${
+            viewMode === 'twin3d' ? 'xl:min-h-0 xl:overflow-y-auto' : ''
+          }`}
+        >
           <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-2 font-semibold text-slate-900">
               <Filter className="h-4 w-4" />
@@ -1222,7 +1226,11 @@ function NetworkMapPage() {
         </aside>
         )}
 
-        <main className="relative min-h-155 overflow-hidden bg-[radial-gradient(circle_at_center,#f8fafc_0,#ffffff_70%)]">
+        <main
+          className={`relative min-h-155 overflow-hidden bg-[radial-gradient(circle_at_center,#f8fafc_0,#ffffff_70%)] ${
+            viewMode === 'twin3d' ? 'xl:h-full xl:min-h-0' : ''
+          }`}
+        >
           <div className="absolute left-4 top-4 z-20 flex max-w-[calc(100%-2rem)] flex-wrap rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
             <ViewModeButton
               active={viewMode === 'graph'}
@@ -1486,7 +1494,11 @@ function NetworkMapPage() {
           )}
         </main>
 
-        <aside className="border-t border-slate-200 bg-white p-5 xl:border-l xl:border-t-0">
+        <aside
+          className={`border-t border-slate-200 bg-white p-5 xl:border-l xl:border-t-0 ${
+            viewMode === 'twin3d' ? 'xl:min-h-0 xl:overflow-y-auto' : ''
+          }`}
+        >
           {viewMode === 'regional' ? (
             selectedRegion ? (
               <RegionalNetworkDetail
@@ -2212,19 +2224,11 @@ function NetworkPanel({
             {networkMatches.map((match) => {
               const sourceCompany = networkCompanyById.get(match.source)
               const targetCompany = networkCompanyById.get(match.target)
-              const companyToSelect =
-                targetCompany?.id === anchorCompany.id
-                  ? sourceCompany
-                  : targetCompany ?? sourceCompany
 
               return (
-                <button
+                <div
                   key={match.id}
-                  type="button"
-                  onClick={() =>
-                    companyToSelect && onSelectCompany(companyToSelect)
-                  }
-                  className="block w-full px-4 py-3.5 text-left transition hover:bg-cyan-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-400"
+                  className="w-full px-4 py-3.5 text-left"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -2240,7 +2244,7 @@ function NetworkPanel({
                     </div>
                     <ConnectionStatusBadge status={match.status} />
                   </div>
-                </button>
+                </div>
               )
             })}
           </div>
